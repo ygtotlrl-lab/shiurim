@@ -150,3 +150,6 @@ main{padding:0 var(--sp-6); padding-bottom:calc(var(--tabbar-h) + var(--sp-6) + 
 @media (min-width:640px){:root{--col:600px}}
 @media (min-width:900px){:root{--col:720px}}
 @media (min-width:1200px){:root{--col:820px}}
+/* ── אייקונים ── */
+/* העובי נקבע כאן ולא ב-icon() — גוף הפונקציה אינו נערך לאפליקציה אחת. */
+.ico{width:1.15em;height:1.15em;flex:none;stroke-width:1.75}

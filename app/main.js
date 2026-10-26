@@ -9,6 +9,7 @@ import { actWire, closeAsk, closeModal, esc, shellBare, swApply, swHideUpdate, u
 import { KEY_RAMBAM, KEY_TANYA, KV_TABLE, MSG_MOREH_CLOSE, MSG_MOREH_OPEN, MSG_VIL_CLOSE, MSG_VIL_OPEN,
          PUSH_TABLES, SUPABASE_ANON_KEY, SUPABASE_URL, TABLES, TABS } from './constants.js';
 import { S, shell, view } from './state.js';
+import { icon } from './icons.js';
 import { sPendKey, sPendKeyOf, sPickSet, sQ, sStripRows, sSyncNow, sSyncPull, sTableMeta } from './domain.js';
 import { rambamCur, rambamFill, rambamMorehFill, rambamMount, rambamScreenHTML,
          rambamVilnaFill } from './screens/rambam.js';
@@ -125,23 +126,11 @@ function brandHTML() {
   return '<img src="icons/icon-192.016bd933.png" alt="" width="40" height="40">';
 }
 
-// סט קווי-מעוגל אחד בעובי 1.75.
-function iconFor(kind) {
-  var p = {
-    scroll: 'M7 4h11v14a2 2 0 01-2 2H6 M7 4a2 2 0 00-2 2v12a2 2 0 002 2 M10 9h5 M10 13h5',
-    book:   'M12 6c-2-1.5-5-2-8-1.5V19c3-.5 6 0 8 1.5 M12 6c2-1.5 5-2 8-1.5V19c-3-.5-6 0-8 1.5 M12 6v14.5'
-  }[kind] || 'M12 4v16 M4 12h16';
-  return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" ' +
-         'stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">' +
-         p.split(' M').map(function (s, i) { return '<path d="' + (i ? 'M' + s : s) + '"/>'; }).join('') +
-         '</svg>';
-}
-
 function tabbarHTML() {
   return '<div class="in">' + TABS.map(function (t) {
     return '<button class="tab-btn' + (view.screen === t.k ? ' on' : '') +
            '" data-act="tab-go" data-id="' + esc(t.k) + '">' +
-           '<span class="ti">' + iconFor(t.ic) + '</span>' + esc(t.lab) + '</button>';
+           '<span class="ti">' + icon(t.ic) + '</span>' + esc(t.lab) + '</button>';
   }).join('') + '</div>';
 }
 
