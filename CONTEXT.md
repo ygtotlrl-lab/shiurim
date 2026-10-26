@@ -1,0 +1,38 @@
+# שיעורים — קונטקסט פיתוח
+
+## פרטי ריפו
+- **ריפו:** `ygtotlrl-lab/shiurim`
+- **GitHub Pages:** כתובת האפליקציה — `android.url` שבתצורה
+- **הקוד:** `index.html` (הקליפה) · `app/` · `core/`
+- **Supabase:** project — `supabase.url` שבתצורה | טבלה `s_settings` — ⚠️ **הפרויקט
+  משותף** עם גיוס והקופה: ⭐ הגיבוי, הפינוי הלילי ורשימת-ההיתר אינם בבעלות הריפו הזה.
+- **הסריקות:** במאגרי הקבצים `shiurim-rambam` ו-`shiurim-files` — ⚠️ נפחן עובר את תקרת האתר
+  ב-GitHub Pages, ⛔ ולכן הן אינן בריפו.
+- **הלקוח והצורך:** לימוד יומי אישי — השיעור הנבחר משותף לכל המכשירים, ⛔ בלי כניסה.
+
+---
+
+<!-- SHARED:start id="context-grant" -->
+## ⚠️ Supabase — GRANT חובה לטבלאות חדשות
+
+כל טבלה חדשה שנוצרת ב-`public` schema חייבת לכלול GRANT מפורש — אחרת supabase-js
+לא יוכל לגשת אליה. **⛔ וכאן הסדר הוא `revoke` ואז `grant`, ולא `grant` לבדו:**
+
+```sql
+revoke all on public.TABLE_NAME from anon, authenticated;
+grant select, insert, update on public.TABLE_NAME to anon, authenticated;
+grant all on public.TABLE_NAME to service_role;
+alter table public.TABLE_NAME enable row level security;
+```
+
+⚠️ **הסיבה:** `GRANT` הוא **אדיטיבי בלבד ואינו מסיר דבר**, ופרויקט Supabase
+סטנדרטי מגיע עם `alter default privileges … grant all on tables` — כלומר
+**כל טבלה נולדת עם `DELETE` ו-`TRUNCATE`**. מחיקה כאן היא תמיד `deleted=true`,
+ולכן ההרשאות האלה מיותרות בהגדרה ומסוכנות בפועל: מפתח ה-anon יושב גלוי
+ב-`app.config.js` הציבורי.
+
+⚠️ **ושמות הטבלאות נגזרים מתפקידן** — ⭐ `<תחילית>_settings` · `_users` ·
+`_entries`: ⛔ ולא לפי מה שנשמע טוב.
+<!-- SHARED:end -->
+
+מקור האמת המלא לסכימה: `migrations/000_schema.sql`.

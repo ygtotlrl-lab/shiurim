@@ -1,0 +1,244 @@
+// app/main.js — העלייה, מפת הפעולות והניווט
+import { appConfigure, getDeviceId, netTimeout } from '../core/util.js';
+import { eraKeys, pendAlertDismiss, pendCount, sbWatch } from '../core/sync.js';
+import { lsOpen } from '../core/storage.js';
+import { MIRROR, mirrorKey, mirrorTables } from '../core/mirror.js';
+import { logAwait } from '../core/backup.js';
+import { bootRun } from '../core/boot-run.js';
+import { actWire, closeAsk, closeModal, esc, shellBare, swApply, swHideUpdate, uiNoDialog } from '../core/ui.js';
+import { KEY_RAMBAM, KEY_TANYA, KV_TABLE, MSG_MOREH_CLOSE, MSG_MOREH_OPEN, MSG_VIL_CLOSE, MSG_VIL_OPEN,
+         PUSH_TABLES, SUPABASE_ANON_KEY, SUPABASE_URL, TABLES, TABS } from './constants.js';
+import { S, shell, view } from './state.js';
+import { sPendKey, sPendKeyOf, sPickSet, sQ, sStripRows, sSyncNow, sSyncPull, sTableMeta } from './domain.js';
+import { rambamCur, rambamFill, rambamMorehFill, rambamMount, rambamScreenHTML,
+         rambamVilnaFill } from './screens/rambam.js';
+import { tanyaCur, tanyaFill, tanyaMount, tanyaScreenHTML } from './screens/tanya.js';
+
+// ── החיווט ──
+// החיווט נמסר בשומרי קריאה — ה-CFG מוגדרים בהמשך, והשומר קורא אותם בזמן הקריאה ולא בזמן המסירה.
+appConfigure({
+  get BK_CFG() { return BK_CFG; },
+  get DEV_CFG() { return DEV_CFG; },
+  get DOM_ACTIONS() { return DOM_ACTIONS; },
+  get ERA_CFG() { return ERA_CFG; },
+  get LS_CFG() { return LS_CFG; },
+  get MIRROR_CFG() { return MIRROR_CFG; },
+  get PEND_CFG() { return PEND_CFG; },
+  get PL_CFG() { return PL_CFG; },
+  get PUSH_CFG() { return PUSH_CFG; },
+  get RTY_CFG() { return RTY_CFG; },
+  get saveRefresh() { return saveRefresh; }
+});
+
+var MIRROR_CFG = {
+  prefix: self.APP.prefix + 'mirror_',
+  tables: function () { return TABLES.map(function (m) { return m.t; }); },
+  // ריק ומוצהר — שדה חסר נקרא «לא נשאל», וריק נקרא «נמדד ואין».
+  noPush: [],
+  empty:  function () { return []; },
+  clean:  function (t, rows) { return sStripRows(t, rows); },
+  fail:   function (where, e) { console.error('[mirror] ' + where, e); },
+};
+
+var LS_CFG = {
+  cachePrefix: self.APP.id + '-',
+  logKey: 's_ls_log',
+  dismissKey: 's_sw_dismissed',
+  // מפתח שאינו במרשם נמחק בעלייה.
+  keys: function () {
+    return [LS_CFG.logKey, LS_CFG.dismissKey, DEV_CFG.key, PEND_CFG.key,
+            BK_CFG.flagKey, BK_CFG.logQueueKey]
+      .concat(eraKeys(), mirrorTables().map(mirrorKey));
+  }
+};
+
+var DEV_CFG = { key: 's_device_id' };
+
+var BK_CFG = {
+  client: function () { return S.sb; },
+  flagKey: 's_last_backup',
+  logQueueKey: 's_log_queue',
+  prefix: '',
+  device: function () { try { return getDeviceId(); } catch (e) { return null; } },
+  // אין כניסה ולכן אין שם משתמש — המכשיר הוא הזהות היחידה, ושדה מומצא היה עדות שאיש לא מסר.
+  user: function () { return null; },
+  secrets: [],
+  sources: function () {
+    return [
+      { name: KV_TABLE, order: 'key', ts: 'updated_at' }
+    ];
+  }
+};
+
+var PEND_CFG = {
+  key: 's_pending',
+  // סימון שקידומתו אינה כאן יורד בעלייה — אין לו כותב ואין שורה שתידחף ותוריד אותו.
+  marks: function () { return PUSH_TABLES.map(function (t) { return sPendKeyOf(t, ''); }); },
+  redraw: function () { }
+};
+
+var RTY_CFG = {
+  flush:   function () { return sSyncNow(); },
+  pending: function () { try { return pendCount() > 0; } catch (e) { return false; } },
+};
+
+var PL_CFG = {
+  every:  3000,
+  // אין כניסה — הבדיקה המחזורית פעילה כל עוד הלשונית גלויה.
+  active: function () { return document.visibilityState !== 'hidden'; },
+  seen:   function () { return S._sSeenTs; },
+  note:   function (ts) { S._sSeenTs = ts; },
+  ok:     function () { S._lastSeenOk = Date.now(); },
+  pull:   function () { return sSyncNow(); },
+  client: function () { return S.sb; },
+  table:  function () { return KV_TABLE; },
+};
+
+var PUSH_CFG = {
+  tables: PUSH_TABLES,
+  chunk:  500,
+  delay:  400,
+  rows:   function (t) { return MIRROR[t] || []; },
+  key:    function (t, row) { return sPendKey(t, row); },
+  send:   function (t, rows) {
+    var m = sTableMeta(t);
+    return netTimeout(S.sb.from(t).upsert(rows, { onConflict: m.key }));
+  },
+  run:    function () { sSyncNow(); },
+};
+
+var ERA_CFG = {
+  prefix: self.APP.prefix,
+  client: function () { return S.sb; },
+  table:  function () { return KV_TABLE; },
+  refresh: function () { return sSyncNow(); },
+  log:    function (action, entries) { return logAwait(action, entries); }
+};
+
+function saveRefresh() { sRender(); }
+
+document.title = self.APP.name;
+
+// ── הקליפה ──
+// הלוגו הוא הנכס שהמחולל מייצר — ציור שני של המאסטר היה מקור אמת שני.
+function brandHTML() {
+  return '<img src="icons/icon-192.016bd933.png" alt="" width="40" height="40">';
+}
+
+// סט קווי-מעוגל אחד בעובי 1.75.
+function iconFor(kind) {
+  var p = {
+    scroll: 'M7 4h11v14a2 2 0 01-2 2H6 M7 4a2 2 0 00-2 2v12a2 2 0 002 2 M10 9h5 M10 13h5',
+    book:   'M12 6c-2-1.5-5-2-8-1.5V19c3-.5 6 0 8 1.5 M12 6c2-1.5 5-2 8-1.5V19c-3-.5-6 0-8 1.5 M12 6v14.5'
+  }[kind] || 'M12 4v16 M4 12h16';
+  return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" ' +
+         'stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">' +
+         p.split(' M').map(function (s, i) { return '<path d="' + (i ? 'M' + s : s) + '"/>'; }).join('') +
+         '</svg>';
+}
+
+function tabbarHTML() {
+  return '<div class="in">' + TABS.map(function (t) {
+    return '<button class="tab-btn' + (view.screen === t.k ? ' on' : '') +
+           '" data-act="tab-go" data-id="' + esc(t.k) + '">' +
+           '<span class="ti">' + iconFor(t.ic) + '</span>' + esc(t.lab) + '</button>';
+  }).join('') + '</div>';
+}
+
+// ── הרינדור ──
+// הבחירה שמצוירת כבר אינה מצוירת מחדש — משיכה מהענן אינה מוחקת עמודים שנטענו ולוחות שנפתחו.
+function sRender() {
+  var root = sQ('#view');
+  if (!root) { uiNoDialog('sRender', 'view'); return; }
+  var cur = view.screen === 'tanya' ? tanyaCur() : rambamCur();
+  if (view.shown[view.screen] !== cur || !root.firstChild || root.dataset.screen !== view.screen) {
+    root.dataset.screen = view.screen;
+    if (view.screen === 'tanya') { root.innerHTML = tanyaScreenHTML(); tanyaMount(); }
+    else { root.innerHTML = rambamScreenHTML(); rambamMount(); }
+    view.shown = { rambam: null, tanya: null };
+    view.shown[view.screen] = cur;
+  }
+  var hd = sQ('#masthead'), tb = sQ('#tabbar');
+  if (hd) { hd.classList.remove('hidden'); hd.innerHTML = brandHTML(); }
+  if (tb) tb.innerHTML = tabbarHTML();
+  shellBare(false);
+}
+
+// בחירה חדשה נכתבת לטבלת ההגדרות ומסתנכרנת לכל המכשירים, והמסך עולה לראשו.
+function pickGo(key, v) {
+  sPickSet(key, v);
+  sRender();
+  window.scrollTo({ top: 0 });
+}
+
+// שורה ברשימה נפתחת במקומה — גוף השיעור נבנה בפתיחה הראשונה בלבד.
+function rowToggle(el, fill) {
+  var box = el.parentElement && el.parentElement.querySelector('.ch-bd');
+  if (!box) { uiNoDialog('row-toggle', el.dataset.id); return; }
+  var open = box.classList.toggle('hidden') === false;
+  el.setAttribute('aria-expanded', String(open));
+  if (open && !box.firstChild) fill(box);
+}
+
+// ── מפת הפעולות ──
+var DOM_ACTIONS = {
+  'tab-go': function (el) {
+    view.screen = el.dataset.id;
+    sRender();
+    window.scrollTo({ top: 0 });
+  },
+  'rambam-next': function (el) { pickGo(KEY_RAMBAM, +el.dataset.id); },
+  'tanya-next':  function (el) { pickGo(KEY_TANYA, +el.dataset.id); },
+  'rambam-row':  function (el) { rowToggle(el, rambamFill); },
+  'tanya-row':   function (el) { rowToggle(el, tanyaFill); },
+  'moreh-toggle': function (el) {
+    var ms = sQ('#moreh'), box = sQ('#moreh-pages');
+    if (!ms || !box) { uiNoDialog('moreh-toggle', 'moreh'); return; }
+    var open = ms.classList.toggle('hidden') === false;
+    el.textContent = open ? MSG_MOREH_CLOSE : MSG_MOREH_OPEN;
+    if (open && !box.firstChild) rambamMorehFill(box);
+  },
+  'vilna-toggle': function (el) {
+    var lesson = el.closest('.lesson'), vs = lesson && lesson.querySelector('[data-vil]');
+    if (!vs) { uiNoDialog('vilna-toggle', el.dataset.id); return; }
+    var open = vs.classList.toggle('hidden') === false;
+    el.textContent = open ? MSG_VIL_CLOSE : MSG_VIL_OPEN;
+    if (open && !vs.firstChild) rambamVilnaFill(vs, +el.dataset.id);
+    if (open) vs.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  },
+  'page-zoom': function (el) { el.classList.toggle('big'); },
+  'ask-yes': function () { closeAsk(true); },
+  'ask-no':  function () { closeAsk(false); },
+  'modal-close': function () { closeModal(); },
+  'ls-alert-close': function () { var el = document.getElementById('ls-alert'); if (el) el.remove(); },
+  'pend-alert-ok':  function () { pendAlertDismiss(); },
+  'sw-apply': function (el) { swApply(el); },
+  'sw-dismiss': function () { swHideUpdate(); }
+};
+
+// ── המאזינים הגלובליים ──
+// מאזין אחד לכל אירוע, בהאצלה מ-document — המסכים נבנים מחדש בכל רינדור, ומאזין שנקשר לאלמנט מת איתו.
+actWire(DOM_ACTIONS);
+
+document.addEventListener('change', function (e) {
+  var el = e.target;
+  if (!el.dataset) return;
+  if (el.dataset.chg === 'rambam-pick') { pickGo(KEY_RAMBAM, +el.value); return; }
+  if (el.dataset.chg === 'tanya-pick') { pickGo(KEY_TANYA, +el.value); }
+});
+
+// ── העלייה ──
+function sBoot() {
+  shell.sRender = sRender;
+  S.sb = sbWatch(window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY));
+  // הליבה עולה לפני הציור הראשון — המסך עולה מהמראה, והסימונים הממתינים מוצגים מהשנייה הראשונה.
+  bootRun();
+  sRender();
+  sSyncPull().then(function () { sRender(); });
+}
+
+// האחסון נפתח לפני כל קריאה ממנו — אחרי שה-CFG הוגדרו, כי המרשם קורא אותם.
+await lsOpen();
+sBoot();
+
+window.bootOk();

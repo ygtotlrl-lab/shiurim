@@ -1,0 +1,28 @@
+// נוצר מהתצורה — app.config.js, ב-node tools/gen-app.mjs: אין לערוך ביד
+plugins {
+    id 'com.android.application'
+}
+
+android {
+    namespace 'com.shiurim.app'
+    compileSdk 34
+
+    defaultConfig {
+        applicationId "com.shiurim.app"
+        minSdk 21
+        targetSdk 34
+        versionCode 1
+        versionName "1.0"
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+}

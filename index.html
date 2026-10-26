@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#1E3A6E">
+<title></title>
+<script>
+// base דינמי לפני כל תג עם כתובת יחסית — כשה-service worker מגיש את הקליפה בנתיב עמוק, כתובת יחסית נפתרת רמה אחת עמוק מדי.
+// אחרת המניפסט, העובד והאייקונים מחזירים 404, והעובד נרשם בהיקף שגוי.
+(function () {
+  var p = location.pathname;
+  var m = p.match(/^(.*?\/shiurim\/)/);
+  var b = document.createElement('base');
+  b.href = m ? m[1] : p.replace(/[^/]*$/, '');
+  document.head.appendChild(b);
+})();
+</script>
+<link rel="manifest" href="manifest.json">
+<script src="app.config.js"></script>
+<script src="core/boot.js"></script>
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.c9a411e2.png">
+<link rel="icon" href="icons/favicon-32.39c63cc6.png" sizes="32x32">
+<link rel="icon" href="icons/favicon-16.b7c9a22b.png" sizes="16x16">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@500;700;900&family=Assistant:wght@400;600;700&display=swap">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.111.0/dist/umd/supabase.js" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js" crossorigin="anonymous"></script>
+<link rel="stylesheet" href="core/ui.css">
+<link rel="stylesheet" href="core/chart.css">
+<link rel="stylesheet" href="app/style.css">
+</head>
+<body>
+
+<!-- הקליפה מתחילה חשופה — המסגרת נחשפת עם הרינדור הראשון. -->
+<div id="shell" class="is-bare">
+<!-- הסרגל מחוץ למיכל התוכן — סרגל שנבנה בתוך המסך נמחק איתו בכל רינדור. -->
+<nav id="tabbar" class="tabbar" aria-label="ניווט"></nav>
+
+<header id="masthead" class="brand hidden"></header>
+
+<main id="view"><div class="view-loading" role="status" aria-label="טוען"><span class="view-spin"></span></div></main>
+
+</div>
+
+<!-- מיכל חלון הדו-שיח ילד ישיר של body — מיכל בתוך מסך נמחק איתו במעבר, והדיאלוג מפסיק להיפתח בשקט. -->
+<div id="modal" class="veil" data-veil="modal">
+  <div class="sheet" data-ks role="dialog" aria-modal="true" aria-labelledby="modal-title">
+    <div class="sheet-hd">
+      <h3 id="modal-title"></h3>
+      <button class="x" data-act="modal-close" aria-label="סגירה">✕</button>
+    </div>
+    <div class="sheet-bd" id="modal-body"></div>
+    <div class="sheet-ft" id="modal-foot"></div>
+  </div>
+</div>
+
+<div id="ask" class="veil" data-veil="ask">
+  <div class="sheet" role="alertdialog" aria-modal="true" aria-labelledby="ask-title">
+    <div class="sheet-hd"><h3 id="ask-title"></h3></div>
+    <div class="sheet-bd" id="ask-body"></div>
+    <div class="sheet-ft">
+      <button data-act="ask-no">ביטול</button>
+      <button class="danger" data-act="ask-yes" id="ask-yes">אישור</button>
+    </div>
+  </div>
+</div>
+
+<div id="toasts" aria-live="polite"></div>
+
+<div id="updater">
+  <div class="in">
+    <span>🔄 גרסה חדשה זמינה</span>
+    <button data-act="sw-apply">עדכן עכשיו</button>
+    <button class="x" data-act="sw-dismiss" aria-label="סגור">✕</button>
+  </div>
+</div>
+
+<script type="module" src="app/main.js"></script>
+
+</body>
+</html>

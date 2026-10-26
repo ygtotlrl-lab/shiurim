@@ -1,0 +1,13 @@
+name: guard
+
+# .github/workflows/guard.yml — שומר הדחיפה
+on:
+  push:
+  pull_request:
+
+jobs:
+  guard:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - run: node tools/guard.mjs

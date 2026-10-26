@@ -1,0 +1,99 @@
+name: Build APK
+
+# .github/workflows/build-apk.yml — בניית ה-APK וחתימתו
+
+on:
+  workflow_dispatch:
+  # שינויי ווב אינם דורשים APK חדש — המעטפת טוענת את האתר החי, ולכן נתיביהם אינם כאן.
+  # אין להסיר את branches — חבילה חתומה נבנית רק מהענף המשוחרר, ולא מקוד שעוד לא מוזג.
+  push:
+    branches: [main]
+    paths:
+      - 'android/**'
+      # התיעוד אינו נכנס ל-APK — שינוי בו אינו בנייה ואינו קידום גרסה.
+      - '!android/README.md'
+      - 'signing/**'
+      - '.github/workflows/build-apk.yml'
+
+env:
+  # נתיב אחד לשלב שכותב ולשלב שמוחק — שני נתיבים משאירים מפתח על הרץ אחרי מחיקה שהצליחה.
+  SIGN_KEYSTORE: /tmp/apk-signing.keystore
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      # מזהה האפליקציה נקרא מהתצורה — הזרימה אינה נושאת ערך של אפליקציה.
+      - name: Read the app id from the config
+        run: echo "APP_ID=$(node tools/gen-app.mjs --get id)" >> "$GITHUB_ENV"
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      # החבילות מוצהרות — ברירת המחדל של הפעולה מבקשת את החבילה tools, שאינה במאגר ה-SDK, ונופלת בכל בנייה.
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v4
+        with:
+          packages: 'platform-tools'
+
+      # אין להוסיף שלב שמעתיק נכסי ווב — עותק ב-file:// יושב במחיצת localStorage אחרת מאתר ה-https,
+      # ומה שיוקלד בו אופליין אינו נראה לאפליקציה האמיתית.
+      - name: Generate Gradle wrapper
+        run: |
+          set -euo pipefail
+          cd android
+          gradle wrapper --gradle-version 8.7 --no-daemon
+
+      - name: Build release APK (unsigned)
+        run: |
+          set -euo pipefail
+          cd android
+          ./gradlew :app:assembleRelease --no-daemon
+
+      - name: Sign with the permanent key
+        env:
+          KEYSTORE_B64: ${{ secrets.KEYSTORE_B64 }}
+          SIGN_PASS: ${{ secrets.KEYSTORE_PASS }}
+        run: |
+          set -euo pipefail
+          # המפתח נכתב מחוץ לעץ העבודה — קובץ בעץ נכנס ל-artifact ולסטטוס של git.
+          umask 077
+          # הסדר: נרמול, שער האלפבית, פענוח — שער לפני הנרמול מפיל ערך שהנרמול היה מציל, וההודעה מטעה לסיסמה שגויה.
+          # ערך שעבר ממשק אנושי נושא רווחים, סופי שורה, BOM וסימני כיווניות; מה שאינו באלפבית אחרי הנרמול עדיין מפיל.
+          B64=$(printf '%s' "$KEYSTORE_B64" \
+                | LC_ALL=C tr -d ' \t\r\n' \
+                | LC_ALL=C sed -e 's/\xEF\xBB\xBF//g' \
+                               -e 's/\xE2\x80[\x8B-\x8F]//g' \
+                               -e 's/\xC2[\xA0\xAD]//g')
+          if ! printf '%s' "$B64" | LC_ALL=C grep -qE '^[A-Za-z0-9+/]+=*$'; then
+            echo "❌ KEYSTORE_B64 carries a character outside the base64 alphabet — a contaminated paste, not a wrong password" >&2
+            exit 1
+          fi
+          printf '%s' "$B64" | base64 -d > "$SIGN_KEYSTORE"
+          [ -s "$SIGN_KEYSTORE" ] || { echo "❌ KEYSTORE_B64 decoded to an empty file" >&2; exit 1; }
+          # כלי החתימה ב-build-tools, שאינו ב-PATH כברירת מחדל.
+          BT=$(ls -d "$ANDROID_HOME"/build-tools/* | sort -V | tail -1)
+          echo "Using build-tools: $BT"
+          echo "$BT" >> "$GITHUB_PATH"
+          export PATH="$BT:$PATH"
+          ./signing/sign-apk.sh \
+            android/app/build/outputs/apk/release/app-release-unsigned.apk \
+            app-signed.apk
+
+      # המחיקה רצה גם כשהחתימה נפלה — שלב שרץ רק בהצלחה משאיר את המפתח על הרץ בדיוק בריצות שנעצרו.
+      - name: Remove the decoded key
+        if: always()
+        run: rm -f "$SIGN_KEYSTORE"
+
+      - name: Upload signed APK
+        uses: actions/upload-artifact@v7
+        with:
+          name: ${{ env.APP_ID }}-apk
+          path: app-signed.apk
+          if-no-files-found: error
