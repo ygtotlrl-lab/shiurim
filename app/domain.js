@@ -4,11 +4,14 @@ import { ctxEpoch, ctxStale, idEq, mergeCore, pendHas, pendMark, pushDirty,
          schedulePush } from '../core/sync.js';
 import { MIRROR, mirrorSave } from '../core/mirror.js';
 import { logAction } from '../core/backup.js';
-import { pullRender, toast } from '../core/ui.js';
+import { esc, openModal, pullRender, toast } from '../core/ui.js';
 import { hebGematria } from '../core/hebrew.js';
-import { FILES_URL, KV_TABLE, RAMBAM_URL, MSG_HAKDAMA, MSG_LOADING, MSG_LOAD_FAIL, MSG_PEREK, PARSHIOT, PDFJS_WORKER_URL,
-         PUSH_TABLES, RAMBAM_LESSONS, TABLES, TANYA_CHAPTERS, TANYA_RATIO } from './constants.js';
+import { FILES_URL, KEY_RAMBAM, KEY_TANYA, KV_TABLE, RAMBAM_URL, MSG_HAKDAMA, MSG_LOADING, MSG_LOAD_FAIL,
+         MSG_HOME_BACK, MSG_MOREH_OPEN, MSG_PEREK, MSG_PICK_CUR, MSG_PICK_NONE, MSG_PICK_PARASHA_TITLE, MSG_PICK_SEARCH,
+         MSG_PICK_TITLE, MSG_RAMBAM_OPENING, PARSHIOT, PDFJS_WORKER_URL, PUSH_TABLES, RAMBAM_LESSONS, TABLES,
+         TANYA_BOOKS, TANYA_CHAPTERS, TANYA_RATIO } from './constants.js';
 import { S, shell } from './state.js';
+import { icon } from './icons.js';
 
 // ── מטא ──
 function sTableMeta(t) {
@@ -118,12 +121,85 @@ function sPickSet(key, v) {
   pushSoon();
 }
 
+// השיעור שנבחר בכל לימוד — הסדר הראשי והמסך של הלימוד קוראים אותו.
+function rambamCur() { return sPick(KEY_RAMBAM, RAMBAM_LESSONS.length); }
+
+function tanyaCur() { return sPick(KEY_TANYA, PARSHIOT.length); }
+
 // ── תוויות ──
 function rambamLabel(i) { return hebGematria(i + 1, '') + '. ' + RAMBAM_LESSONS[i][0]; }
 
 function tanyaChapName(c) { return c === 0 ? MSG_HAKDAMA : MSG_PEREK + hebGematria(c, ''); }
 
 function tanyaLabel(c) { return PARSHIOT[c] + ' — ' + tanyaChapName(c); }
+
+// סרגל הקריאה — חזרה לסדר הלימוד, ושם השיעור שפותח את הבחירה.
+function readBarHTML(kind, kicker, title) {
+  return '<div class="readbar" id="readbar"><div class="in">' +
+    '<button class="rb-home" data-act="go-home" aria-label="' + esc(MSG_HOME_BACK) + '">' + icon('home') + '</button>' +
+    '<button class="rb-pick" data-act="pick-open" data-k="' + kind + '"><span class="rb-k">' + esc(kicker) + '</span>' +
+    '<b>' + title + '</b>' + icon('down') + '</button></div></div>';
+}
+
+// ── בחירת שיעור — גיליון מלמטה ──
+// קבוצה לכל הלכות ברמב״ם ולכל חומש בתניא; שיעור שחוצה שתי הלכות נכנס לקבוצה של הראשונה.
+function rambamGroups() {
+  var out = [], last = null;
+  RAMBAM_LESSONS.forEach(function (x, i) {
+    var m = /^(הל' .+?) (פרק .+)$/.exec(x[0].split(' · ')[0]);
+    var g = m ? m[1] : MSG_RAMBAM_OPENING;
+    if (!last || last.title !== g) { last = { title: g, items: [] }; out.push(last); }
+    last.items.push({ i: i, num: hebGematria(i + 1, ''), name: m ? x[0].slice(m[1].length + 1) : x[0] });
+  });
+  return out;
+}
+
+function tanyaGroups() {
+  return TANYA_BOOKS.map(function (b, k) {
+    var end = k + 1 < TANYA_BOOKS.length ? TANYA_BOOKS[k + 1][1] : PARSHIOT.length, items = [];
+    for (var i = b[1]; i < end; i++) items.push({ i: i, num: PARSHIOT[i], name: tanyaChapName(i) });
+    return { title: b[0], items: items };
+  });
+}
+
+function pickerOpen(kind) {
+  var isR = kind === 'rambam';
+  var cur = isR ? rambamCur() : tanyaCur();
+  var h = '<label class="pk-search">' + icon('search') + '<input type="search" data-inp="pick-q" aria-label="' +
+          esc(MSG_PICK_SEARCH) + '" placeholder="' + esc(MSG_PICK_SEARCH) + '"></label><div class="pk-list" id="pk-list">';
+  (isR ? rambamGroups() : tanyaGroups()).forEach(function (g) {
+    h += '<div class="pk-grp"><div class="pk-gt">' + esc(g.title) + '</div>' + g.items.map(function (it) {
+      var on = it.i === cur;
+      return '<button class="pk-it' + (on ? ' on' : '') + '" data-act="pick-go" data-k="' + kind + '" data-id="' + it.i +
+             '" data-q="' + esc(g.title + ' ' + it.num + ' ' + it.name + ' ' + (it.i + 1)) + '">' +
+             '<span class="pk-n">' + esc(it.num) + '</span><span class="pk-t">' + esc(it.name) +
+             (on ? ' · ' + esc(MSG_PICK_CUR) : '') + '</span></button>';
+    }).join('') + '</div>';
+  });
+  h += '<p class="pk-none hidden" id="pk-none">' + esc(MSG_PICK_NONE) + '</p></div>';
+  openModal(isR ? MSG_PICK_TITLE : MSG_PICK_PARASHA_TITLE, h,
+            isR ? '<button class="btn ghost" data-act="moreh-open">' + esc(MSG_MOREH_OPEN) + '</button>' : '');
+  var on = sQ('#pk-list .pk-it.on');
+  if (on) on.scrollIntoView({ block: 'center' });
+}
+
+// החיפוש מסתיר במקום — כותרת שכל שיעוריה הוסתרו יורדת איתם.
+function pickerFilter(q) {
+  q = String(q || '').trim();
+  var any = false;
+  document.querySelectorAll('#pk-list .pk-grp').forEach(function (g) {
+    var shown = 0;
+    g.querySelectorAll('.pk-it').forEach(function (b) {
+      var hit = !q || b.dataset.q.indexOf(q) >= 0;
+      b.classList.toggle('hidden', !hit);
+      if (hit) shown++;
+    });
+    g.classList.toggle('hidden', !shown);
+    if (shown) any = true;
+  });
+  var none = sQ('#pk-none');
+  if (none) none.classList.toggle('hidden', any);
+}
 
 // ── הקבצים ──
 // r/ ו-v/ — מאגר הרמב״ם; כל השאר — מאגר הקבצים.
@@ -239,6 +315,6 @@ function tanyaSheet(item) {
 
 function tanyaChapter(c) { return TANYA_CHAPTERS[c]; }
 
-export { el, fileUrl, localPut, pdfInto, pushSoon, rambamFile, rambamLabel,
+export { el, fileUrl, localPut, pdfInto, pickerFilter, pickerOpen, pushSoon, rambamCur, rambamFile, rambamLabel, readBarHTML,
          sLive, sPendKey, sPendKeyOf, sPick, sPickSet, sQ, sStripRows, sSyncNow, sSyncPull,
-         sTableMeta, tanyaChapName, tanyaChapter, tanyaLabel, tanyaSheet };
+         sTableMeta, tanyaChapName, tanyaChapter, tanyaCur, tanyaLabel, tanyaSheet };

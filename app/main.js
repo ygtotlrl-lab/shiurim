@@ -6,14 +6,15 @@ import { MIRROR, mirrorKey, mirrorTables } from '../core/mirror.js';
 import { logAwait } from '../core/backup.js';
 import { bootRun } from '../core/boot-run.js';
 import { actWire, closeAsk, closeModal, esc, shellBare, swApply, swHideUpdate, uiNoDialog } from '../core/ui.js';
-import { KEY_RAMBAM, KEY_TANYA, KV_TABLE, MSG_MOREH_CLOSE, MSG_MOREH_OPEN, MSG_VIL_CLOSE, MSG_VIL_OPEN,
-         PUSH_TABLES, SUPABASE_ANON_KEY, SUPABASE_URL, TABLES, TABS } from './constants.js';
+import { KEY_RAMBAM, KEY_TANYA, KV_TABLE, MSG_VIL_CLOSE, MSG_VIL_OPEN, PUSH_TABLES, SUPABASE_ANON_KEY,
+         SUPABASE_URL, TABLES, TABS } from './constants.js';
 import { S, shell, view } from './state.js';
 import { icon } from './icons.js';
-import { sPendKey, sPendKeyOf, sPickSet, sQ, sStripRows, sSyncNow, sSyncPull, sTableMeta } from './domain.js';
-import { rambamCur, rambamFill, rambamMorehFill, rambamMount, rambamScreenHTML,
-         rambamVilnaFill } from './screens/rambam.js';
-import { tanyaCur, tanyaFill, tanyaMount, tanyaScreenHTML } from './screens/tanya.js';
+import { pickerFilter, pickerOpen, rambamCur, sPendKey, sPendKeyOf, sPickSet, sQ, sStripRows, sSyncNow, sSyncPull,
+         sTableMeta, tanyaCur } from './domain.js';
+import { homeScreenHTML } from './screens/home.js';
+import { rambamMorehFill, rambamMount, rambamScreenHTML, rambamVilnaFill } from './screens/rambam.js';
+import { tanyaMount, tanyaScreenHTML } from './screens/tanya.js';
 
 // ── החיווט ──
 // החיווט נמסר בשומרי קריאה — ה-CFG מוגדרים בהמשך, והשומר קורא אותם בזמן הקריאה ולא בזמן המסירה.
@@ -136,21 +137,32 @@ function tabbarHTML() {
 
 // ── הרינדור ──
 // הבחירה שמצוירת כבר אינה מצוירת מחדש — משיכה מהענן אינה מוחקת עמודים שנטענו ולוחות שנפתחו.
+// בסדר הלימוד — בלי סרגל; בשיעור — הדף על כל המסך, והסרגלים נאספים בגלילה.
 function sRender() {
   var root = sQ('#view');
   if (!root) { uiNoDialog('sRender', 'view'); return; }
-  var cur = view.screen === 'tanya' ? tanyaCur() : rambamCur();
+  var home = view.screen === 'home';
+  var cur = home ? (rambamCur() + ':' + tanyaCur()) : view.screen === 'tanya' ? tanyaCur() : rambamCur();
   if (view.shown[view.screen] !== cur || !root.firstChild || root.dataset.screen !== view.screen) {
     root.dataset.screen = view.screen;
-    if (view.screen === 'tanya') { root.innerHTML = tanyaScreenHTML(); tanyaMount(); }
+    if (home) root.innerHTML = homeScreenHTML();
+    else if (view.screen === 'tanya') { root.innerHTML = tanyaScreenHTML(); tanyaMount(); }
     else { root.innerHTML = rambamScreenHTML(); rambamMount(); }
-    view.shown = { rambam: null, tanya: null };
+    view.shown = { home: null, rambam: null, tanya: null };
     view.shown[view.screen] = cur;
   }
+  document.body.classList.toggle('reading', !home);
+  if (home) document.body.classList.remove('calm');
   var hd = sQ('#masthead'), tb = sQ('#tabbar');
-  if (hd) { hd.classList.remove('hidden'); hd.innerHTML = brandHTML(); }
-  if (tb) tb.innerHTML = tabbarHTML();
+  if (hd) { hd.classList.toggle('hidden', !home); hd.innerHTML = brandHTML(); }
+  if (tb) { tb.classList.toggle('hidden', home); tb.innerHTML = tabbarHTML(); }
   shellBare(false);
+}
+
+function go(screen) {
+  view.screen = screen;
+  sRender();
+  window.scrollTo({ top: 0 });
 }
 
 // בחירה חדשה נכתבת לטבלת ההגדרות ומסתנכרנת לכל המכשירים, והמסך עולה לראשו.
@@ -160,33 +172,37 @@ function pickGo(key, v) {
   window.scrollTo({ top: 0 });
 }
 
-// שורה ברשימה נפתחת במקומה — גוף השיעור נבנה בפתיחה הראשונה בלבד.
-function rowToggle(el, fill) {
-  var box = el.parentElement && el.parentElement.querySelector('.ch-bd');
-  if (!box) { uiNoDialog('row-toggle', el.dataset.id); return; }
-  var open = box.classList.toggle('hidden') === false;
-  el.setAttribute('aria-expanded', String(open));
-  if (open && !box.firstChild) fill(box);
+// הסרגלים נאספים בגלילה למטה וחוזרים בגלילה למעלה — הדף לבדו על המסך.
+var lastY = 0;
+function calmOnScroll() {
+  var y = window.scrollY;
+  if (!document.body.classList.contains('reading')) { lastY = y; return; }
+  if (y > lastY + 8 && y > 80) document.body.classList.add('calm');
+  else if (y < lastY - 8 || y < 40) document.body.classList.remove('calm');
+  lastY = y;
 }
 
 // ── מפת הפעולות ──
 var DOM_ACTIONS = {
-  'tab-go': function (el) {
-    view.screen = el.dataset.id;
-    sRender();
-    window.scrollTo({ top: 0 });
+  'tab-go': function (el) { go(el.dataset.id); },
+  'go-home': function () { go('home'); },
+  'read-toggle': function () { document.body.classList.toggle('calm'); },
+  'pick-open': function (el) { pickerOpen(el.dataset.k); },
+  'pick-go': function (el) {
+    closeModal();
+    pickGo(el.dataset.k === 'tanya' ? KEY_TANYA : KEY_RAMBAM, +el.dataset.id);
   },
   'rambam-next': function (el) { pickGo(KEY_RAMBAM, +el.dataset.id); },
   'tanya-next':  function (el) { pickGo(KEY_TANYA, +el.dataset.id); },
-  'rambam-row':  function (el) { rowToggle(el, rambamFill); },
-  'tanya-row':   function (el) { rowToggle(el, tanyaFill); },
-  'moreh-toggle': function (el) {
+  'moreh-open': function () {
+    closeModal();
     var ms = sQ('#moreh'), box = sQ('#moreh-pages');
-    if (!ms || !box) { uiNoDialog('moreh-toggle', 'moreh'); return; }
-    var open = ms.classList.toggle('hidden') === false;
-    el.textContent = open ? MSG_MOREH_CLOSE : MSG_MOREH_OPEN;
-    if (open && !box.firstChild) rambamMorehFill(box);
+    if (!ms || !box) { uiNoDialog('moreh-open', 'moreh'); return; }
+    ms.classList.remove('hidden');
+    if (!box.firstChild) rambamMorehFill(box);
+    ms.scrollIntoView({ block: 'start' });
   },
+  'moreh-close': function () { var ms = sQ('#moreh'); if (ms) ms.classList.add('hidden'); },
   'vilna-toggle': function (el) {
     var lesson = el.closest('.lesson'), vs = lesson && lesson.querySelector('[data-vil]');
     if (!vs) { uiNoDialog('vilna-toggle', el.dataset.id); return; }
@@ -209,12 +225,12 @@ var DOM_ACTIONS = {
 // מאזין אחד לכל אירוע, בהאצלה מ-document — המסכים נבנים מחדש בכל רינדור, ומאזין שנקשר לאלמנט מת איתו.
 actWire(DOM_ACTIONS);
 
-document.addEventListener('change', function (e) {
+document.addEventListener('input', function (e) {
   var el = e.target;
-  if (!el.dataset) return;
-  if (el.dataset.chg === 'rambam-pick') { pickGo(KEY_RAMBAM, +el.value); return; }
-  if (el.dataset.chg === 'tanya-pick') { pickGo(KEY_TANYA, +el.value); }
+  if (el && el.dataset && el.dataset.inp === 'pick-q') pickerFilter(el.value);
 });
+
+window.addEventListener('scroll', calmOnScroll, { passive: true });
 
 // ── העלייה ──
 function sBoot() {

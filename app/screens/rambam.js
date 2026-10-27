@@ -1,35 +1,19 @@
 // app/screens/rambam.js — רמב״ם: שלושה פרקים ליום, לפי מורה השיעור
 import { esc } from '../../core/ui.js';
-import { KEY_RAMBAM, MSG_CUR_LESSON, MSG_MOREH_OPEN, MSG_NEXT_LESSON, MSG_PAGES, MSG_PICK_LESSON,
-         MSG_RAMBAM, MSG_REST_LESSONS, MSG_VIL_OPEN, MSG_VIL_SUB, MSG_ZOOM_SUB, RAMBAM_LESSONS,
-         VILNA } from '../constants.js';
-import { el, pdfInto, rambamFile, rambamLabel, sPick, sQ } from '../domain.js';
-
-function rambamCur() { return sPick(KEY_RAMBAM, RAMBAM_LESSONS.length); }
+import { MSG_MOREH_CLOSE, MSG_MOREH_OPEN, MSG_NEXT_LESSON, MSG_RAMBAM, MSG_VIL_OPEN,
+         MSG_VIL_SUB, MSG_ZOOM_SUB, RAMBAM_LESSONS, VILNA } from '../constants.js';
+import { el, pdfInto, rambamCur, rambamFile, rambamLabel, readBarHTML, sQ } from '../domain.js';
 
 function rambamScreenHTML() {
-  var c = rambamCur(), h = '';
-  h += '<header class="top"><h1>' + esc(MSG_RAMBAM) + '</h1></header>';
-  h += '<div class="toolbar"><button class="btn ghost" data-act="moreh-toggle">' + esc(MSG_MOREH_OPEN) + '</button></div>';
-  h += '<section id="moreh" class="moreh hidden"><p class="sub">' + esc(MSG_ZOOM_SUB) + '</p><div class="pages" id="moreh-pages"></div></section>';
-  h += '<div class="picker"><label for="pick-rambam">' + esc(MSG_PICK_LESSON) + '</label>' +
-       '<select id="pick-rambam" data-chg="rambam-pick">' + RAMBAM_LESSONS.map(function (x, i) {
-         return '<option value="' + i + '"' + (i === c ? ' selected' : '') + '>' + esc(rambamLabel(i)) + '</option>';
-       }).join('') + '</select></div>';
-  h += '<section class="now"><span class="tag">' + esc(MSG_CUR_LESSON) + '</span>' +
-       '<h2 class="chap-title">' + esc(rambamLabel(c)) + '</h2>' +
-       '<div class="lesson" id="now-body" data-id="' + c + '"></div>' +
-       (c + 1 < RAMBAM_LESSONS.length
-         ? '<div class="nextrow"><button class="btn" data-act="rambam-next" data-id="' + (c + 1) + '">' + esc(MSG_NEXT_LESSON) + '</button></div>'
-         : '') + '</section>';
-  h += '<div class="divider">' + esc(MSG_REST_LESSONS) + '</div><div class="rest">';
-  RAMBAM_LESSONS.forEach(function (x, i) {
-    if (i === c) return;
-    h += '<div class="ch"><button class="ch-hd" data-act="rambam-row" data-id="' + i + '" aria-expanded="false">' +
-         '<span class="cn">' + esc(rambamLabel(i)) + '</span><span class="meta">' + x[1] + esc(MSG_PAGES) + '</span></button>' +
-         '<div class="ch-bd lesson hidden" data-id="' + i + '"></div></div>';
-  });
-  return h + '</div>';
+  var c = rambamCur();
+  return readBarHTML('rambam', MSG_RAMBAM, esc(rambamLabel(c))) +
+    '<section id="moreh" class="moreh hidden"><div class="moreh-hd"><h2>' + esc(MSG_MOREH_OPEN) + '</h2>' +
+    '<button class="btn ghost" data-act="moreh-close">' + esc(MSG_MOREH_CLOSE) + '</button></div>' +
+    '<p class="sub">' + esc(MSG_ZOOM_SUB) + '</p><div class="pages" id="moreh-pages"></div></section>' +
+    '<div class="lesson read" id="now-body" data-id="' + c + '" data-act="read-toggle"></div>' +
+    (c + 1 < RAMBAM_LESSONS.length
+      ? '<div class="read-end"><button class="btn" data-act="rambam-next" data-id="' + (c + 1) + '">' + esc(MSG_NEXT_LESSON) + '</button></div>'
+      : '');
 }
 
 // גוף השיעור — עמודי רמב״ם לעם, וכפתור מהדורת וילנא שנפתח בתוך השיעור.
@@ -66,4 +50,4 @@ function rambamVilnaFill(vs, i) {
 
 function rambamMorehFill(box) { pdfInto(box, 'r/moreh-shiur.pdf', 0, 0, 3000, true); }
 
-export { rambamCur, rambamFill, rambamMorehFill, rambamMount, rambamScreenHTML, rambamVilnaFill };
+export { rambamFill, rambamMorehFill, rambamMount, rambamScreenHTML, rambamVilnaFill };
