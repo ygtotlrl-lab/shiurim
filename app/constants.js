@@ -113,6 +113,7 @@ var LESSONS = [
   { k: 'mishnayot', lab: 'משניות' },
   { k: 'shulchan-aruch', lab: 'שולחן ערוך הרב' },
   { k: 'ein-yaakov', lab: 'עין יעקב' },
+  { k: 'shas', lab: 'ש״ס', app: self.APP.android.launch.shas },
   { k: 'siddur', lab: 'סידור' }
 ];
 
