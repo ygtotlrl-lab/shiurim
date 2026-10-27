@@ -123,7 +123,7 @@ document.title = self.APP.name;
 // ── הקליפה ──
 // הלוגו הוא הנכס שהמחולל מייצר — ציור שני של המאסטר היה מקור אמת שני.
 function brandHTML() {
-  return '<img src="icons/icon-192.016bd933.png" alt="" width="40" height="40">';
+  return '<img src="icons/icon-192.b6655e27.png" alt="" width="40" height="40">';
 }
 
 function tabbarHTML() {
