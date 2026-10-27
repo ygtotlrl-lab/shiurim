@@ -4,6 +4,7 @@ var PATHS = {
   scroll: '<path d="M7 4h11v14a2 2 0 0 1-2 2H6"/><path d="M7 4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2"/><path d="M10 9h5M10 13h5"/>',
   home:   '<path d="M4 11l8-7 8 7"/><path d="M7 10v10h10V10"/>',
   down:   '<path d="M6 9l6 6 6-6"/>',
+  out:    '<path d="M14 4h6v6"/><path d="M20 4l-9 9"/><path d="M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/>',
   search: '<circle cx="10.8" cy="10.8" r="6.3"/><path d="M15.6 15.6l4.6 4.6"/>',
   book:   '<path d="M12 6c-2-1.5-5-2-8-1.5V19c3-.5 6 0 8 1.5"/><path d="M12 6c2-1.5 5-2 8-1.5V19c-3-.5-6 0-8 1.5"/><path d="M12 6v14.5"/>'
 };

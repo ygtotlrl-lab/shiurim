@@ -102,6 +102,9 @@ main{padding:0 var(--sp-6); padding-bottom:calc(var(--sp-6) + env(safe-area-inse
 .toc-t{flex:1;min-width:0;font-family:var(--f-display);font-weight:700;font-size:var(--fs-6);color:var(--brand-ink)}
 .toc-go{color:var(--gold);display:flex}
 .toc-go .ico{width:22px;height:22px;transform:rotate(90deg)}
+/* קישור לאפליקציה אחרת — חץ החוצה, בלי סיבוב. */
+.toc-out .ico{transform:none;width:20px;height:20px}
+a.toc-row{text-decoration:none}
 .toc-row:active{background:var(--gold-soft)}
 /* שיעור בלי תוכן — שומר על מקומו בסדר, באפור, ואינו נלחץ. */
 .toc-row.off{cursor:default}

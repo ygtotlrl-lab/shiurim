@@ -202,10 +202,13 @@ function pickerFilter(q) {
 }
 
 // ── השיעורים ──
-// שיעור פתוח כשיש לו מסך, או כשאחד מחלקיו פתוח.
+// שיעור פתוח כשיש לו מסך או אפליקציה, או כשאחד מחלקיו פתוח.
 function lessonOpen(l) {
-  return l.subs ? l.subs.some(lessonOpen) : !!l.screen;
+  return l.subs ? l.subs.some(lessonOpen) : !!(l.screen || l.app);
 }
+
+// קישור שהמעטפת פותחת כאפליקציה אחרת — ובדפדפן באנדרואיד, כרום פותח אותו בעצמו.
+function lessonAppHref(l) { return 'intent://launch#Intent;package=' + l.app + ';end'; }
 
 // בחירה בין חלקי השיעור — גיליון מלמטה; חלק בלי תוכן מוצג באפור ואינו נלחץ.
 function lessonPickOpen(k) {
@@ -335,6 +338,6 @@ function pinchReset() {
 
 function tanyaChapter(c) { return TANYA_CHAPTERS[c]; }
 
-export { el, fileUrl, lessonOpen, lessonPickOpen, localPut, pickerFilter, pinchEnd, pinchMove, pinchReset, pinchStart, pickerOpen, pushSoon, rambamCur, rambamDir, rambamLabel, readBarHTML,
+export { el, fileUrl, lessonAppHref, lessonOpen, lessonPickOpen, localPut, pickerFilter, pinchEnd, pinchMove, pinchReset, pinchStart, pickerOpen, pushSoon, rambamCur, rambamDir, rambamLabel, readBarHTML,
          sLive, sPendKey, sPendKeyOf, sPick, sPickSet, sQ, sStripRows, sSyncNow, sSyncPull,
          scanInto, sTableMeta, tanyaChapName, tanyaChapter, tanyaCur, tanyaLabel, tanyaSheet };

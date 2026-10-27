@@ -95,7 +95,7 @@ var KEY_TANYA = 'tanya_parasha';
 var TANYA_BOOKS = [['בראשית', 0], ['שמות', 12], ['ויקרא', 23], ['במדבר', 33], ['דברים', 43]];
 
 // מרשם השיעורים, בסדר שבמסך הראשי — screen הוא המסך שהשיעור פותח, ובלעדיו השיעור «בקרוב».
-// שיעור עם subs פותח בחירה בין חלקיו.
+// שיעור עם subs פותח בחירה בין חלקיו, ושיעור עם app פותח אפליקציה אחרת — החבילה מהתצורה, `android.launch`.
 var LESSONS = [
   { k: 'hayom-yom', lab: 'היום יום' },
   { k: 'chumash', lab: 'חומש', subs: [
@@ -103,7 +103,7 @@ var LESSONS = [
     { k: 'shnayim-mikra', lab: 'שניים מקרא' },
     { k: 'tanach', lab: 'תנ״ך' }
   ] },
-  { k: 'tehillim', lab: 'תהלים' },
+  { k: 'tehillim', lab: 'תהלים', app: self.APP.android.launch.tehillim },
   { k: 'tanya', lab: 'תניא', subs: [
     { k: 'tanya-yomi', lab: 'תניא יומי' },
     { k: 'tanya-week', lab: MSG_TANYA_WEEK, screen: 'tanya' }
