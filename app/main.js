@@ -10,7 +10,7 @@ import { KEY_RAMBAM, KEY_TANYA, KV_TABLE, MSG_VIL_CLOSE, MSG_VIL_OPEN, PUSH_TABL
          SUPABASE_URL, TABLES, TABS } from './constants.js';
 import { S, shell, view } from './state.js';
 import { icon } from './icons.js';
-import { pickerFilter, pickerOpen, rambamCur, sPendKey, sPendKeyOf, sPickSet, sQ, sStripRows, sSyncNow, sSyncPull,
+import { pickerFilter, pickerOpen, pinchEnd, pinchMove, pinchStart, rambamCur, sPendKey, sPendKeyOf, sPickSet, sQ, sStripRows, sSyncNow, sSyncPull,
          sTableMeta, tanyaCur } from './domain.js';
 import { homeScreenHTML } from './screens/home.js';
 import { rambamMorehFill, rambamMount, rambamScreenHTML, rambamVilnaFill } from './screens/rambam.js';
@@ -211,7 +211,6 @@ var DOM_ACTIONS = {
     if (open && !vs.firstChild) rambamVilnaFill(vs, +el.dataset.id);
     if (open) vs.scrollIntoView({ behavior: 'smooth', block: 'start' });
   },
-  'page-zoom': function (el) { el.classList.toggle('big'); },
   'ask-yes': function () { closeAsk(true); },
   'ask-no':  function () { closeAsk(false); },
   'modal-close': function () { closeModal(); },
@@ -231,6 +230,12 @@ document.addEventListener('input', function (e) {
 });
 
 window.addEventListener('scroll', calmOnScroll, { passive: true });
+
+// touchmove אינו פסיבי — הצביטה עוצרת את הגלילה של הדפדפן בזמן שהיא מותחת את הדף.
+document.addEventListener('touchstart', pinchStart, { passive: true });
+document.addEventListener('touchmove', pinchMove, { passive: false });
+document.addEventListener('touchend', pinchEnd);
+document.addEventListener('touchcancel', pinchEnd);
 
 // ── העלייה ──
 function sBoot() {

@@ -227,7 +227,9 @@ var docCache = {};
 
 function pdfDoc(path) {
   if (!docCache[path]) {
-    docCache[path] = pdfjs().then(function (lib) { return lib.getDocument({ url: fileUrl(path) }).promise; });
+    docCache[path] = pdfjs().then(function (lib) {
+      // רק העמודים שמבקשים — קובץ וילנא הוא עשרות מגה, והשיעור צריך כמה עמודים ממנו.
+      return lib.getDocument({ url: fileUrl(path), disableAutoFetch: true, disableStream: true }).promise; });
     docCache[path].catch(function () { delete docCache[path]; });
   }
   return docCache[path];
@@ -250,18 +252,17 @@ function el(tag, cls, text) {
 }
 
 // ── גיליון ──
-function sheetEl(ratio, zoom) {
-  var f = el('figure', 'pg' + (zoom ? ' pg-zoom' : ''));
+function sheetEl(ratio) {
+  var f = el('figure', 'pg');
   var s = el('div', 'leaf');
   // היחס נגזר מהעמוד בזמן ריצה — משתנה CSS, וכלל ה-.sheet הוא שקורא אותו.
   s.style.setProperty('--ratio', String(ratio));
-  if (zoom) f.setAttribute('data-act', 'page-zoom');
   f.appendChild(s);
   return { fig: f, sheet: s };
 }
 
 // כל עמודי קובץ PDF אחד, או טווח ממנו — מצוירים לתוך box.
-function pdfInto(box, path, from, to, minW, zoom) {
+function pdfInto(box, path, from, to, minW) {
   var ld = el('div', 'loading', MSG_LOADING);
   box.appendChild(ld);
   return pdfDoc(path).then(function (doc) {
@@ -270,16 +271,19 @@ function pdfInto(box, path, from, to, minW, zoom) {
     function one(k) {
       return doc.getPage(k).then(function (pg) {
         var vp = pg.getViewport({ scale: 1 });
-        var sh = sheetEl(vp.width / vp.height, zoom);
+        var sh = sheetEl(vp.width / vp.height);
         box.appendChild(sh.fig);
         sh.sheet._draw = function () {
           var dpr = Math.min(window.devicePixelRatio || 1, 2.5);
-          var w = Math.max((sh.sheet.clientWidth || 600) * dpr, minW || 0);
+          // תקרה לרוחב — עמוד מוגדל פי ארבעה היה בד של מאות מגה בזיכרון הטלפון.
+          var w = Math.min(Math.max((sh.sheet.clientWidth || 600) * dpr, minW || 0), Math.max(minW || 0, 2600));
+          var old = sh.sheet.querySelector('canvas');
+          if (old && old.width >= w * 0.9) return Promise.resolve();
           var v = pg.getViewport({ scale: w / vp.width });
           var c = document.createElement('canvas');
           c.width = Math.round(v.width); c.height = Math.round(v.height);
           return pg.render({ canvasContext: c.getContext('2d'), viewport: v }).promise
-            .then(function () { sh.sheet.appendChild(c); });
+            .then(function () { if (old) old.replaceWith(c); else sh.sheet.appendChild(c); });
         };
         if (drawObs) drawObs.observe(sh.sheet); else sh.sheet._draw();
       });
@@ -295,7 +299,7 @@ function pdfInto(box, path, from, to, minW, zoom) {
 
 // עמוד תניא — תמונה, ועליה רצועות ההלבנה של מה שאינו שייך לפרק.
 function tanyaSheet(item) {
-  var sh = sheetEl(1 / (TANYA_RATIO[item.p] || 1.25), false);
+  var sh = sheetEl(1 / (TANYA_RATIO[item.p] || 1.25));
   var im = new Image();
   im.loading = 'lazy'; im.decoding = 'async'; im.alt = '';
   im.src = fileUrl('p/' + item.p + '.png');
@@ -313,8 +317,47 @@ function tanyaSheet(item) {
   return sh.fig;
 }
 
+// ── הגדלה בשתי אצבעות ──
+// בזמן הצביטה — transform בלבד, חלק; בסופה הרוחב נקבע, הגלילה מיושרת לנקודת המגע, והעמודים הגלויים מצוירים מחדש בחדות.
+var PZ_MAX = 4;
+var pz = null;
+function pzDist(t) { return Math.hypot(t[0].clientX - t[1].clientX, t[0].clientY - t[1].clientY); }
+function pinchStart(e) {
+  if (e.touches.length !== 2) return;
+  var box = e.target.closest && e.target.closest('.read .pages');
+  if (!box) return;
+  var r = box.getBoundingClientRect(), t = e.touches;
+  var cx = (t[0].clientX + t[1].clientX) / 2, cy = (t[0].clientY + t[1].clientY) / 2;
+  pz = { box: box, d0: pzDist(t), z0: +box.dataset.z || 1, s: 1, cx: cx - r.left, ox: cx - r.left + box.scrollLeft, oy: cy - r.top };
+  box.style.transformOrigin = pz.ox + 'px ' + pz.oy + 'px';
+}
+function pinchMove(e) {
+  if (!pz || e.touches.length !== 2) return;
+  e.preventDefault();
+  var z = Math.min(PZ_MAX, Math.max(1, pz.z0 * pzDist(e.touches) / pz.d0));
+  pz.s = z / pz.z0;
+  pz.box.style.transform = 'scale(' + pz.s + ')';
+}
+function pinchEnd() {
+  if (!pz) return;
+  var p = pz, box = p.box, z = p.z0 * p.s;
+  pz = null;
+  box.style.transform = '';
+  if (Math.abs(p.s - 1) < 0.02) return;
+  if (z < 1.05) z = 1;
+  box.dataset.z = String(z);
+  box.style.setProperty('--z', String(z));
+  box.classList.toggle('zoomed', z > 1);
+  box.scrollLeft = p.ox * p.s - p.cx;
+  window.scrollBy(0, p.oy * (p.s - 1));
+  box.querySelectorAll('.leaf').forEach(function (lf) {
+    var r = lf.getBoundingClientRect();
+    if (lf._draw && lf.querySelector('canvas') && r.bottom > -600 && r.top < innerHeight + 600) lf._draw();
+  });
+}
+
 function tanyaChapter(c) { return TANYA_CHAPTERS[c]; }
 
-export { el, fileUrl, localPut, pdfInto, pickerFilter, pickerOpen, pushSoon, rambamCur, rambamFile, rambamLabel, readBarHTML,
+export { el, fileUrl, localPut, pdfInto, pickerFilter, pinchEnd, pinchMove, pinchStart, pickerOpen, pushSoon, rambamCur, rambamFile, rambamLabel, readBarHTML,
          sLive, sPendKey, sPendKeyOf, sPick, sPickSet, sQ, sStripRows, sSyncNow, sSyncPull,
          sTableMeta, tanyaChapName, tanyaChapter, tanyaCur, tanyaLabel, tanyaSheet };

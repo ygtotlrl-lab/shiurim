@@ -98,10 +98,6 @@ main{padding:0 var(--sp-6); padding-bottom:calc(var(--tabbar-h) + var(--sp-6) + 
 /* רצועת הלבנה — מיקומה נגזר מנתוני הפרק ונכתב למשתנים. */
 .leaf .wh{position:absolute;top:var(--top);height:var(--h);left:var(--left,0);width:var(--w,100%);
   background:var(--leaf);box-shadow:0 0 0 1px var(--leaf)}
-.pg-zoom{cursor:zoom-in}
-.pg-zoom.big{cursor:zoom-out}
-.pg-zoom.big .leaf{width:220%}
-.vpages,.moreh .pages{overflow-x:auto;justify-items:start;padding-bottom:var(--sp-3)}
 
 /* ── מסכים ── */
 .sub,.vsub{color:var(--text-2);font-size:var(--fs-3);margin:0 0 var(--sp-4)}
@@ -112,23 +108,19 @@ main{padding:0 var(--sp-6); padding-bottom:calc(var(--tabbar-h) + var(--sp-6) + 
 .sect span{font-size:var(--fs-2);color:var(--text-2)}
 .vil{margin-top:var(--sp-6);padding:var(--sp-5) var(--sp-4) 0;border-top:2px solid var(--gold-soft)}
 
-/* סדר הלימוד — שער של ספר: כותרת, תאריך, ושורה ממוספרת לכל שיעור. */
+/* השער — כותרת ושורה לכל שיעור. */
 .toc{padding:var(--sp-5) 0 var(--sp-7)}
-.toc-orn{text-align:center;color:var(--gold);letter-spacing:.5em;font-size:var(--fs-3)}
-.toc h1{text-align:center;font-family:var(--f-display);font-weight:900;font-size:var(--fs-7);color:var(--brand-ink)}
-.toc-date{text-align:center;color:var(--text-2);font-size:var(--fs-3);margin:var(--sp-2) 0 var(--sp-6)}
+.toc h1{text-align:center;font-family:var(--f-display);font-weight:900;font-size:var(--fs-7);color:var(--brand-ink);
+  margin-bottom:var(--sp-6)}
 .toc-rule{height:1px;margin:0 var(--sp-6);background:linear-gradient(90deg,transparent,var(--gold),transparent)}
 .toc-row{width:100%;display:flex;align-items:center;gap:var(--sp-6);background:none;border:0;
-  border-bottom:1px solid var(--border);padding:var(--sp-6) var(--sp-4);cursor:pointer;text-align:start}
-.toc-n{font-family:var(--f-display);font-weight:900;font-size:var(--fs-6);color:var(--gold);min-width:1.2em;text-align:center}
-.toc-t{flex:1;min-width:0}
-.toc-t b{display:block;font-family:var(--f-display);font-size:var(--fs-6);color:var(--brand-ink)}
-.toc-t span{color:var(--text-2);font-size:var(--fs-3)}
+  border-bottom:1px solid var(--border);padding:var(--sp-7) var(--sp-4);cursor:pointer;text-align:start}
+.toc-t{flex:1;min-width:0;font-family:var(--f-display);font-weight:700;font-size:var(--fs-6);color:var(--brand-ink)}
 .toc-go{color:var(--gold);display:flex}
 .toc-go .ico{width:22px;height:22px;transform:rotate(90deg)}
 .toc-row:active{background:var(--gold-soft)}
 @media (hover:hover){
-  .toc-row:hover .toc-t b{color:var(--gold)}
+  .toc-row:hover .toc-t{color:var(--gold)}
 }
 
 /* השיעור על כל המסך — הדף מקצה לקצה, בלי רקע ובלי מרווח; הסרגלים נאספים בגלילה ובהקשה. */
@@ -153,7 +145,11 @@ body.reading main{padding:calc(var(--readbar-h) + env(safe-area-inset-top,0px)) 
 body.calm .readbar{transform:translateY(-100%)}
 body.reading .tabbar{transition:transform var(--dur-4)}
 body.calm .tabbar{transform:translateY(100%)}
-.read .pages{gap:0}
+.read .pages{gap:0;overflow-x:auto;direction:ltr;touch-action:pan-x pan-y}
+/* הגדלה — הדף נמתח לרוחב --z, והגלילה לצדדים בתוך רצף העמודים. */
+.read .pages.zoomed{justify-items:start}
+.read .pages .pg,.read .pages .sect{width:calc(var(--z,1) * 100%)}
+.read .pages .sect{direction:rtl}
 .read .leaf{box-shadow:none;border-radius:0;border-bottom:1px solid var(--border)}
 .read .loading{text-align:center;padding:var(--sp-7)}
 .read-end{display:flex;justify-content:center;padding:var(--sp-7) var(--sp-6)}
