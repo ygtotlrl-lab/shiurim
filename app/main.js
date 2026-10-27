@@ -5,12 +5,11 @@ import { lsOpen } from '../core/storage.js';
 import { MIRROR, mirrorKey, mirrorTables } from '../core/mirror.js';
 import { logAwait } from '../core/backup.js';
 import { bootRun } from '../core/boot-run.js';
-import { actWire, closeAsk, closeModal, esc, shellBare, swApply, swHideUpdate, uiNoDialog } from '../core/ui.js';
+import { actWire, closeAsk, closeModal, shellBare, swApply, swHideUpdate, uiNoDialog } from '../core/ui.js';
 import { KEY_RAMBAM, KEY_TANYA, KV_TABLE, MSG_VIL_CLOSE, MSG_VIL_OPEN, PUSH_TABLES, SUPABASE_ANON_KEY,
-         SUPABASE_URL, TABLES, TABS } from './constants.js';
+         SUPABASE_URL, TABLES } from './constants.js';
 import { S, shell, view } from './state.js';
-import { icon } from './icons.js';
-import { pickerFilter, pickerOpen, pinchEnd, pinchMove, pinchReset, pinchStart, rambamCur, sPendKey, sPendKeyOf, sPickSet, sQ, sStripRows, sSyncNow, sSyncPull,
+import { lessonPickOpen, pickerFilter, pickerOpen, pinchEnd, pinchMove, pinchReset, pinchStart, rambamCur, sPendKey, sPendKeyOf, sPickSet, sQ, sStripRows, sSyncNow, sSyncPull,
          sTableMeta, tanyaCur } from './domain.js';
 import { homeScreenHTML } from './screens/home.js';
 import { rambamMorehFill, rambamMount, rambamScreenHTML, rambamVilnaFill } from './screens/rambam.js';
@@ -127,17 +126,9 @@ function brandHTML() {
   return '<img src="icons/icon-192.b6655e27.png" alt="" width="40" height="40">';
 }
 
-function tabbarHTML() {
-  return '<div class="in">' + TABS.map(function (t) {
-    return '<button class="tab-btn' + (view.screen === t.k ? ' on' : '') +
-           '" data-act="tab-go" data-id="' + esc(t.k) + '">' +
-           '<span class="ti">' + icon(t.ic) + '</span>' + esc(t.lab) + '</button>';
-  }).join('') + '</div>';
-}
-
 // ── הרינדור ──
 // הבחירה שמצוירת כבר אינה מצוירת מחדש — משיכה מהענן אינה מוחקת עמודים שנטענו ולוחות שנפתחו.
-// בסדר הלימוד — בלי סרגל; בשיעור — הדף על כל המסך, והסרגלים נאספים בגלילה.
+// ברשימת השיעורים — הלוגו; בשיעור — הדף על כל המסך, וסרגל הקריאה נאסף בגלילה.
 function sRender() {
   var root = sQ('#view');
   if (!root) { uiNoDialog('sRender', 'view'); return; }
@@ -153,9 +144,8 @@ function sRender() {
   }
   document.body.classList.toggle('reading', !home);
   if (home) document.body.classList.remove('calm');
-  var hd = sQ('#masthead'), tb = sQ('#tabbar');
+  var hd = sQ('#masthead');
   if (hd) { hd.classList.toggle('hidden', !home); hd.innerHTML = brandHTML(); }
-  if (tb) { tb.classList.toggle('hidden', home); tb.innerHTML = tabbarHTML(); }
   shellBare(false);
 }
 
@@ -172,7 +162,7 @@ function pickGo(key, v) {
   window.scrollTo({ top: 0 });
 }
 
-// הסרגלים נאספים בגלילה למטה וחוזרים בגלילה למעלה — הדף לבדו על המסך.
+// הסרגל נאסף בגלילה למטה וחוזר בגלילה למעלה — הדף לבדו על המסך.
 var lastY = 0;
 function calmOnScroll() {
   var y = window.scrollY;
@@ -186,6 +176,8 @@ function calmOnScroll() {
 var DOM_ACTIONS = {
   'tab-go': function (el) { go(el.dataset.id); },
   'go-home': function () { go('home'); },
+  'lesson-pick': function (el) { lessonPickOpen(el.dataset.id); },
+  'lesson-go': function (el) { closeModal(); go(el.dataset.id); },
   'read-toggle': function () { if (!pinchReset()) document.body.classList.toggle('calm'); },
   'pick-open': function (el) { pickerOpen(el.dataset.k); },
   'pick-go': function (el) {

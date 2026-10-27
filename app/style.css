@@ -2,9 +2,9 @@
 
 /* ── אסימוני העיצוב ── */
 :root{
-  /* נגזר מגובה סרגל הלשוניות — טוסט נמוך ממנו מוסתר מאחוריו. */
-  --toast-bottom:calc(var(--tabbar-h) + 24px);
-  /* עמודת קריאה — המסך וסרגל הלשוניות קוראים אותה, והיא מתרחבת בכל נקודת שבירה. */
+  /* אין שורת ניווט תחתונה — הטוסט מעל קצה המסך בלבד. */
+  --toast-bottom:calc(24px + env(safe-area-inset-bottom));
+  /* עמודת קריאה — המסך וסרגל הקריאה קוראים אותה, והיא מתרחבת בכל נקודת שבירה. */
   --col:390px;
   /* גובה סרגל הקריאה — הדף מתחיל מתחתיו, והסרגל נאסף מעליו. */
   --readbar-h:60px;
@@ -59,26 +59,11 @@ button,[data-act]{user-select:none}
 
 /* ── קליפה ── */
 #shell{display:contents}
-main{padding:0 var(--sp-6); padding-bottom:calc(var(--tabbar-h) + var(--sp-6) + env(safe-area-inset-bottom));
+main{padding:0 var(--sp-6); padding-bottom:calc(var(--sp-6) + env(safe-area-inset-bottom));
   width:100%;max-width:var(--col);margin:0 auto;flex:1 0 auto}
 /* הלוגו הוא הנכס שהמחולל מייצר — ציור שני של המאסטר היה מקור אמת שני. */
 .brand{display:flex;align-items:center;justify-content:center;padding:var(--sp-6) 0 var(--sp-2)}
 .brand img{width:40px;height:40px;border-radius:var(--r-4)}
-.tabbar{position:fixed;inset-block-end:0;inset-inline:0;z-index:var(--z-2);
-  display:flex;justify-content:center;
-  height:calc(var(--tabbar-h) + env(safe-area-inset-bottom));padding-bottom:env(safe-area-inset-bottom);
-  background:var(--card);border-top:1px solid var(--border)}
-.tabbar .in{display:flex;width:100%;max-width:var(--col)}
-.tab-btn{flex:1;background:none;border:0;cursor:pointer;color:var(--text-3);
-  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:var(--sp-2);
-  padding:var(--sp-5) var(--sp-2);font-size:var(--fs-2);min-height:44px;transition:color var(--dur-3)}
-.tab-btn .ti{display:flex;align-items:center;justify-content:center}
-.tab-btn svg{width:22px;height:22px;display:block}
-.tab-btn.on{color:var(--brand-ink);font-weight:700}
-.tab-btn:active{color:var(--brand-ink)}
-@media (hover:hover){
-  .tab-btn:hover{color:var(--brand-ink)}
-}
 
 /* ── רכיבים ── */
 .btn{display:inline-flex;align-items:center;gap:var(--sp-4);background:var(--brand-fill);color:var(--on-brand);
@@ -118,14 +103,25 @@ main{padding:0 var(--sp-6); padding-bottom:calc(var(--tabbar-h) + var(--sp-6) + 
 .toc-go{color:var(--gold);display:flex}
 .toc-go .ico{width:22px;height:22px;transform:rotate(90deg)}
 .toc-row:active{background:var(--gold-soft)}
+/* שיעור בלי תוכן — שומר על מקומו בסדר, באפור, ואינו נלחץ. */
+.toc-row.off{cursor:default}
+.toc-row.off .toc-t,.lp-it.off .lp-t{color:var(--text-3)}
+.toc-soon{flex:none;font-size:var(--fs-2);color:var(--text-3);border:1px solid var(--border);border-radius:var(--r-7);
+  padding:var(--sp-1) var(--sp-4)}
+.lp-list{padding:0 0 var(--sp-6)}
+.lp-it{width:100%;display:flex;align-items:center;gap:var(--sp-5);background:none;border:0;border-top:1px solid var(--border);
+  padding:var(--sp-6);cursor:pointer;text-align:start}
+.lp-it.off{cursor:default}
+.lp-t{flex:1;min-width:0;font-family:var(--f-display);font-weight:700;font-size:var(--fs-5);color:var(--brand-ink)}
+.lp-it:not(.off):active{background:var(--gold-soft)}
 @media (hover:hover){
   .toc-row:hover .toc-t{color:var(--gold)}
 }
 
-/* השיעור על כל המסך — הדף מקצה לקצה, בלי רקע ובלי מרווח; הסרגלים נאספים בגלילה ובהקשה. */
+/* השיעור על כל המסך — הדף מקצה לקצה, בלי רקע ובלי מרווח; הסרגל נאסף בגלילה ובהקשה. */
 body.reading{background:var(--leaf)}
 body.reading main{padding:calc(var(--readbar-h) + env(safe-area-inset-top,0px)) 0
-  calc(var(--tabbar-h) + var(--sp-7) + env(safe-area-inset-bottom))}
+  calc(var(--sp-7) + env(safe-area-inset-bottom))}
 .readbar{position:fixed;inset-block-start:0;inset-inline:0;z-index:var(--z-2);
   padding-top:env(safe-area-inset-top,0px);background:var(--card);border-bottom:1px solid var(--border);
   transition:transform var(--dur-4)}
@@ -142,8 +138,6 @@ body.reading main{padding:calc(var(--readbar-h) + env(safe-area-inset-top,0px)) 
 .rb-pick b .sep{color:var(--gold);padding:0 .3em}
 .rb-pick .ico{color:var(--gold)}
 body.calm .readbar{transform:translateY(-100%)}
-body.reading .tabbar{transition:transform var(--dur-4)}
-body.calm .tabbar{transform:translateY(100%)}
 .read .pages{gap:0;overflow-x:auto;direction:ltr;touch-action:pan-x pan-y}
 /* הגדלה — הדף נמתח לרוחב --z, והגלילה לצדדים בתוך רצף העמודים. */
 .read .pages.zoomed{justify-items:start}
@@ -157,7 +151,7 @@ body.calm .tabbar{transform:translateY(100%)}
 
 /* בחירת שיעור — גיליון מלמטה: חיפוש, קבוצה לכל הלכות או חומש, והנוכחי בזהב. */
 #modal{align-items:flex-end}
-#modal .sheet{width:100%;max-width:var(--col);height:min(78vh,720px);display:flex;flex-direction:column;
+#modal .sheet{width:100%;max-width:var(--col);max-height:min(78vh,720px);display:flex;flex-direction:column;
   background:var(--card);border-radius:var(--r-6) var(--r-6) 0 0;box-shadow:0 -10px 30px rgba(0,0,0,.2);
   padding-bottom:env(safe-area-inset-bottom)}
 #modal .sheet::before{content:"";width:44px;height:5px;border-radius:3px;background:var(--border);margin:var(--sp-4) auto 0}

@@ -4,12 +4,12 @@ import { ctxEpoch, ctxStale, idEq, mergeCore, pendHas, pendMark, pushDirty,
          schedulePush } from '../core/sync.js';
 import { MIRROR, mirrorSave } from '../core/mirror.js';
 import { logAction } from '../core/backup.js';
-import { esc, openModal, pullRender, toast } from '../core/ui.js';
+import { esc, openModal, pullRender, toast, uiNoDialog } from '../core/ui.js';
 import { hebGematria } from '../core/hebrew.js';
 import { KEY_RAMBAM, KEY_TANYA, KV_TABLE, MSG_HAKDAMA, MSG_LOAD_FAIL,
          MSG_HOME_BACK, MSG_MOREH_OPEN, MSG_PEREK, MSG_PICK_CUR, MSG_PICK_NONE, MSG_PICK_PARASHA_TITLE, MSG_PICK_SEARCH,
          MSG_PICK_TITLE, MSG_RAMBAM_OPENING, PARSHIOT, PUSH_TABLES, RAMBAM_LESSONS, RAMBAM_URL, SCAN, SCAN_W, TABLES,
-         TANYA_BOOKS, TANYA_CHAPTERS, TANYA_RATIO, TANYA_URL } from './constants.js';
+         LESSONS, MSG_SOON, TANYA_BOOKS, TANYA_CHAPTERS, TANYA_RATIO, TANYA_URL } from './constants.js';
 import { S, shell } from './state.js';
 import { icon } from './icons.js';
 
@@ -201,6 +201,26 @@ function pickerFilter(q) {
   if (none) none.classList.toggle('hidden', any);
 }
 
+// ── השיעורים ──
+// שיעור פתוח כשיש לו מסך, או כשאחד מחלקיו פתוח.
+function lessonOpen(l) {
+  return l.subs ? l.subs.some(lessonOpen) : !!l.screen;
+}
+
+// בחירה בין חלקי השיעור — גיליון מלמטה; חלק בלי תוכן מוצג באפור ואינו נלחץ.
+function lessonPickOpen(k) {
+  var l = LESSONS.filter(function (x) { return x.k === k; })[0];
+  if (!l || !l.subs) { uiNoDialog('lessonPickOpen', k); return; }
+  openModal(l.lab, '<div class="lp-list">' + l.subs.map(function (s) {
+    if (!s.screen) {
+      return '<div class="lp-it off" aria-disabled="true"><span class="lp-t">' + esc(s.lab) + '</span>' +
+        '<span class="toc-soon">' + esc(MSG_SOON) + '</span></div>';
+    }
+    return '<button class="lp-it" data-act="lesson-go" data-id="' + esc(s.screen) + '"><span class="lp-t">' + esc(s.lab) +
+      '</span><span class="toc-go">' + icon('down') + '</span></button>';
+  }).join('') + '</div>', '');
+}
+
 // ── הסריקות ──
 // כל הסריקות בתקן אחד — תמונה מוכנה לכל עמוד, ולא קובץ שהמכשיר מפענח.
 // p/ — מאגר התניא; כל השאר — מאגר הרמב״ם.
@@ -315,6 +335,6 @@ function pinchReset() {
 
 function tanyaChapter(c) { return TANYA_CHAPTERS[c]; }
 
-export { el, fileUrl, localPut, pickerFilter, pinchEnd, pinchMove, pinchReset, pinchStart, pickerOpen, pushSoon, rambamCur, rambamDir, rambamLabel, readBarHTML,
+export { el, fileUrl, lessonOpen, lessonPickOpen, localPut, pickerFilter, pinchEnd, pinchMove, pinchReset, pinchStart, pickerOpen, pushSoon, rambamCur, rambamDir, rambamLabel, readBarHTML,
          sLive, sPendKey, sPendKeyOf, sPick, sPickSet, sQ, sStripRows, sSyncNow, sSyncPull,
          scanInto, sTableMeta, tanyaChapName, tanyaChapter, tanyaCur, tanyaLabel, tanyaSheet };
