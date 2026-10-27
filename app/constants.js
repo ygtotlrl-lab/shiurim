@@ -16,7 +16,7 @@ var SUPABASE_ANON_KEY = self.APP.supabase.key;
 // הרמב״ם — שתי המהדורות; כל השאר — מאגר אחד.
 var RAMBAM_URL = 'https://ygtotlrl-lab.github.io/shiurim-rambam/';
 
-var FILES_URL = 'https://ygtotlrl-lab.github.io/shiurim-files/';
+var FILES_URL = 'https://ygtotlrl-lab.github.io/shiurim-tanya/';
 
 // העובד של pdf.js — באותה גרסה כמו התג שבראש המסמך.
 var PDFJS_WORKER_URL = 'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.worker.min.js';
