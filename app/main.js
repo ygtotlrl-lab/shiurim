@@ -120,15 +120,9 @@ function saveRefresh() { sRender(); }
 
 document.title = self.APP.name;
 
-// ── הקליפה ──
-// הלוגו הוא הנכס שהמחולל מייצר — ציור שני של המאסטר היה מקור אמת שני.
-function brandHTML() {
-  return '<img src="icons/icon-192.b6655e27.png" alt="" width="40" height="40">';
-}
-
 // ── הרינדור ──
 // הבחירה שמצוירת כבר אינה מצוירת מחדש — משיכה מהענן אינה מוחקת עמודים שנטענו ולוחות שנפתחו.
-// ברשימת השיעורים — הלוגו; בשיעור — הדף על כל המסך, וסרגל הקריאה נאסף בגלילה.
+// ברשימת השיעורים — מדף הכריכות; בשיעור — הדף על כל המסך, וסרגל הקריאה נאסף בגלילה.
 function sRender() {
   var root = sQ('#view');
   if (!root) { uiNoDialog('sRender', 'view'); return; }
@@ -143,9 +137,8 @@ function sRender() {
     view.shown[view.screen] = cur;
   }
   document.body.classList.toggle('reading', !home);
+  document.body.classList.toggle('shelf', home);
   if (home) document.body.classList.remove('calm');
-  var hd = sQ('#masthead');
-  if (hd) { hd.classList.toggle('hidden', !home); hd.innerHTML = brandHTML(); }
   shellBare(false);
 }
 

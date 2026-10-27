@@ -95,26 +95,26 @@ var KEY_TANYA = 'tanya_parasha';
 var TANYA_BOOKS = [['בראשית', 0], ['שמות', 12], ['ויקרא', 23], ['במדבר', 33], ['דברים', 43]];
 
 // מרשם השיעורים, בסדר שבמסך הראשי — screen הוא המסך שהשיעור פותח, ובלעדיו השיעור «בקרוב».
-// שיעור עם subs פותח בחירה בין חלקיו, ושיעור עם app פותח אפליקציה אחרת — החבילה מהתצורה, `android.launch`.
+// cover — צבע הכריכה במסך הראשי, ו-wide — כריכה לרוחב המדף; שיעור עם subs פותח בחירה בין חלקיו, ושיעור עם app פותח אפליקציה אחרת — החבילה מהתצורה, `android.launch`.
 var LESSONS = [
-  { k: 'hayom-yom', lab: 'היום יום' },
-  { k: 'chumash', lab: 'חומש', subs: [
+  { k: 'hayom-yom', lab: 'היום יום', cover: 'green' },
+  { k: 'chumash', lab: 'חומש', cover: 'brown', subs: [
     { k: 'chumash-yomi', lab: 'חומש' },
     { k: 'shnayim-mikra', lab: 'שניים מקרא' },
     { k: 'tanach', lab: 'תנ״ך' }
   ] },
-  { k: 'tehillim', lab: 'תהלים', app: self.APP.android.launch.tehillim },
-  { k: 'tanya', lab: 'תניא', subs: [
+  { k: 'tehillim', lab: 'תהלים', cover: 'green', app: self.APP.android.launch.tehillim },
+  { k: 'tanya', lab: 'תניא', cover: 'bord', subs: [
     { k: 'tanya-yomi', lab: 'תניא יומי' },
     { k: 'tanya-week', lab: MSG_TANYA_WEEK, screen: 'tanya' }
   ] },
-  { k: 'rambam', lab: MSG_RAMBAM, screen: 'rambam' },
-  { k: 'chassidishe-parsha', lab: 'החסידישע פרשה' },
-  { k: 'mishnayot', lab: 'משניות' },
-  { k: 'shulchan-aruch', lab: 'שולחן ערוך הרב' },
-  { k: 'ein-yaakov', lab: 'עין יעקב' },
-  { k: 'shas', lab: 'ש״ס', app: self.APP.android.launch.shas },
-  { k: 'siddur', lab: 'סידור' }
+  { k: 'rambam', lab: MSG_RAMBAM, cover: 'navy', wide: true, screen: 'rambam' },
+  { k: 'chassidishe-parsha', lab: 'החסידישע פרשה', cover: 'bord' },
+  { k: 'mishnayot', lab: 'משניות', cover: 'navy' },
+  { k: 'shulchan-aruch', lab: 'שולחן ערוך הרב', cover: 'brown' },
+  { k: 'ein-yaakov', lab: 'עין יעקב', cover: 'green' },
+  { k: 'shas', lab: 'ש״ס', cover: 'brown', app: self.APP.android.launch.shas },
+  { k: 'siddur', lab: 'סידור', cover: 'bord' }
 ];
 
 // ── מפת השיעורים ──

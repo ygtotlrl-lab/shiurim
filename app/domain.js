@@ -217,10 +217,10 @@ function lessonPickOpen(k) {
   openModal(l.lab, '<div class="lp-list">' + l.subs.map(function (s) {
     if (!s.screen) {
       return '<div class="lp-it off" aria-disabled="true"><span class="lp-t">' + esc(s.lab) + '</span>' +
-        '<span class="toc-soon">' + esc(MSG_SOON) + '</span></div>';
+        '<span class="lp-soon">' + esc(MSG_SOON) + '</span></div>';
     }
     return '<button class="lp-it" data-act="lesson-go" data-id="' + esc(s.screen) + '"><span class="lp-t">' + esc(s.lab) +
-      '</span><span class="toc-go">' + icon('down') + '</span></button>';
+      '</span><span class="lp-go">' + icon('down') + '</span></button>';
   }).join('') + '</div>', '');
 }
 
