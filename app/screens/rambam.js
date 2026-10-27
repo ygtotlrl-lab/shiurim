@@ -7,7 +7,7 @@ import { el, pdfInto, rambamCur, rambamFile, rambamLabel, readBarHTML, sQ } from
 function rambamScreenHTML() {
   var c = rambamCur();
   return readBarHTML('rambam', MSG_RAMBAM, esc(rambamLabel(c))) +
-    '<section id="moreh" class="moreh read hidden"><div class="moreh-hd"><h2>' + esc(MSG_MOREH_OPEN) + '</h2>' +
+    '<section id="moreh" class="moreh read hidden" data-act="read-toggle"><div class="moreh-hd"><h2>' + esc(MSG_MOREH_OPEN) + '</h2>' +
     '<button class="btn ghost" data-act="moreh-close">' + esc(MSG_MOREH_CLOSE) + '</button></div>' +
     '<div class="pages" id="moreh-pages"></div></section>' +
     '<div class="lesson read" id="now-body" data-id="' + c + '" data-act="read-toggle"></div>' +

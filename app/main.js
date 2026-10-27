@@ -10,7 +10,7 @@ import { KEY_RAMBAM, KEY_TANYA, KV_TABLE, MSG_VIL_CLOSE, MSG_VIL_OPEN, PUSH_TABL
          SUPABASE_URL, TABLES, TABS } from './constants.js';
 import { S, shell, view } from './state.js';
 import { icon } from './icons.js';
-import { pickerFilter, pickerOpen, pinchEnd, pinchMove, pinchStart, rambamCur, sPendKey, sPendKeyOf, sPickSet, sQ, sStripRows, sSyncNow, sSyncPull,
+import { pickerFilter, pickerOpen, pinchEnd, pinchMove, pinchReset, pinchStart, rambamCur, sPendKey, sPendKeyOf, sPickSet, sQ, sStripRows, sSyncNow, sSyncPull,
          sTableMeta, tanyaCur } from './domain.js';
 import { homeScreenHTML } from './screens/home.js';
 import { rambamMorehFill, rambamMount, rambamScreenHTML, rambamVilnaFill } from './screens/rambam.js';
@@ -186,7 +186,7 @@ function calmOnScroll() {
 var DOM_ACTIONS = {
   'tab-go': function (el) { go(el.dataset.id); },
   'go-home': function () { go('home'); },
-  'read-toggle': function () { document.body.classList.toggle('calm'); },
+  'read-toggle': function () { if (!pinchReset()) document.body.classList.toggle('calm'); },
   'pick-open': function (el) { pickerOpen(el.dataset.k); },
   'pick-go': function (el) {
     closeModal();

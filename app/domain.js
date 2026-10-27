@@ -356,8 +356,19 @@ function pinchEnd() {
   });
 }
 
+// הקשה על דף מוגדל מחזירה את כל העמודים לגודלם — ההגדלה נשארת עד צביטה חזרה או עד הקשה.
+function pinchReset() {
+  var zs = document.querySelectorAll('.read .pages.zoomed');
+  zs.forEach(function (box) {
+    box.classList.remove('zoomed');
+    box.style.removeProperty('--z');
+    delete box.dataset.z;
+  });
+  return zs.length > 0;
+}
+
 function tanyaChapter(c) { return TANYA_CHAPTERS[c]; }
 
-export { el, fileUrl, localPut, pdfInto, pickerFilter, pinchEnd, pinchMove, pinchStart, pickerOpen, pushSoon, rambamCur, rambamFile, rambamLabel, readBarHTML,
+export { el, fileUrl, localPut, pdfInto, pickerFilter, pinchEnd, pinchMove, pinchReset, pinchStart, pickerOpen, pushSoon, rambamCur, rambamFile, rambamLabel, readBarHTML,
          sLive, sPendKey, sPendKeyOf, sPick, sPickSet, sQ, sStripRows, sSyncNow, sSyncPull,
          sTableMeta, tanyaChapName, tanyaChapter, tanyaCur, tanyaLabel, tanyaSheet };
