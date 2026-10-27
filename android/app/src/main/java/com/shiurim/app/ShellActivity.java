@@ -136,7 +136,7 @@ public abstract class ShellActivity extends Activity {
             return true;
         }
 
-        private final String[] LAUNCH = { "org.chabad.tehillim", "com.mogy.dafyomi" };
+        private final String[] LAUNCH = { "il.avimak.Tehillim", "com.mogy.dafyomi" };
 
         @Override
         public void onPageStarted(WebView wv, String url, android.graphics.Bitmap favicon) {

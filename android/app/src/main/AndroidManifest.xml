@@ -7,7 +7,7 @@
 
     <!-- מ-API 30 המעטפת רואה רק אפליקציה שמוצהרת כאן — בלעדיה מותקנת נראית חסרה, והקישור נופל לחנות -->
     <queries>
-        <package android:name="org.chabad.tehillim" />
+        <package android:name="il.avimak.Tehillim" />
         <package android:name="com.mogy.dafyomi" />
     </queries>
 
