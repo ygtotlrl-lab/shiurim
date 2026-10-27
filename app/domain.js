@@ -6,10 +6,10 @@ import { MIRROR, mirrorSave } from '../core/mirror.js';
 import { logAction } from '../core/backup.js';
 import { esc, openModal, pullRender, toast } from '../core/ui.js';
 import { hebGematria } from '../core/hebrew.js';
-import { FILES_URL, KEY_RAMBAM, KEY_TANYA, KV_TABLE, MSG_HAKDAMA, MSG_LOAD_FAIL,
+import { KEY_RAMBAM, KEY_TANYA, KV_TABLE, MSG_HAKDAMA, MSG_LOAD_FAIL,
          MSG_HOME_BACK, MSG_MOREH_OPEN, MSG_PEREK, MSG_PICK_CUR, MSG_PICK_NONE, MSG_PICK_PARASHA_TITLE, MSG_PICK_SEARCH,
-         MSG_PICK_TITLE, MSG_RAMBAM_OPENING, PARSHIOT, PUSH_TABLES, RAMBAM_LESSONS, SCAN, TABLES,
-         TANYA_BOOKS, TANYA_CHAPTERS, TANYA_RATIO } from './constants.js';
+         MSG_PICK_TITLE, MSG_RAMBAM_OPENING, PARSHIOT, PUSH_TABLES, RAMBAM_LESSONS, RAMBAM_URL, SCAN, TABLES,
+         TANYA_BOOKS, TANYA_CHAPTERS, TANYA_RATIO, TANYA_URL } from './constants.js';
 import { S, shell } from './state.js';
 import { icon } from './icons.js';
 
@@ -202,8 +202,9 @@ function pickerFilter(q) {
 }
 
 // ── הסריקות ──
-// כל הסריקות בתקן אחד — תמונה מוכנה לכל עמוד, במאגר הקבצים, ולא קובץ שהמכשיר מפענח.
-function fileUrl(path) { return FILES_URL + path; }
+// כל הסריקות בתקן אחד — תמונה מוכנה לכל עמוד, ולא קובץ שהמכשיר מפענח.
+// p/ — מאגר התניא; כל השאר — מאגר הרמב״ם.
+function fileUrl(path) { return (/^p\//.test(path) ? TANYA_URL : RAMBAM_URL) + path; }
 
 function rambamDir(i) { return 'r/' + String(i + 1).padStart(3, '0'); }
 
