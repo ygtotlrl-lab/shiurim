@@ -8,7 +8,7 @@ import { esc, openModal, pullRender, toast } from '../core/ui.js';
 import { hebGematria } from '../core/hebrew.js';
 import { KEY_RAMBAM, KEY_TANYA, KV_TABLE, MSG_HAKDAMA, MSG_LOAD_FAIL,
          MSG_HOME_BACK, MSG_MOREH_OPEN, MSG_PEREK, MSG_PICK_CUR, MSG_PICK_NONE, MSG_PICK_PARASHA_TITLE, MSG_PICK_SEARCH,
-         MSG_PICK_TITLE, MSG_RAMBAM_OPENING, PARSHIOT, PUSH_TABLES, RAMBAM_LESSONS, RAMBAM_URL, SCAN, TABLES,
+         MSG_PICK_TITLE, MSG_RAMBAM_OPENING, PARSHIOT, PUSH_TABLES, RAMBAM_LESSONS, RAMBAM_URL, SCAN, SCAN_W, TABLES,
          TANYA_BOOKS, TANYA_CHAPTERS, TANYA_RATIO, TANYA_URL } from './constants.js';
 import { S, shell } from './state.js';
 import { icon } from './icons.js';
@@ -208,12 +208,9 @@ function fileUrl(path) { return (/^p\//.test(path) ? TANYA_URL : RAMBAM_URL) + p
 
 function rambamDir(i) { return 'r/' + String(i + 1).padStart(3, '0'); }
 
-// היחס של כל עמוד בתיקייה — מהמרשם שההמרה כותבת: [רוחב, גובה, מספר] כשכולם שווים, או [רוחב, [גבהים]].
+// היחס של כל עמוד בתיקייה — מהמרשם שההמרה כותבת.
 function scanRatios(dir) {
-  var x = SCAN[dir];
-  if (!x) return [];
-  var hs = Array.isArray(x[1]) ? x[1] : Array(x[2]).fill(x[1]);
-  return hs.map(function (h) { return x[0] / h; });
+  return (SCAN[dir] || []).map(function (h) { return SCAN_W / h; });
 }
 
 function el(tag, cls, text) {
