@@ -36,9 +36,7 @@ var CORE = [
 
 // גרסאות נעוצות במדויק — major צף נשבר בשחרור של הספק בלי שינוי קוד.
 var CDN_ASSETS = [
-  'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.111.0/dist/umd/supabase.js',
-  'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js',
-  'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.worker.min.js'
+  'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.111.0/dist/umd/supabase.js'
 ];
 
 importScripts('./core/sw.js');

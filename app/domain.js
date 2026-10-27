@@ -6,9 +6,9 @@ import { MIRROR, mirrorSave } from '../core/mirror.js';
 import { logAction } from '../core/backup.js';
 import { esc, openModal, pullRender, toast } from '../core/ui.js';
 import { hebGematria } from '../core/hebrew.js';
-import { FILES_URL, KEY_RAMBAM, KEY_TANYA, KV_TABLE, RAMBAM_URL, MSG_HAKDAMA, MSG_LOADING, MSG_LOAD_FAIL,
+import { FILES_URL, KEY_RAMBAM, KEY_TANYA, KV_TABLE, MSG_HAKDAMA, MSG_LOAD_FAIL,
          MSG_HOME_BACK, MSG_MOREH_OPEN, MSG_PEREK, MSG_PICK_CUR, MSG_PICK_NONE, MSG_PICK_PARASHA_TITLE, MSG_PICK_SEARCH,
-         MSG_PICK_TITLE, MSG_RAMBAM_OPENING, PARSHIOT, PDFJS_WORKER_URL, PUSH_TABLES, RAMBAM_LESSONS, TABLES,
+         MSG_PICK_TITLE, MSG_RAMBAM_OPENING, PARSHIOT, PUSH_TABLES, RAMBAM_LESSONS, SCAN, TABLES,
          TANYA_BOOKS, TANYA_CHAPTERS, TANYA_RATIO } from './constants.js';
 import { S, shell } from './state.js';
 import { icon } from './icons.js';
@@ -201,48 +201,19 @@ function pickerFilter(q) {
   if (none) none.classList.toggle('hidden', any);
 }
 
-// ── הקבצים ──
-// r/ ו-v/ — מאגר הרמב״ם; כל השאר — מאגר הקבצים.
-function fileUrl(path) { return (/^[rv]\//.test(path) ? RAMBAM_URL : FILES_URL) + path; }
+// ── הסריקות ──
+// כל הסריקות בתקן אחד — תמונה מוכנה לכל עמוד, במאגר הקבצים, ולא קובץ שהמכשיר מפענח.
+function fileUrl(path) { return FILES_URL + path; }
 
-function rambamFile(i) { return 'r/' + String(i + 1).padStart(3, '0') + '.pdf'; }
+function rambamDir(i) { return 'r/' + String(i + 1).padStart(3, '0'); }
 
-// ── pdf.js ──
-var pdfjsP = null;
-
-// הספרייה נטענת בתג שבראש המסמך, והעובד נבנה מ-blob — עובד ממקור זר נחסם בדפדפן.
-function pdfjs() {
-  if (pdfjsP) return pdfjsP;
-  var lib = window.pdfjsLib;
-  if (!lib) return Promise.reject(new Error('pdfjsLib חסר'));
-  pdfjsP = fetch(PDFJS_WORKER_URL).then(function (r) { return r.text(); }).then(function (t) {
-    lib.GlobalWorkerOptions.workerSrc = URL.createObjectURL(new Blob([t], { type: 'text/javascript' }));
-    return lib;
-  });
-  pdfjsP.catch(function () { pdfjsP = null; });
-  return pdfjsP;
+// היחס של כל עמוד בתיקייה — מהמרשם שההמרה כותבת: [רוחב, גובה, מספר] כשכולם שווים, או [רוחב, [גבהים]].
+function scanRatios(dir) {
+  var x = SCAN[dir];
+  if (!x) return [];
+  var hs = Array.isArray(x[1]) ? x[1] : Array(x[2]).fill(x[1]);
+  return hs.map(function (h) { return x[0] / h; });
 }
-
-var docCache = {};
-
-function pdfDoc(path) {
-  if (!docCache[path]) {
-    docCache[path] = pdfjs().then(function (lib) {
-      // רק העמודים שמבקשים — קובץ וילנא הוא עשרות מגה, והשיעור צריך כמה עמודים ממנו.
-      return lib.getDocument({ url: fileUrl(path), disableAutoFetch: true, disableStream: true }).promise; });
-    docCache[path].catch(function () { delete docCache[path]; });
-  }
-  return docCache[path];
-}
-
-// עמוד מצויר רק כשהוא מתקרב למסך — שיעור של עשרות עמודים אינו מצויר כולו בפתיחה.
-var drawObs = ('IntersectionObserver' in window) ? new IntersectionObserver(function (es) {
-  es.forEach(function (e) {
-    if (!e.isIntersecting) return;
-    drawObs.unobserve(e.target);
-    if (e.target._draw) e.target._draw();
-  });
-}, { rootMargin: '600px 0px' }) : null;
 
 function el(tag, cls, text) {
   var e = document.createElement(tag);
@@ -261,50 +232,23 @@ function sheetEl(ratio) {
   return { fig: f, sheet: s };
 }
 
-// כל עמודי קובץ PDF אחד, או טווח ממנו — מצוירים לתוך box.
-function pdfInto(box, path, from, to, minW) {
-  var ld = el('div', 'loading', MSG_LOADING);
-  box.appendChild(ld);
-  return pdfDoc(path).then(function (doc) {
-    ld.remove();
-    var a = from || 1, b = Math.min(to || doc.numPages, doc.numPages), chain = Promise.resolve();
-    function one(k) {
-      return doc.getPage(k).then(function (pg) {
-        var vp = pg.getViewport({ scale: 1 });
-        var sh = sheetEl(vp.width / vp.height);
-        box.appendChild(sh.fig);
-        sh.sheet._draw = function () {
-          var dpr = Math.min(window.devicePixelRatio || 1, 2.5);
-          // תקרה לרוחב — עמוד מוגדל פי ארבעה היה בד של מאות מגה בזיכרון הטלפון.
-          var w = Math.min(Math.max((sh.sheet.clientWidth || 600) * dpr, minW || 0), Math.max(minW || 0, 2600));
-          var old = sh.sheet.querySelector('canvas');
-          if (old && old.width >= w * 0.9) return Promise.resolve();
-          var v = pg.getViewport({ scale: w / vp.width });
-          var c = document.createElement('canvas');
-          c.width = Math.round(v.width); c.height = Math.round(v.height);
-          return pg.render({ canvasContext: c.getContext('2d'), viewport: v }).promise
-            .then(function () { if (old) old.replaceWith(c); else sh.sheet.appendChild(c); });
-        };
-        if (drawObs) drawObs.observe(sh.sheet); else sh.sheet._draw();
-      });
-    }
-    for (var k = a; k <= b; k++) chain = chain.then(one.bind(null, k));
-    return chain;
-  }).catch(function (e) {
-    console.error('[pdf] ' + path, e);
-    ld.textContent = MSG_LOAD_FAIL;
-    toast(MSG_LOAD_FAIL, null, 'bad');
-  });
+// תמונה שלא הגיעה — הודעה אחת, ולא אחת לכל עמוד.
+var failAt = 0;
+function scanFail() {
+  if (Date.now() - failAt < 5000) return;
+  failAt = Date.now();
+  toast(MSG_LOAD_FAIL, null, 'bad');
 }
 
-// עמוד תניא — תמונה, ועליה רצועות ההלבנה של מה שאינו שייך לפרק.
-function tanyaSheet(item) {
-  var sh = sheetEl(1 / (TANYA_RATIO[item.p] || 1.25));
+// עמוד סרוק — נטען רק כשהוא מתקרב למסך, ועליו רצועות ההלבנה של מה שאינו שייך לשיעור.
+function scanSheet(path, ratio, whites) {
+  var sh = sheetEl(ratio);
   var im = new Image();
   im.loading = 'lazy'; im.decoding = 'async'; im.alt = '';
-  im.src = fileUrl('p/' + item.p + '.png');
+  im.onerror = scanFail;
+  im.src = fileUrl(path);
   sh.sheet.appendChild(im);
-  item.w.forEach(function (r) {
+  (whites || []).forEach(function (r) {
     var w = el('div', 'wh');
     w.style.setProperty('--top', r[0] + '%');
     w.style.setProperty('--h', (r[1] - r[0]) + '%');
@@ -317,8 +261,16 @@ function tanyaSheet(item) {
   return sh.fig;
 }
 
+// כל עמודי תיקייה, או טווח ממנה.
+function scanInto(box, dir, from, to) {
+  var rs = scanRatios(dir), a = from || 1, b = Math.min(to || rs.length, rs.length);
+  for (var k = a; k <= b; k++) box.appendChild(scanSheet(dir + '/' + k + '.png', rs[k - 1]));
+}
+
+function tanyaSheet(item) { return scanSheet('p/' + item.p + '.png', 1 / (TANYA_RATIO[item.p] || 1.25), item.w); }
+
 // ── הגדלה בשתי אצבעות ──
-// בזמן הצביטה — transform בלבד, חלק; בסופה הרוחב נקבע, הגלילה מיושרת לנקודת המגע, והעמודים הגלויים מצוירים מחדש בחדות.
+// בזמן הצביטה — transform בלבד, חלק; בסופה הרוחב נקבע, והגלילה מיושרת לנקודת המגע.
 var PZ_MAX = 4;
 var pz = null;
 function pzDist(t) { return Math.hypot(t[0].clientX - t[1].clientX, t[0].clientY - t[1].clientY); }
@@ -350,10 +302,6 @@ function pinchEnd() {
   box.classList.toggle('zoomed', z > 1);
   box.scrollLeft = p.ox * p.s - p.cx;
   window.scrollBy(0, p.oy * (p.s - 1));
-  box.querySelectorAll('.leaf').forEach(function (lf) {
-    var r = lf.getBoundingClientRect();
-    if (lf._draw && lf.querySelector('canvas') && r.bottom > -600 && r.top < innerHeight + 600) lf._draw();
-  });
 }
 
 // הקשה על דף מוגדל מחזירה את כל העמודים לגודלם — ההגדלה נשארת עד צביטה חזרה או עד הקשה.
@@ -369,6 +317,6 @@ function pinchReset() {
 
 function tanyaChapter(c) { return TANYA_CHAPTERS[c]; }
 
-export { el, fileUrl, localPut, pdfInto, pickerFilter, pinchEnd, pinchMove, pinchReset, pinchStart, pickerOpen, pushSoon, rambamCur, rambamFile, rambamLabel, readBarHTML,
+export { el, fileUrl, localPut, pickerFilter, pinchEnd, pinchMove, pinchReset, pinchStart, pickerOpen, pushSoon, rambamCur, rambamDir, rambamLabel, readBarHTML,
          sLive, sPendKey, sPendKeyOf, sPick, sPickSet, sQ, sStripRows, sSyncNow, sSyncPull,
-         sTableMeta, tanyaChapName, tanyaChapter, tanyaCur, tanyaLabel, tanyaSheet };
+         scanInto, sTableMeta, tanyaChapName, tanyaChapter, tanyaCur, tanyaLabel, tanyaSheet };
