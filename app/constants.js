@@ -97,20 +97,23 @@ var TANYA_BOOKS = [['בראשית', 0], ['שמות', 12], ['ויקרא', 23], ['
 // מרשם השיעורים, בסדר שבמסך הראשי — screen הוא המסך שהשיעור פותח, ובלעדיו השיעור «בקרוב».
 // שיעור עם subs פותח בחירה בין חלקיו.
 var LESSONS = [
-  { k: 'tanya', lab: 'תניא', subs: [
-    { k: 'tanya-yomi', lab: 'תניא יומי' },
-    { k: 'tanya-week', lab: MSG_TANYA_WEEK, screen: 'tanya' }
-  ] },
+  { k: 'hayom-yom', lab: 'היום יום' },
   { k: 'chumash', lab: 'חומש', subs: [
     { k: 'chumash-yomi', lab: 'חומש' },
     { k: 'shnayim-mikra', lab: 'שניים מקרא' },
     { k: 'tanach', lab: 'תנ״ך' }
   ] },
+  { k: 'tehillim', lab: 'תהלים' },
+  { k: 'tanya', lab: 'תניא', subs: [
+    { k: 'tanya-yomi', lab: 'תניא יומי' },
+    { k: 'tanya-week', lab: MSG_TANYA_WEEK, screen: 'tanya' }
+  ] },
   { k: 'rambam', lab: MSG_RAMBAM, screen: 'rambam' },
-  { k: 'ein-yaakov', lab: 'עין יעקב' },
+  { k: 'chassidishe-parsha', lab: 'החסידישע פרשה' },
+  { k: 'mishnayot', lab: 'משניות' },
   { k: 'shulchan-aruch', lab: 'שולחן ערוך הרב' },
-  { k: 'hayom-yom', lab: 'היום יום' },
-  { k: 'mishnayot', lab: 'משניות' }
+  { k: 'ein-yaakov', lab: 'עין יעקב' },
+  { k: 'siddur', lab: 'סידור' }
 ];
 
 // ── מפת השיעורים ──
