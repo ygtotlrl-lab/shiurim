@@ -8,7 +8,7 @@ import { esc, openModal, pullRender, toast, uiNoDialog } from '../core/ui.js';
 import { hebDayLabel, hebGematria } from '../core/hebrew.js';
 import { ALIYOT, CH, CH_URL, KEY_CHUMASH, MSG_PICK_ALIYAH_TITLE, HY, HY_MONTHS, HY_NAMES, HY_URL, KEY_HAYOM, KEY_RAMBAM, KEY_TANYA, MSG_PICK_DAY_TITLE, KV_TABLE, MSG_HAKDAMA, MSG_LOAD_FAIL,
          MSG_MOREH_OPEN, MSG_PEREK, MSG_PICK_CUR, MSG_PICK_NONE, MSG_PICK_PARASHA_TITLE, MSG_PICK_SEARCH,
-         MSG_PICK_TITLE, MSG_RAMBAM_OPENING, PARSHIOT, PUSH_TABLES, RAMBAM_LESSONS, RAMBAM_URL, SCAN, SCAN_W, TABLES,
+         MSG_PICK_TITLE, MSG_RAMBAM_OPENING, PARSHIOT, PUSH_TABLES, MT_URL, RAMBAM_LESSONS, RAMBAM_MAP, RAMBAM_VOLS, RAMBAM_X, SCAN, SCAN_W, TABLES,
          LESSONS, MSG_SOON, TANYA_BOOKS, TANYA_CHAPTERS, TANYA_RATIO, TANYA_URL } from './constants.js';
 import { S, shell } from './state.js';
 import { icon } from './icons.js';
@@ -237,12 +237,22 @@ function lessonPickOpen(k) {
 
 // ── הסריקות ──
 // כל הסריקות בתקן אחד — תמונה מוכנה לכל עמוד, ולא קובץ שהמכשיר מפענח.
-// p/ — מאגר התניא; yi/ he/ — היום יום; 1/–5/ — החומש; כל השאר — מאגר הרמב״ם.
+// p/ — מאגר התניא; yi/ he/ — היום יום; 1/–5/ — החומש; laam/ vilna/ — מאגר משנה תורה.
 function fileUrl(path) {
-  return (/^p\//.test(path) ? TANYA_URL : /^(yi|he)\//.test(path) ? HY_URL : /^[1-5]\//.test(path) ? CH_URL : RAMBAM_URL) + path;
+  return (/^p\//.test(path) ? TANYA_URL : /^(yi|he)\//.test(path) ? HY_URL : /^[1-5]\//.test(path) ? CH_URL : MT_URL) + path;
 }
 
-function rambamDir(i) { return 'r/' + String(i + 1).padStart(3, '0'); }
+// שיעור רמב״ם — העמודים מהספרים השלמים של רמב״ם לעם, וההלבנה של השיעור הסמוך מעליהם (RAMBAM_MAP).
+function rambamInto(box, i) {
+  (RAMBAM_MAP[i] || []).forEach(function (seg) {
+    var dir = 'laam/' + RAMBAM_VOLS[seg[0]];
+    if (Array.isArray(seg[2]) || typeof seg[1] === 'string') {
+      var key = RAMBAM_VOLS[seg[0]] + '/' + seg[1];
+      var h = RAMBAM_X[key] || (SCAN[dir] || [])[seg[1] - 1];
+      box.appendChild(scanSheet(dir + '/' + seg[1] + '.png', h ? SCAN_W / h : 0.64, seg[2]));
+    } else scanInto(box, dir, seg[1], seg[2]);
+  });
+}
 
 // היחס של כל עמוד בתיקייה — מהמרשם שההמרה כותבת.
 function scanRatios(dir) {
@@ -422,6 +432,6 @@ function pinchReset() {
 
 function tanyaChapter(c) { return TANYA_CHAPTERS[c]; }
 
-export { PICKERS, chLabel, chSheets, chumashCur, el, fileUrl, hayomCur, hyHeSheets, hyLabel, hyStep, hyYiSheet, lessonAppHref, lessonOpen, lessonPickOpen, localPut, pickerFilter, pinchEnd, pinchMove, pinchReset, pinchStart, pickerOpen, pushSoon, rambamCur, rambamDir, rambamLabel, readBarHTML,
+export { PICKERS, chLabel, chSheets, chumashCur, el, fileUrl, hayomCur, hyHeSheets, hyLabel, hyStep, hyYiSheet, lessonAppHref, lessonOpen, lessonPickOpen, localPut, pickerFilter, pinchEnd, pinchMove, pinchReset, pinchStart, pickerOpen, pushSoon, rambamCur, rambamInto, rambamLabel, readBarHTML,
          sLive, sPendKey, sPendKeyOf, sPick, sPickSet, sQ, sStripRows, sSyncNow, sSyncPull,
          scanInto, sTableMeta, tanyaChapName, tanyaChapter, tanyaCur, tanyaLabel, tanyaSheet };

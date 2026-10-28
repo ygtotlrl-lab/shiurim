@@ -2,7 +2,7 @@
 import { esc } from '../../core/ui.js';
 import { MSG_MOREH, MSG_MOREH_CLOSE, MSG_NEXT_LESSON, MSG_PREV_LESSON, MSG_RAMBAM, MSG_VIL_OPEN,
          RAMBAM_LESSONS, VILNA } from '../constants.js';
-import { el, rambamCur, rambamDir, rambamLabel, readBarHTML, scanInto, sQ } from '../domain.js';
+import { el, rambamCur, rambamInto, rambamLabel, readBarHTML, scanInto, sQ } from '../domain.js';
 
 function rambamScreenHTML() {
   var c = rambamCur();
@@ -22,7 +22,7 @@ function rambamFill(box) {
   var i = +box.dataset.id;
   var pages = el('div', 'pages');
   box.appendChild(pages);
-  scanInto(pages, rambamDir(i));
+  rambamInto(pages, i);
   var row = el('div', 'nextrow');
   var b = el('button', 'btn ghost', MSG_VIL_OPEN);
   b.setAttribute('data-act', 'vilna-toggle');
@@ -42,9 +42,9 @@ function rambamMount() {
 function rambamVilnaFill(vs, i) {
   var pages = el('div', 'pages');
   vs.appendChild(pages);
-  (VILNA.L[i] || []).forEach(function (seg) { scanInto(pages, 'v/' + VILNA.c[seg[0]][0], seg[1], seg[2]); });
+  (VILNA[i] || []).forEach(function (seg) { scanInto(pages, 'vilna/' + seg[0], seg[1], seg[2]); });
 }
 
-function rambamMorehFill(box) { scanInto(box, 'r/moreh-shiur'); }
+function rambamMorehFill(box) { scanInto(box, 'laam/moreh'); }
 
 export { rambamFill, rambamMorehFill, rambamMount, rambamScreenHTML, rambamVilnaFill };
