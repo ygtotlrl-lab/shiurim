@@ -7,7 +7,7 @@ import { logAction } from '../core/backup.js';
 import { esc, openModal, pullRender, toast, uiNoDialog } from '../core/ui.js';
 import { hebDayLabel, hebGematria } from '../core/hebrew.js';
 import { ALIYOT, CH, CH_URL, KEY_CHUMASH, MSG_PICK_ALIYAH_TITLE, HY, HY_MONTHS, HY_NAMES, HY_URL, KEY_HAYOM, KEY_RAMBAM, KEY_TANYA, MSG_PICK_DAY_TITLE, KV_TABLE, MSG_HAKDAMA, MSG_LOAD_FAIL,
-         MSG_HOME_BACK, MSG_MOREH_OPEN, MSG_PEREK, MSG_PICK_CUR, MSG_PICK_NONE, MSG_PICK_PARASHA_TITLE, MSG_PICK_SEARCH,
+         MSG_MOREH_OPEN, MSG_PEREK, MSG_PICK_CUR, MSG_PICK_NONE, MSG_PICK_PARASHA_TITLE, MSG_PICK_SEARCH,
          MSG_PICK_TITLE, MSG_RAMBAM_OPENING, PARSHIOT, PUSH_TABLES, RAMBAM_LESSONS, RAMBAM_URL, SCAN, SCAN_W, TABLES,
          LESSONS, MSG_SOON, TANYA_BOOKS, TANYA_CHAPTERS, TANYA_RATIO, TANYA_URL } from './constants.js';
 import { S, shell } from './state.js';
@@ -133,10 +133,9 @@ function tanyaChapName(c) { return c === 0 ? MSG_HAKDAMA : MSG_PEREK + hebGematr
 
 function tanyaLabel(c) { return PARSHIOT[c] + ' — ' + tanyaChapName(c); }
 
-// סרגל הקריאה — חזרה לסדר הלימוד, ושם השיעור שפותח את הבחירה.
+// סרגל הקריאה — שם השיעור, באמצע, ופותח את הבחירה; הניווט — בשורה התחתונה.
 function readBarHTML(kind, kicker, title) {
   return '<div class="readbar" id="readbar"><div class="in">' +
-    '<button class="rb-home" data-act="go-home" aria-label="' + esc(MSG_HOME_BACK) + '">' + icon('home') + '</button>' +
     '<button class="rb-pick" data-act="pick-open" data-k="' + kind + '"><span class="rb-k">' + esc(kicker) + '</span>' +
     '<b>' + title + '</b>' + icon('down') + '</button></div></div>';
 }

@@ -135,16 +135,13 @@ body.shelf{background:var(--shelf)}
 /* השיעור על כל המסך — הדף מקצה לקצה, בלי רקע ובלי מרווח; הסרגל נאסף בגלילה ובהקשה. */
 body.reading{background:var(--leaf)}
 body.reading main{padding:calc(var(--readbar-h) + env(safe-area-inset-top,0px)) 0
-  calc(var(--sp-7) + env(safe-area-inset-bottom))}
+  calc(var(--readbar-h) + var(--sp-7) + env(safe-area-inset-bottom))}
 .readbar{position:fixed;inset-block-start:0;inset-inline:0;z-index:var(--z-2);
   padding-top:env(safe-area-inset-top,0px);background:var(--card);border-bottom:1px solid var(--border);
   transition:transform var(--dur-4)}
-.readbar .in{display:flex;align-items:center;gap:var(--sp-4);height:var(--readbar-h);
+.readbar .in{display:flex;align-items:center;justify-content:center;height:var(--readbar-h);
   max-width:var(--col);margin:0 auto;padding:0 var(--sp-4)}
-.rb-home{flex:none;width:40px;height:40px;border-radius:var(--r-4);border:0;background:none;color:var(--brand-ink);
-  display:flex;align-items:center;justify-content:center;cursor:pointer}
-.rb-home .ico{width:22px;height:22px}
-.rb-pick{flex:1;min-width:0;display:flex;align-items:center;gap:var(--sp-3);background:var(--bg);
+.rb-pick{flex:0 1 auto;min-width:0;max-width:100%;display:flex;align-items:center;gap:var(--sp-3);background:var(--bg);
   border:1px solid var(--border);border-radius:var(--r-5);padding:var(--sp-3) var(--sp-5);cursor:pointer;text-align:start}
 .rb-k{flex:none;font-size:var(--fs-2);font-weight:700;color:var(--gold)}
 .rb-pick b{flex:1;min-width:0;font-family:var(--f-display);font-size:var(--fs-4);color:var(--brand-ink);
@@ -152,6 +149,17 @@ body.reading main{padding:calc(var(--readbar-h) + env(safe-area-inset-top,0px)) 
 .rb-pick b .sep{color:var(--gold);padding:0 .3em}
 .rb-pick .ico{color:var(--gold)}
 body.calm .readbar{transform:translateY(-100%)}
+/* השורה התחתונה — צפה מעל הדף, ועולה ויורדת יחד עם הסרגל העליון. */
+.botbar{display:none;position:fixed;inset-block-end:0;inset-inline:0;z-index:var(--z-2);
+  padding-bottom:env(safe-area-inset-bottom,0px);background:var(--card);border-top:1px solid var(--border);
+  transition:transform var(--dur-4)}
+body.reading .botbar{display:block}
+body.calm .botbar{transform:translateY(100%)}
+.botbar .in{display:flex;align-items:center;justify-content:center;gap:var(--sp-7);height:var(--readbar-h);
+  max-width:var(--col);margin:0 auto}
+.bb-it{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;min-width:64px;
+  border:0;background:none;color:var(--brand-ink);font:600 var(--fs-2)/1 var(--f-body);text-decoration:none;cursor:pointer}
+.bb-it .ico{width:22px;height:22px}
 .read .pages{gap:0;overflow-x:auto;direction:ltr;touch-action:pan-x pan-y}
 /* הגדלה — הדף נמתח לרוחב --z, והגלילה לצדדים בתוך רצף העמודים. */
 .read .pages.zoomed{justify-items:start}

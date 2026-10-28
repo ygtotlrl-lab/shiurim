@@ -5,8 +5,8 @@ import { lsOpen } from '../core/storage.js';
 import { MIRROR, mirrorKey, mirrorTables } from '../core/mirror.js';
 import { logAwait } from '../core/backup.js';
 import { bootRun } from '../core/boot-run.js';
-import { actWire, closeAsk, closeModal, shellBare, swApply, swHideUpdate, uiNoDialog } from '../core/ui.js';
-import { KEY_CHUMASH, KEY_HAYOM, KEY_RAMBAM, KEY_TANYA, KV_TABLE, MSG_VIL_CLOSE, MSG_VIL_OPEN, PUSH_TABLES, SUPABASE_ANON_KEY,
+import { actWire, closeAsk, closeModal, esc, shellBare, swApply, swHideUpdate, uiNoDialog } from '../core/ui.js';
+import { KEY_CHUMASH, KEY_HAYOM, KEY_RAMBAM, KEY_TANYA, KV_TABLE, MSG_NAV_BACK, MSG_NAV_EXIT, MSG_NAV_HOME, MSG_VIL_CLOSE, MSG_VIL_OPEN, PUSH_TABLES, SUPABASE_ANON_KEY,
          SUPABASE_URL, TABLES } from './constants.js';
 import { S, shell, view } from './state.js';
 import { PICKERS, chumashCur, hayomCur, lessonPickOpen, pickerFilter, pickerOpen, pinchEnd, pinchMove, pinchReset, pinchStart, rambamCur, sPendKey, sPendKeyOf, sPickSet, sQ, sStripRows, sSyncNow, sSyncPull,
@@ -16,6 +16,7 @@ import { rambamMorehFill, rambamMount, rambamScreenHTML, rambamVilnaFill } from 
 import { chumashMount, chumashScreenHTML } from './screens/chumash.js';
 import { hayomMount, hayomScreenHTML } from './screens/hayom.js';
 import { tanyaMount, tanyaScreenHTML } from './screens/tanya.js';
+import { icon } from './icons.js';
 
 // ── החיווט ──
 // החיווט נמסר בשומרי קריאה — ה-CFG מוגדרים בהמשך, והשומר קורא אותם בזמן הקריאה ולא בזמן המסירה.
@@ -147,17 +148,54 @@ function sRender() {
   shellBare(false);
 }
 
+// ── ההיסטוריה ──
+// כל מעבר — מסך או בחירה — רשומה בהיסטוריה של הדפדפן; «חזור» וכפתור החזרה של הטלפון חוזרים אליה.
+// d — עומק הרשומה: בראשונה אין לאן לחזור, ו«חזור» הולך לבית.
+function navState(d) {
+  var P = PICKERS[view.screen];
+  return { screen: view.screen, v: P ? P.cur() : null, d: d };
+}
+// הדפדפן אינו משחזר גלילה בחזרה — המסך שחוזרים אליו עולה לראשו, כמו בכל מעבר.
+try { history.scrollRestoration = 'manual'; } catch (e) { /* דפדפן ישן */ }
+function navDepth() { return (history.state && history.state.d) || 0; }
+function navPush() { try { history.pushState(navState(navDepth() + 1), ''); } catch (e) { /* בלי היסטוריה — הניווט עובד בלעדיה */ } }
+window.addEventListener('popstate', function (e) {
+  var st = e.state;
+  view.screen = st && st.screen ? st.screen : 'home';
+  var P = PICKERS[view.screen];
+  if (P && st && typeof st.v === 'number' && st.v !== P.cur()) sPickSet(P.key, st.v);
+  sRender();
+  navTop();
+});
+function navBack() { if (navDepth() > 0) history.back(); else go('home'); }
+
+// מסך חדש עולה לראשו, והשורות גלויות.
+function navTop() {
+  document.body.classList.remove('calm');
+  window.scrollTo({ top: 0 });
+}
+
 function go(screen) {
   view.screen = screen;
   sRender();
-  window.scrollTo({ top: 0 });
+  navPush();
+  navTop();
 }
 
 // בחירה חדשה נכתבת לטבלת ההגדרות ומסתנכרנת לכל המכשירים, והמסך עולה לראשו.
 function pickGo(key, v) {
   sPickSet(key, v);
   sRender();
-  window.scrollTo({ top: 0 });
+  navPush();
+  navTop();
+}
+
+// השורה התחתונה — חזור · בית · יציאה; «יציאה» רק במעטפת, שקולטת את הקישור וסוגרת את האפליקציה.
+function botBarHTML() {
+  var it = function (act, ico, lab) { return '<button class="bb-it" data-act="' + act + '">' + icon(ico) + '<span>' + esc(lab) + '</span></button>'; };
+  var exit = /\bwv\b/.test(navigator.userAgent)
+    ? '<a class="bb-it" href="app-exit:close">' + icon('exit') + '<span>' + esc(MSG_NAV_EXIT) + '</span></a>' : '';
+  return '<div class="in">' + it('nav-back', 'back', MSG_NAV_BACK) + it('go-home', 'home', MSG_NAV_HOME) + exit + '</div>';
 }
 
 // הסרגל נאסף בגלילה למטה וחוזר בגלילה למעלה — הדף לבדו על המסך.
@@ -174,6 +212,7 @@ function calmOnScroll() {
 var DOM_ACTIONS = {
   'tab-go': function (el) { go(el.dataset.id); },
   'go-home': function () { go('home'); },
+  'nav-back': function () { navBack(); },
   'lesson-pick': function (el) { lessonPickOpen(el.dataset.id); },
   'lesson-go': function (el) { closeModal(); go(el.dataset.id); },
   'read-toggle': function () { if (!pinchReset()) document.body.classList.toggle('calm'); },
@@ -234,10 +273,13 @@ document.addEventListener('touchcancel', pinchEnd);
 // ── העלייה ──
 function sBoot() {
   shell.sRender = sRender;
+  var bb = sQ('#botbar');
+  if (bb) bb.innerHTML = botBarHTML();
   S.sb = sbWatch(window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY));
   // הליבה עולה לפני הציור הראשון — המסך עולה מהמראה, והסימונים הממתינים מוצגים מהשנייה הראשונה.
   bootRun();
   sRender();
+  try { history.replaceState(navState(0), ''); } catch (e) { /* בלי היסטוריה */ }
   sSyncPull().then(function () { sRender(); });
 }
 

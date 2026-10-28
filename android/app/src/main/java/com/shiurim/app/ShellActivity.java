@@ -106,6 +106,12 @@ public abstract class ShellActivity extends Activity {
             if (scheme == null) return false;
             if (scheme.equals("http") || scheme.equals("https")) return false;
             if (scheme.equals("intent")) return launchApp(uri);
+            // «יציאה» סוגרת את האפליקציה רק מדף של האפליקציה עצמה — דף שנפרץ אינו סוגר אותה.
+            if (scheme.equals("app-exit")) {
+                String cur = webView != null ? webView.getUrl() : null;
+                if (cur != null && cur.startsWith("https://ygtotlrl-lab.github.io/shiurim/")) finish();
+                return true;
+            }
             try {
                 Intent intent = new Intent(Intent.ACTION_VIEW, uri);
                 // אין FLAG_ACTIVITY_NEW_TASK מהקשר Activity חי — הקישור נפתח מעל המעטפת, וחזרה מחזירה אליה.
