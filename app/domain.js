@@ -6,7 +6,7 @@ import { MIRROR, mirrorSave } from '../core/mirror.js';
 import { logAction } from '../core/backup.js';
 import { esc, openModal, pullRender, toast, uiNoDialog } from '../core/ui.js';
 import { hebDayLabel, hebGematria } from '../core/hebrew.js';
-import { ALIYOT, CH, CH_URL, KEY_CHUMASH, MSG_PICK_ALIYAH_TITLE, HY, HY_MONTHS, HY_NAMES, HY_URL, KEY_HAYOM, KEY_RAMBAM, KEY_TANYA, MSG_PICK_DAY_TITLE, KV_TABLE, MSG_HAKDAMA, MSG_LOAD_FAIL,
+import { ALIYOT, CH, CH_URL, HAFTAROT, KEY_CHUMASH, KEY_SHNAYIM, MSG_PICK_ALIYAH_TITLE, HY, HY_MONTHS, HY_NAMES, HY_URL, KEY_HAYOM, KEY_RAMBAM, KEY_TANYA, MSG_PICK_DAY_TITLE, KV_TABLE, MSG_HAKDAMA, MSG_LOAD_FAIL,
          MSG_MOREH_OPEN, MSG_PEREK, MSG_PICK_CUR, MSG_PICK_NONE, MSG_PICK_PARASHA_TITLE, MSG_PICK_SEARCH,
          MSG_PICK_TITLE, MSG_RAMBAM_OPENING, PARSHIOT, PUSH_TABLES, MT_URL, RAMBAM_LESSONS, RAMBAM_MAP, RAMBAM_VOLS, RAMBAM_X, SCAN, SCAN_W, TABLES,
          LESSONS, MSG_SOON, TANYA_BOOKS, TANYA_CHAPTERS, TANYA_RATIO, TANYA_URL } from './constants.js';
@@ -166,7 +166,8 @@ var PICKERS = {
   rambam: { key: KEY_RAMBAM, cur: rambamCur, groups: rambamGroups, title: MSG_PICK_TITLE },
   tanya: { key: KEY_TANYA, cur: tanyaCur, groups: tanyaGroups, title: MSG_PICK_PARASHA_TITLE },
   hayom: { key: KEY_HAYOM, cur: hayomCur, groups: hayomGroups, title: MSG_PICK_DAY_TITLE },
-  chumash: { key: KEY_CHUMASH, cur: chumashCur, groups: chumashGroups, title: MSG_PICK_ALIYAH_TITLE }
+  chumash: { key: KEY_CHUMASH, cur: chumashCur, groups: chumashGroups, title: MSG_PICK_ALIYAH_TITLE },
+  shnayim: { key: KEY_SHNAYIM, cur: shnayimCur, groups: shnayimGroups, title: MSG_PICK_PARASHA_TITLE }
 };
 
 function pickerOpen(kind) {
@@ -237,9 +238,9 @@ function lessonPickOpen(k) {
 
 // ── הסריקות ──
 // כל הסריקות בתקן אחד — תמונה מוכנה לכל עמוד, ולא קובץ שהמכשיר מפענח.
-// p/ — מאגר התניא; yi/ he/ — היום יום; 1/–5/ — החומש; laam/ vilna/ — מאגר משנה תורה.
+// p/ — מאגר התניא; yi/ he/ — היום יום; 1/–5/ ו-m/ — החומש וספר המנהגים; laam/ vilna/ — מאגר משנה תורה.
 function fileUrl(path) {
-  return (/^p\//.test(path) ? TANYA_URL : /^(yi|he)\//.test(path) ? HY_URL : /^[1-5]\//.test(path) ? CH_URL : MT_URL) + path;
+  return (/^p\//.test(path) ? TANYA_URL : /^(yi|he)\//.test(path) ? HY_URL : /^([1-5]|m)\//.test(path) ? CH_URL : MT_URL) + path;
 }
 
 // שיעור רמב״ם — העמודים מהספרים השלמים של רמב״ם לעם, וההלבנה של השיעור הסמוך מעליהם (RAMBAM_MAP).
@@ -346,6 +347,34 @@ function chSheets(i) {
   return out;
 }
 
+// ── שניים מקרא ──
+function shnayimCur() { return sPick(KEY_SHNAYIM, PARSHIOT.length); }
+
+function shnayimGroups() {
+  return TANYA_BOOKS.map(function (b, k) {
+    var end = k + 1 < TANYA_BOOKS.length ? TANYA_BOOKS[k + 1][1] : PARSHIOT.length, items = [];
+    for (var i = b[1]; i < end; i++) items.push({ i: i, num: String(i + 1), name: PARSHIOT[i] });
+    return { title: b[0], items: items };
+  });
+}
+
+// הפרשה — מתחילת הראשון ועד סוף השביעי, עמודים שלמים.
+function shnayimSheets(c) {
+  var a = CH[c * 7], b = CH[c * 7 + 6], rs = scanRatios(String(a[0])), out = [];
+  for (var p = a[1]; p <= b[2]; p++) out.push(scanSheet(a[0] + '/' + p + '.png', rs[p - 1]));
+  return out;
+}
+
+// הפטרה — קטעי עמודים, וההלבנה של מה שאינו במנהג.
+function haftaraSheets(segs) {
+  return (segs || []).map(function (s) {
+    var rs = scanRatios(String(s[0]));
+    return scanSheet(s[0] + '/' + s[1] + '.png', rs[s[1] - 1], s[2]);
+  });
+}
+
+function haftaraOf(c) { return HAFTAROT.P[c]; }
+
 function hayomCur() { return sPick(KEY_HAYOM, HY.yi.length); }
 
 function hyPos(i) { return hyOrder().map(function (x) { return x.i; }).indexOf(i); }
@@ -432,6 +461,6 @@ function pinchReset() {
 
 function tanyaChapter(c) { return TANYA_CHAPTERS[c]; }
 
-export { PICKERS, chLabel, chSheets, chumashCur, el, fileUrl, hayomCur, hyHeSheets, hyLabel, hyStep, hyYiSheet, lessonAppHref, lessonOpen, lessonPickOpen, localPut, pickerFilter, pinchEnd, pinchMove, pinchReset, pinchStart, pickerOpen, pushSoon, rambamCur, rambamInto, rambamLabel, readBarHTML,
+export { PICKERS, haftaraOf, haftaraSheets, shnayimCur, shnayimSheets, chLabel, chSheets, chumashCur, el, fileUrl, hayomCur, hyHeSheets, hyLabel, hyStep, hyYiSheet, lessonAppHref, lessonOpen, lessonPickOpen, localPut, pickerFilter, pinchEnd, pinchMove, pinchReset, pinchStart, pickerOpen, pushSoon, rambamCur, rambamInto, rambamLabel, readBarHTML,
          sLive, sPendKey, sPendKeyOf, sPick, sPickSet, sQ, sStripRows, sSyncNow, sSyncPull,
          scanInto, sTableMeta, tanyaChapName, tanyaChapter, tanyaCur, tanyaLabel, tanyaSheet };

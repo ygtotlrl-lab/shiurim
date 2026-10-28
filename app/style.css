@@ -89,6 +89,8 @@ main{padding:0 var(--sp-6); padding-bottom:calc(var(--sp-6) + env(safe-area-inse
 /* ── מסכים ── */
 .sub{color:var(--text-2);font-size:var(--fs-3);margin:0 0 var(--sp-4)}
 .nextrow{display:flex;justify-content:center;margin-top:var(--sp-6)}
+.nextrow.opens{flex-direction:column;align-items:center;gap:var(--sp-3)}
+.nextrow.opens .btn{min-width:min(100%,20rem)}
 .sect{width:100%;display:flex;align-items:baseline;gap:var(--sp-5);margin-top:var(--sp-6);
   padding:var(--sp-5) var(--sp-6) 0;border-top:2px solid var(--gold-soft)}
 .sect h3{font-family:var(--f-display);font-weight:900;font-size:var(--fs-5);color:var(--brand-ink)}

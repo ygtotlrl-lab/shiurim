@@ -6,14 +6,15 @@ import { MIRROR, mirrorKey, mirrorTables } from '../core/mirror.js';
 import { logAwait } from '../core/backup.js';
 import { bootRun } from '../core/boot-run.js';
 import { actWire, closeAsk, closeModal, esc, shellBare, swApply, swHideUpdate, uiNoDialog } from '../core/ui.js';
-import { KEY_CHUMASH, KEY_HAYOM, KEY_RAMBAM, KEY_TANYA, KV_TABLE, MSG_NAV_BACK, MSG_NAV_EXIT, MSG_NAV_HOME, MSG_VIL_CLOSE, MSG_VIL_OPEN, PUSH_TABLES, SUPABASE_ANON_KEY,
+import { KEY_CHUMASH, KEY_SHNAYIM, MSG_MINHAG_CLOSE, MSG_MINHAG_OPEN, KEY_HAYOM, KEY_RAMBAM, KEY_TANYA, KV_TABLE, MSG_NAV_BACK, MSG_NAV_EXIT, MSG_NAV_HOME, MSG_VIL_CLOSE, MSG_VIL_OPEN, PUSH_TABLES, SUPABASE_ANON_KEY,
          SUPABASE_URL, TABLES } from './constants.js';
 import { S, shell, view } from './state.js';
-import { PICKERS, chumashCur, hayomCur, lessonPickOpen, pickerFilter, pickerOpen, pinchEnd, pinchMove, pinchReset, pinchStart, rambamCur, sPendKey, sPendKeyOf, sPickSet, sQ, sStripRows, sSyncNow, sSyncPull,
+import { PICKERS, chumashCur, shnayimCur, hayomCur, lessonPickOpen, pickerFilter, pickerOpen, pinchEnd, pinchMove, pinchReset, pinchStart, rambamCur, sPendKey, sPendKeyOf, sPickSet, sQ, sStripRows, sSyncNow, sSyncPull,
          sTableMeta, tanyaCur } from './domain.js';
 import { homeScreenHTML } from './screens/home.js';
 import { rambamMorehFill, rambamMount, rambamScreenHTML, rambamVilnaFill } from './screens/rambam.js';
 import { chumashMount, chumashScreenHTML } from './screens/chumash.js';
+import { minhagFill, shnayimMount, shnayimScreenHTML, specialFill, specialPick } from './screens/shnayim.js';
 import { hayomMount, hayomScreenHTML } from './screens/hayom.js';
 import { tanyaMount, tanyaScreenHTML } from './screens/tanya.js';
 import { icon } from './icons.js';
@@ -131,15 +132,16 @@ function sRender() {
   if (!root) { uiNoDialog('sRender', 'view'); return; }
   var home = view.screen === 'home';
   var cur = home ? (rambamCur() + ':' + tanyaCur()) : view.screen === 'tanya' ? tanyaCur()
-    : view.screen === 'hayom' ? hayomCur() : view.screen === 'chumash' ? chumashCur() : rambamCur();
+    : view.screen === 'hayom' ? hayomCur() : view.screen === 'chumash' ? chumashCur() : view.screen === 'shnayim' ? shnayimCur() : rambamCur();
   if (view.shown[view.screen] !== cur || !root.firstChild || root.dataset.screen !== view.screen) {
     root.dataset.screen = view.screen;
     if (home) root.innerHTML = homeScreenHTML();
     else if (view.screen === 'tanya') { root.innerHTML = tanyaScreenHTML(); tanyaMount(); }
     else if (view.screen === 'hayom') { root.innerHTML = hayomScreenHTML(); hayomMount(); }
     else if (view.screen === 'chumash') { root.innerHTML = chumashScreenHTML(); chumashMount(); }
+    else if (view.screen === 'shnayim') { root.innerHTML = shnayimScreenHTML(); shnayimMount(); }
     else { root.innerHTML = rambamScreenHTML(); rambamMount(); }
-    view.shown = { home: null, rambam: null, tanya: null, hayom: null, chumash: null };
+    view.shown = { home: null, rambam: null, tanya: null, hayom: null, chumash: null, shnayim: null };
     view.shown[view.screen] = cur;
   }
   document.body.classList.toggle('reading', !home);
@@ -227,6 +229,24 @@ var DOM_ACTIONS = {
   'tanya-next':  function (el) { pickGo(KEY_TANYA, +el.dataset.id); },
   'hayom-next': function (el) { pickGo(KEY_HAYOM, +el.dataset.id); },
   'chumash-next': function (el) { pickGo(KEY_CHUMASH, +el.dataset.id); },
+  'shnayim-next': function (el) { pickGo(KEY_SHNAYIM, +el.dataset.id); },
+  'minhag-toggle': function (el) {
+    var sec = sQ('[data-minhag]');
+    if (!sec) { uiNoDialog('minhag-toggle', 'minhag'); return; }
+    var open = sec.classList.toggle('hidden') === false;
+    el.textContent = open ? MSG_MINHAG_CLOSE : MSG_MINHAG_OPEN;
+    if (open && !sec.firstChild) minhagFill(sec);
+    if (open) sec.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  },
+  'special-open': function () { specialPick(); },
+  'special-go': function (el) {
+    closeModal();
+    var sec = sQ('[data-special]');
+    if (!sec) { uiNoDialog('special-go', 'special'); return; }
+    specialFill(sec, +el.dataset.id);
+    sec.classList.remove('hidden');
+    sec.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  },
   'moreh-open': function () {
     closeModal();
     var ms = sQ('#moreh'), box = sQ('#moreh-pages');
