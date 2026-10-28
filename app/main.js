@@ -13,6 +13,7 @@ import { lessonPickOpen, pickerFilter, pickerOpen, pinchEnd, pinchMove, pinchRes
          sTableMeta, tanyaCur } from './domain.js';
 import { homeScreenHTML } from './screens/home.js';
 import { rambamMorehFill, rambamMount, rambamScreenHTML, rambamVilnaFill } from './screens/rambam.js';
+import { hayomMount, hayomScreenHTML } from './screens/hayom.js';
 import { tanyaMount, tanyaScreenHTML } from './screens/tanya.js';
 
 // ── החיווט ──
@@ -127,13 +128,16 @@ function sRender() {
   var root = sQ('#view');
   if (!root) { uiNoDialog('sRender', 'view'); return; }
   var home = view.screen === 'home';
-  var cur = home ? (rambamCur() + ':' + tanyaCur()) : view.screen === 'tanya' ? tanyaCur() : rambamCur();
+  var hd = hyDate();
+  var cur = home ? (rambamCur() + ':' + tanyaCur()) : view.screen === 'tanya' ? tanyaCur()
+    : view.screen === 'hayom' ? hd.toDateString() : rambamCur();
   if (view.shown[view.screen] !== cur || !root.firstChild || root.dataset.screen !== view.screen) {
     root.dataset.screen = view.screen;
     if (home) root.innerHTML = homeScreenHTML();
     else if (view.screen === 'tanya') { root.innerHTML = tanyaScreenHTML(); tanyaMount(); }
+    else if (view.screen === 'hayom') { root.innerHTML = hayomScreenHTML(hd); hayomMount(hd); }
     else { root.innerHTML = rambamScreenHTML(); rambamMount(); }
-    view.shown = { home: null, rambam: null, tanya: null };
+    view.shown = { home: null, rambam: null, tanya: null, hayom: null };
     view.shown[view.screen] = cur;
   }
   document.body.classList.toggle('reading', !home);
@@ -142,8 +146,16 @@ function sRender() {
   shellBare(false);
 }
 
+// היום יום — התאריך של השעון, וההזזה שבמסך.
+function hyDate() {
+  var d = new Date();
+  d.setDate(d.getDate() + view.hyOff);
+  return d;
+}
+
 function go(screen) {
   view.screen = screen;
+  view.hyOff = 0;
   sRender();
   window.scrollTo({ top: 0 });
 }
@@ -179,6 +191,7 @@ var DOM_ACTIONS = {
   },
   'rambam-next': function (el) { pickGo(KEY_RAMBAM, +el.dataset.id); },
   'tanya-next':  function (el) { pickGo(KEY_TANYA, +el.dataset.id); },
+  'hy-day': function (el) { view.hyOff += +el.dataset.id; sRender(); window.scrollTo({ top: 0 }); },
   'moreh-open': function () {
     closeModal();
     var ms = sQ('#moreh'), box = sQ('#moreh-pages');

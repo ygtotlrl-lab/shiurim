@@ -5,8 +5,8 @@ import { ctxEpoch, ctxStale, idEq, mergeCore, pendHas, pendMark, pushDirty,
 import { MIRROR, mirrorSave } from '../core/mirror.js';
 import { logAction } from '../core/backup.js';
 import { esc, openModal, pullRender, toast, uiNoDialog } from '../core/ui.js';
-import { hebGematria } from '../core/hebrew.js';
-import { KEY_RAMBAM, KEY_TANYA, KV_TABLE, MSG_HAKDAMA, MSG_LOAD_FAIL,
+import { hebDate, hebGematria, hebIsLeap } from '../core/hebrew.js';
+import { HY, HY_MONTHS, HY_URL, KEY_RAMBAM, KEY_TANYA, KV_TABLE, MSG_HAKDAMA, MSG_LOAD_FAIL,
          MSG_HOME_BACK, MSG_MOREH_OPEN, MSG_PEREK, MSG_PICK_CUR, MSG_PICK_NONE, MSG_PICK_PARASHA_TITLE, MSG_PICK_SEARCH,
          MSG_PICK_TITLE, MSG_RAMBAM_OPENING, PARSHIOT, PUSH_TABLES, RAMBAM_LESSONS, RAMBAM_URL, SCAN, SCAN_W, TABLES,
          LESSONS, MSG_SOON, TANYA_BOOKS, TANYA_CHAPTERS, TANYA_RATIO, TANYA_URL } from './constants.js';
@@ -134,11 +134,13 @@ function tanyaChapName(c) { return c === 0 ? MSG_HAKDAMA : MSG_PEREK + hebGematr
 function tanyaLabel(c) { return PARSHIOT[c] + ' — ' + tanyaChapName(c); }
 
 // סרגל הקריאה — חזרה לסדר הלימוד, ושם השיעור שפותח את הבחירה.
+// בלי kind — הכותרת בלבד, בלי בורר (היום יום נקבע מהתאריך).
 function readBarHTML(kind, kicker, title) {
+  var lab = '<span class="rb-k">' + esc(kicker) + '</span><b>' + title + '</b>';
   return '<div class="readbar" id="readbar"><div class="in">' +
     '<button class="rb-home" data-act="go-home" aria-label="' + esc(MSG_HOME_BACK) + '">' + icon('home') + '</button>' +
-    '<button class="rb-pick" data-act="pick-open" data-k="' + kind + '"><span class="rb-k">' + esc(kicker) + '</span>' +
-    '<b>' + title + '</b>' + icon('down') + '</button></div></div>';
+    (kind ? '<button class="rb-pick" data-act="pick-open" data-k="' + kind + '">' + lab + icon('down') + '</button>'
+      : '<div class="rb-pick rb-static">' + lab + '</div>') + '</div></div>';
 }
 
 // ── בחירת שיעור — גיליון מלמטה ──
@@ -227,7 +229,7 @@ function lessonPickOpen(k) {
 // ── הסריקות ──
 // כל הסריקות בתקן אחד — תמונה מוכנה לכל עמוד, ולא קובץ שהמכשיר מפענח.
 // p/ — מאגר התניא; כל השאר — מאגר הרמב״ם.
-function fileUrl(path) { return (/^p\//.test(path) ? TANYA_URL : RAMBAM_URL) + path; }
+function fileUrl(path) { return (/^p\//.test(path) ? TANYA_URL : /^(yi|he)\//.test(path) ? HY_URL : RAMBAM_URL) + path; }
 
 function rambamDir(i) { return 'r/' + String(i + 1).padStart(3, '0'); }
 
@@ -290,6 +292,52 @@ function scanInto(box, dir, from, to) {
 
 function tanyaSheet(item) { return scanSheet('p/' + item.p + '.png', 1 / (TANYA_RATIO[item.p] || 1.25), item.w); }
 
+// ── היום יום ──
+// מפתח החודש לפי מנוע התאריך; בשנה פשוטה אדר הוא אדר א ואדר ב יחד.
+var HY_CODES_LEAP = ['tishri', 'heshvan', 'kislev', 'tevet', 'shevat', 'adar1', 'adar2', 'nisan', 'iyar', 'sivan', 'tamuz', 'av', 'elul'];
+var HY_CODES_STD = ['tishri', 'heshvan', 'kislev', 'tevet', 'shevat', 'adar', 'nisan', 'iyar', 'sivan', 'tamuz', 'av', 'elul'];
+var HY_STRIP = 12.5, HY_GAP = 0.6, HY_FOOT = 96.8;
+var hyIdx = null;
+function hyIndex() {
+  if (hyIdx) return hyIdx;
+  hyIdx = {};
+  var i = 0;
+  HY_MONTHS.forEach(function (m) { for (var d = m[1]; d <= m[2]; d++) hyIdx[m[0] + '-' + d] = i++; });
+  return hyIdx;
+}
+
+// הימים שבספר לתאריך — ל׳ חשון ול׳ כסלו, שאינם בספר, לוקחים את כ״ט.
+function hyDays(date) {
+  var h = hebDate(date);
+  if (!h.ok) return [];
+  var code = (hebIsLeap(h.year) ? HY_CODES_LEAP : HY_CODES_STD)[h.monthIndex];
+  var ix = hyIndex();
+  return (code === 'adar' ? ['adar1', 'adar2'] : [code]).map(function (c) {
+    var i = ix[c + '-' + h.day];
+    return i === undefined ? ix[c + '-' + (h.day - 1)] : i;
+  }).filter(function (i) { return i !== undefined; });
+}
+
+// אידיש — עמוד אחד ליום, והימים האחרים מולבנים ברצועות לרוחב העמוד, כי הקווים בסריקה עקומים.
+function hyYiSheet(i) {
+  var v = HY.yi[i], p = Math.floor(v / 10), slot = v % 10, seps = HY.seps[p] || [], w = [];
+  if (slot > 0) seps[slot - 1].forEach(function (y, k) { w.push([0, y, k * HY_STRIP, HY_STRIP]); });
+  if (slot < seps.length) seps[slot].forEach(function (y, k) { w.push([y, 100, k * HY_STRIP, HY_STRIP]); });
+  return scanSheet('yi/' + p + '.png', scanRatios('yi')[p - 1], w);
+}
+
+// עברית — מראש היום עד ראש הבא, גם על פני עמודים; שורת אוצר החכמה שבתחתית מולבנת.
+function hyHeSheets(i) {
+  var a = HY.he[i], b = HY.he[i + 1] || HY.heEnd, last = b[1] <= 9 ? b[0] - 1 : b[0], out = [];
+  for (var p = a[0]; p <= last; p++) {
+    var w = [];
+    if (p === a[0]) w.push([0, a[1] - HY_GAP]);
+    w.push(p === b[0] ? [b[1] - HY_GAP, 100] : [HY_FOOT, 100]);
+    out.push(scanSheet('he/' + p + '.png', scanRatios('he')[p - 1], w));
+  }
+  return out;
+}
+
 // ── הגדלה בשתי אצבעות ──
 // בזמן הצביטה — transform בלבד, חלק; בסופה הרוחב נקבע, והגלילה מיושרת לנקודת המגע.
 var PZ_MAX = 4;
@@ -338,6 +386,6 @@ function pinchReset() {
 
 function tanyaChapter(c) { return TANYA_CHAPTERS[c]; }
 
-export { el, fileUrl, lessonAppHref, lessonOpen, lessonPickOpen, localPut, pickerFilter, pinchEnd, pinchMove, pinchReset, pinchStart, pickerOpen, pushSoon, rambamCur, rambamDir, rambamLabel, readBarHTML,
+export { el, fileUrl, hyDays, hyHeSheets, hyYiSheet, lessonAppHref, lessonOpen, lessonPickOpen, localPut, pickerFilter, pinchEnd, pinchMove, pinchReset, pinchStart, pickerOpen, pushSoon, rambamCur, rambamDir, rambamLabel, readBarHTML,
          sLive, sPendKey, sPendKeyOf, sPick, sPickSet, sQ, sStripRows, sSyncNow, sSyncPull,
          scanInto, sTableMeta, tanyaChapName, tanyaChapter, tanyaCur, tanyaLabel, tanyaSheet };
