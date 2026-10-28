@@ -6,7 +6,7 @@ import { MIRROR, mirrorSave } from '../core/mirror.js';
 import { logAction } from '../core/backup.js';
 import { esc, openModal, pullRender, toast, uiNoDialog } from '../core/ui.js';
 import { hebDayLabel, hebGematria } from '../core/hebrew.js';
-import { HY, HY_MONTHS, HY_NAMES, HY_URL, KEY_HAYOM, KEY_RAMBAM, KEY_TANYA, MSG_PICK_DAY_TITLE, KV_TABLE, MSG_HAKDAMA, MSG_LOAD_FAIL,
+import { ALIYOT, CH, CH_URL, KEY_CHUMASH, MSG_PICK_ALIYAH_TITLE, HY, HY_MONTHS, HY_NAMES, HY_URL, KEY_HAYOM, KEY_RAMBAM, KEY_TANYA, MSG_PICK_DAY_TITLE, KV_TABLE, MSG_HAKDAMA, MSG_LOAD_FAIL,
          MSG_HOME_BACK, MSG_MOREH_OPEN, MSG_PEREK, MSG_PICK_CUR, MSG_PICK_NONE, MSG_PICK_PARASHA_TITLE, MSG_PICK_SEARCH,
          MSG_PICK_TITLE, MSG_RAMBAM_OPENING, PARSHIOT, PUSH_TABLES, RAMBAM_LESSONS, RAMBAM_URL, SCAN, SCAN_W, TABLES,
          LESSONS, MSG_SOON, TANYA_BOOKS, TANYA_CHAPTERS, TANYA_RATIO, TANYA_URL } from './constants.js';
@@ -166,7 +166,8 @@ function tanyaGroups() {
 var PICKERS = {
   rambam: { key: KEY_RAMBAM, cur: rambamCur, groups: rambamGroups, title: MSG_PICK_TITLE },
   tanya: { key: KEY_TANYA, cur: tanyaCur, groups: tanyaGroups, title: MSG_PICK_PARASHA_TITLE },
-  hayom: { key: KEY_HAYOM, cur: hayomCur, groups: hayomGroups, title: MSG_PICK_DAY_TITLE }
+  hayom: { key: KEY_HAYOM, cur: hayomCur, groups: hayomGroups, title: MSG_PICK_DAY_TITLE },
+  chumash: { key: KEY_CHUMASH, cur: chumashCur, groups: chumashGroups, title: MSG_PICK_ALIYAH_TITLE }
 };
 
 function pickerOpen(kind) {
@@ -237,8 +238,10 @@ function lessonPickOpen(k) {
 
 // ── הסריקות ──
 // כל הסריקות בתקן אחד — תמונה מוכנה לכל עמוד, ולא קובץ שהמכשיר מפענח.
-// p/ — מאגר התניא; כל השאר — מאגר הרמב״ם.
-function fileUrl(path) { return (/^p\//.test(path) ? TANYA_URL : /^(yi|he)\//.test(path) ? HY_URL : RAMBAM_URL) + path; }
+// p/ — מאגר התניא; yi/ he/ — היום יום; 1/–5/ — החומש; כל השאר — מאגר הרמב״ם.
+function fileUrl(path) {
+  return (/^p\//.test(path) ? TANYA_URL : /^(yi|he)\//.test(path) ? HY_URL : /^[1-5]\//.test(path) ? CH_URL : RAMBAM_URL) + path;
+}
 
 function rambamDir(i) { return 'r/' + String(i + 1).padStart(3, '0'); }
 
@@ -314,6 +317,24 @@ function hyOrder() {
     for (var d = 1; d <= 30; d++) if (at[m + '-' + d] !== undefined) hyList.push({ i: at[m + '-' + d], m: m, d: d });
   });
   return hyList;
+}
+
+// ── חומש ──
+function chumashCur() { return sPick(KEY_CHUMASH, CH.length); }
+
+function chLabel(i) { return PARSHIOT[Math.floor(i / 7)] + ' · ' + ALIYOT[i % 7]; }
+
+function chumashGroups() {
+  return PARSHIOT.map(function (name, k) {
+    return { title: name, items: ALIYOT.map(function (a, j) { return { i: k * 7 + j, num: a, name: name }; }) };
+  });
+}
+
+// עמודי העלייה, שלמים.
+function chSheets(i) {
+  var r = CH[i], rs = scanRatios(String(r[0])), out = [];
+  for (var p = r[1]; p <= r[2]; p++) out.push(scanSheet(r[0] + '/' + p + '.png', rs[p - 1]));
+  return out;
 }
 
 function hayomCur() { return sPick(KEY_HAYOM, HY.yi.length); }
@@ -402,6 +423,6 @@ function pinchReset() {
 
 function tanyaChapter(c) { return TANYA_CHAPTERS[c]; }
 
-export { PICKERS, el, fileUrl, hayomCur, hyHeSheets, hyLabel, hyStep, hyYiSheet, lessonAppHref, lessonOpen, lessonPickOpen, localPut, pickerFilter, pinchEnd, pinchMove, pinchReset, pinchStart, pickerOpen, pushSoon, rambamCur, rambamDir, rambamLabel, readBarHTML,
+export { PICKERS, chLabel, chSheets, chumashCur, el, fileUrl, hayomCur, hyHeSheets, hyLabel, hyStep, hyYiSheet, lessonAppHref, lessonOpen, lessonPickOpen, localPut, pickerFilter, pinchEnd, pinchMove, pinchReset, pinchStart, pickerOpen, pushSoon, rambamCur, rambamDir, rambamLabel, readBarHTML,
          sLive, sPendKey, sPendKeyOf, sPick, sPickSet, sQ, sStripRows, sSyncNow, sSyncPull,
          scanInto, sTableMeta, tanyaChapName, tanyaChapter, tanyaCur, tanyaLabel, tanyaSheet };

@@ -6,13 +6,14 @@ import { MIRROR, mirrorKey, mirrorTables } from '../core/mirror.js';
 import { logAwait } from '../core/backup.js';
 import { bootRun } from '../core/boot-run.js';
 import { actWire, closeAsk, closeModal, shellBare, swApply, swHideUpdate, uiNoDialog } from '../core/ui.js';
-import { KEY_HAYOM, KEY_RAMBAM, KEY_TANYA, KV_TABLE, MSG_VIL_CLOSE, MSG_VIL_OPEN, PUSH_TABLES, SUPABASE_ANON_KEY,
+import { KEY_CHUMASH, KEY_HAYOM, KEY_RAMBAM, KEY_TANYA, KV_TABLE, MSG_VIL_CLOSE, MSG_VIL_OPEN, PUSH_TABLES, SUPABASE_ANON_KEY,
          SUPABASE_URL, TABLES } from './constants.js';
 import { S, shell, view } from './state.js';
-import { PICKERS, hayomCur, lessonPickOpen, pickerFilter, pickerOpen, pinchEnd, pinchMove, pinchReset, pinchStart, rambamCur, sPendKey, sPendKeyOf, sPickSet, sQ, sStripRows, sSyncNow, sSyncPull,
+import { PICKERS, chumashCur, hayomCur, lessonPickOpen, pickerFilter, pickerOpen, pinchEnd, pinchMove, pinchReset, pinchStart, rambamCur, sPendKey, sPendKeyOf, sPickSet, sQ, sStripRows, sSyncNow, sSyncPull,
          sTableMeta, tanyaCur } from './domain.js';
 import { homeScreenHTML } from './screens/home.js';
 import { rambamMorehFill, rambamMount, rambamScreenHTML, rambamVilnaFill } from './screens/rambam.js';
+import { chumashMount, chumashScreenHTML } from './screens/chumash.js';
 import { hayomMount, hayomScreenHTML } from './screens/hayom.js';
 import { tanyaMount, tanyaScreenHTML } from './screens/tanya.js';
 
@@ -129,14 +130,15 @@ function sRender() {
   if (!root) { uiNoDialog('sRender', 'view'); return; }
   var home = view.screen === 'home';
   var cur = home ? (rambamCur() + ':' + tanyaCur()) : view.screen === 'tanya' ? tanyaCur()
-    : view.screen === 'hayom' ? hayomCur() : rambamCur();
+    : view.screen === 'hayom' ? hayomCur() : view.screen === 'chumash' ? chumashCur() : rambamCur();
   if (view.shown[view.screen] !== cur || !root.firstChild || root.dataset.screen !== view.screen) {
     root.dataset.screen = view.screen;
     if (home) root.innerHTML = homeScreenHTML();
     else if (view.screen === 'tanya') { root.innerHTML = tanyaScreenHTML(); tanyaMount(); }
     else if (view.screen === 'hayom') { root.innerHTML = hayomScreenHTML(); hayomMount(); }
+    else if (view.screen === 'chumash') { root.innerHTML = chumashScreenHTML(); chumashMount(); }
     else { root.innerHTML = rambamScreenHTML(); rambamMount(); }
-    view.shown = { home: null, rambam: null, tanya: null, hayom: null };
+    view.shown = { home: null, rambam: null, tanya: null, hayom: null, chumash: null };
     view.shown[view.screen] = cur;
   }
   document.body.classList.toggle('reading', !home);
@@ -185,6 +187,7 @@ var DOM_ACTIONS = {
   'rambam-next': function (el) { pickGo(KEY_RAMBAM, +el.dataset.id); },
   'tanya-next':  function (el) { pickGo(KEY_TANYA, +el.dataset.id); },
   'hayom-next': function (el) { pickGo(KEY_HAYOM, +el.dataset.id); },
+  'chumash-next': function (el) { pickGo(KEY_CHUMASH, +el.dataset.id); },
   'moreh-open': function () {
     closeModal();
     var ms = sQ('#moreh'), box = sQ('#moreh-pages');
