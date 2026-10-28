@@ -1,13 +1,13 @@
 // app/screens/rambam.js — רמב״ם: שלושה פרקים ליום, לפי מורה השיעור
 import { esc } from '../../core/ui.js';
-import { MSG_MOREH_CLOSE, MSG_MOREH_OPEN, MSG_NEXT_LESSON, MSG_RAMBAM, MSG_VIL_OPEN,
-         MSG_VIL_SUB, RAMBAM_LESSONS, VILNA } from '../constants.js';
+import { MSG_MOREH, MSG_MOREH_CLOSE, MSG_NEXT_LESSON, MSG_RAMBAM, MSG_VIL_OPEN,
+         RAMBAM_LESSONS, VILNA } from '../constants.js';
 import { el, rambamCur, rambamDir, rambamLabel, readBarHTML, scanInto, sQ } from '../domain.js';
 
 function rambamScreenHTML() {
   var c = rambamCur();
   return readBarHTML('rambam', MSG_RAMBAM, esc(rambamLabel(c))) +
-    '<section id="moreh" class="moreh read hidden" data-act="read-toggle"><div class="moreh-hd"><h2>' + esc(MSG_MOREH_OPEN) + '</h2>' +
+    '<section id="moreh" class="moreh read hidden" data-act="read-toggle"><div class="moreh-hd"><h2>' + esc(MSG_MOREH) + '</h2>' +
     '<button class="btn ghost" data-act="moreh-close">' + esc(MSG_MOREH_CLOSE) + '</button></div>' +
     '<div class="pages" id="moreh-pages"></div></section>' +
     '<div class="lesson read" id="now-body" data-id="' + c + '" data-act="read-toggle"></div>' +
@@ -39,7 +39,6 @@ function rambamMount() {
 }
 
 function rambamVilnaFill(vs, i) {
-  vs.appendChild(el('p', 'vsub', MSG_VIL_SUB));
   var pages = el('div', 'pages');
   vs.appendChild(pages);
   (VILNA.L[i] || []).forEach(function (seg) { scanInto(pages, 'v/' + VILNA.c[seg[0]][0], seg[1], seg[2]); });
