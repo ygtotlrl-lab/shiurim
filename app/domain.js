@@ -5,8 +5,8 @@ import { ctxEpoch, ctxStale, idEq, mergeCore, pendHas, pendMark, pushDirty,
 import { MIRROR, mirrorSave } from '../core/mirror.js';
 import { logAction } from '../core/backup.js';
 import { esc, openModal, pullRender, toast, uiNoDialog } from '../core/ui.js';
-import { hebDate, hebGematria, hebIsLeap } from '../core/hebrew.js';
-import { HY, HY_MONTHS, HY_URL, KEY_RAMBAM, KEY_TANYA, KV_TABLE, MSG_HAKDAMA, MSG_LOAD_FAIL,
+import { hebDayLabel, hebGematria } from '../core/hebrew.js';
+import { HY, HY_MONTHS, HY_NAMES, HY_URL, KEY_HAYOM, KEY_RAMBAM, KEY_TANYA, MSG_PICK_DAY_TITLE, KV_TABLE, MSG_HAKDAMA, MSG_LOAD_FAIL,
          MSG_HOME_BACK, MSG_MOREH_OPEN, MSG_PEREK, MSG_PICK_CUR, MSG_PICK_NONE, MSG_PICK_PARASHA_TITLE, MSG_PICK_SEARCH,
          MSG_PICK_TITLE, MSG_RAMBAM_OPENING, PARSHIOT, PUSH_TABLES, RAMBAM_LESSONS, RAMBAM_URL, SCAN, SCAN_W, TABLES,
          LESSONS, MSG_SOON, TANYA_BOOKS, TANYA_CHAPTERS, TANYA_RATIO, TANYA_URL } from './constants.js';
@@ -134,13 +134,11 @@ function tanyaChapName(c) { return c === 0 ? MSG_HAKDAMA : MSG_PEREK + hebGematr
 function tanyaLabel(c) { return PARSHIOT[c] + ' — ' + tanyaChapName(c); }
 
 // סרגל הקריאה — חזרה לסדר הלימוד, ושם השיעור שפותח את הבחירה.
-// בלי kind — הכותרת בלבד, בלי בורר (היום יום נקבע מהתאריך).
 function readBarHTML(kind, kicker, title) {
-  var lab = '<span class="rb-k">' + esc(kicker) + '</span><b>' + title + '</b>';
   return '<div class="readbar" id="readbar"><div class="in">' +
     '<button class="rb-home" data-act="go-home" aria-label="' + esc(MSG_HOME_BACK) + '">' + icon('home') + '</button>' +
-    (kind ? '<button class="rb-pick" data-act="pick-open" data-k="' + kind + '">' + lab + icon('down') + '</button>'
-      : '<div class="rb-pick rb-static">' + lab + '</div>') + '</div></div>';
+    '<button class="rb-pick" data-act="pick-open" data-k="' + kind + '"><span class="rb-k">' + esc(kicker) + '</span>' +
+    '<b>' + title + '</b>' + icon('down') + '</button></div></div>';
 }
 
 // ── בחירת שיעור — גיליון מלמטה ──
@@ -164,35 +162,46 @@ function tanyaGroups() {
   });
 }
 
+// לכל לימוד — מפתח הבחירה, הנוכחי, הקבוצות וכותרת הגיליון.
+var PICKERS = {
+  rambam: { key: KEY_RAMBAM, cur: rambamCur, groups: rambamGroups, title: MSG_PICK_TITLE },
+  tanya: { key: KEY_TANYA, cur: tanyaCur, groups: tanyaGroups, title: MSG_PICK_PARASHA_TITLE },
+  hayom: { key: KEY_HAYOM, cur: hayomCur, groups: hayomGroups, title: MSG_PICK_DAY_TITLE }
+};
+
 function pickerOpen(kind) {
-  var isR = kind === 'rambam';
-  var cur = isR ? rambamCur() : tanyaCur();
+  var P = PICKERS[kind], isR = kind === 'rambam';
+  if (!P) { uiNoDialog('pickerOpen', kind); return; }
+  var cur = P.cur();
   var h = '<label class="pk-search">' + icon('search') + '<input type="search" data-inp="pick-q" aria-label="' +
           esc(MSG_PICK_SEARCH) + '" placeholder="' + esc(MSG_PICK_SEARCH) + '"></label><div class="pk-list" id="pk-list">';
-  (isR ? rambamGroups() : tanyaGroups()).forEach(function (g) {
+  P.groups().forEach(function (g) {
     h += '<div class="pk-grp"><div class="pk-gt">' + esc(g.title) + '</div>' + g.items.map(function (it) {
       var on = it.i === cur;
       return '<button class="pk-it' + (on ? ' on' : '') + '" data-act="pick-go" data-k="' + kind + '" data-id="' + it.i +
-             '" data-q="' + esc(g.title + ' ' + it.num + ' ' + it.name + ' ' + (it.i + 1)) + '">' +
+             '" data-q="' + esc(pickNorm(g.title + ' ' + it.num + ' ' + it.name + ' ' + (it.i + 1))) + '">' +
              '<span class="pk-n">' + esc(it.num) + '</span><span class="pk-t">' + esc(it.name) +
              (on ? ' · ' + esc(MSG_PICK_CUR) : '') + '</span></button>';
     }).join('') + '</div>';
   });
   h += '<p class="pk-none hidden" id="pk-none">' + esc(MSG_PICK_NONE) + '</p></div>';
-  openModal(isR ? MSG_PICK_TITLE : MSG_PICK_PARASHA_TITLE, h,
+  openModal(P.title, h,
             isR ? '<button class="btn ghost" data-act="moreh-open">' + esc(MSG_MOREH_OPEN) + '</button>' : '');
   var on = sQ('#pk-list .pk-it.on');
   if (on) on.scrollIntoView({ block: 'center' });
 }
 
 // החיפוש מסתיר במקום — כותרת שכל שיעוריה הוסתרו יורדת איתם.
+// גרש וגרשיים אינם חלק מההשוואה — «יט» מוצא את «י״ט»; כל מילה בחיפוש נמצאת, בכל סדר.
+function pickNorm(t) { return String(t || '').replace(/[״׳"']/g, ''); }
+
 function pickerFilter(q) {
-  q = String(q || '').trim();
+  var ws = pickNorm(q).trim().split(/\s+/).filter(Boolean);
   var any = false;
   document.querySelectorAll('#pk-list .pk-grp').forEach(function (g) {
     var shown = 0;
     g.querySelectorAll('.pk-it').forEach(function (b) {
-      var hit = !q || b.dataset.q.indexOf(q) >= 0;
+      var hit = ws.every(function (w) { return b.dataset.q.indexOf(w) >= 0; });
       b.classList.toggle('hidden', !hit);
       if (hit) shown++;
     });
@@ -293,29 +302,36 @@ function scanInto(box, dir, from, to) {
 function tanyaSheet(item) { return scanSheet('p/' + item.p + '.png', 1 / (TANYA_RATIO[item.p] || 1.25), item.w); }
 
 // ── היום יום ──
-// מפתח החודש לפי מנוע התאריך; בשנה פשוטה אדר הוא אדר א ואדר ב יחד.
-var HY_CODES_LEAP = ['tishri', 'heshvan', 'kislev', 'tevet', 'shevat', 'adar1', 'adar2', 'nisan', 'iyar', 'sivan', 'tamuz', 'av', 'elul'];
-var HY_CODES_STD = ['tishri', 'heshvan', 'kislev', 'tevet', 'shevat', 'adar', 'nisan', 'iyar', 'sivan', 'tamuz', 'av', 'elul'];
+// הבחירה — מקום היום בספר; הסדר מתשרי עד אלול, וכסלו אחד (א–יח מתש״ד, יט–כט מתש״ג).
 var HY_STRIP = 12.5, HY_GAP = 0.6, HY_FOOT = 96.8;
-var hyIdx = null;
-function hyIndex() {
-  if (hyIdx) return hyIdx;
-  hyIdx = {};
-  var i = 0;
-  HY_MONTHS.forEach(function (m) { for (var d = m[1]; d <= m[2]; d++) hyIdx[m[0] + '-' + d] = i++; });
-  return hyIdx;
+var hyList = null;
+function hyOrder() {
+  if (hyList) return hyList;
+  var at = {}, i = 0;
+  HY_MONTHS.forEach(function (m) { for (var d = m[1]; d <= m[2]; d++) at[m[0] + '-' + d] = i++; });
+  hyList = [];
+  Object.keys(HY_NAMES).forEach(function (m) {
+    for (var d = 1; d <= 30; d++) if (at[m + '-' + d] !== undefined) hyList.push({ i: at[m + '-' + d], m: m, d: d });
+  });
+  return hyList;
 }
 
-// הימים שבספר לתאריך — ל׳ חשון ול׳ כסלו, שאינם בספר, לוקחים את כ״ט.
-function hyDays(date) {
-  var h = hebDate(date);
-  if (!h.ok) return [];
-  var code = (hebIsLeap(h.year) ? HY_CODES_LEAP : HY_CODES_STD)[h.monthIndex];
-  var ix = hyIndex();
-  return (code === 'adar' ? ['adar1', 'adar2'] : [code]).map(function (c) {
-    var i = ix[c + '-' + h.day];
-    return i === undefined ? ix[c + '-' + (h.day - 1)] : i;
-  }).filter(function (i) { return i !== undefined; });
+function hayomCur() { return sPick(KEY_HAYOM, HY.yi.length); }
+
+function hyPos(i) { return hyOrder().map(function (x) { return x.i; }).indexOf(i); }
+
+function hyLabel(i) { var x = hyOrder()[hyPos(i)]; return hebDayLabel(x.d) + ' ' + HY_NAMES[x.m]; }
+
+// הקודם והבא בסדר השנה — אחרי כ״ט אלול חוזרים לא׳ תשרי.
+function hyStep(i, k) { var L = hyOrder(); return L[(hyPos(i) + k + L.length) % L.length].i; }
+
+function hayomGroups() {
+  var out = [], last = null;
+  hyOrder().forEach(function (x) {
+    if (!last || last.m !== x.m) { last = { m: x.m, title: HY_NAMES[x.m], items: [] }; out.push(last); }
+    last.items.push({ i: x.i, num: hebDayLabel(x.d), name: HY_NAMES[x.m] });
+  });
+  return out;
 }
 
 // אידיש — עמוד אחד ליום, והימים האחרים מולבנים ברצועות לרוחב העמוד, כי הקווים בסריקה עקומים.
@@ -386,6 +402,6 @@ function pinchReset() {
 
 function tanyaChapter(c) { return TANYA_CHAPTERS[c]; }
 
-export { el, fileUrl, hyDays, hyHeSheets, hyYiSheet, lessonAppHref, lessonOpen, lessonPickOpen, localPut, pickerFilter, pinchEnd, pinchMove, pinchReset, pinchStart, pickerOpen, pushSoon, rambamCur, rambamDir, rambamLabel, readBarHTML,
+export { PICKERS, el, fileUrl, hayomCur, hyHeSheets, hyLabel, hyStep, hyYiSheet, lessonAppHref, lessonOpen, lessonPickOpen, localPut, pickerFilter, pinchEnd, pinchMove, pinchReset, pinchStart, pickerOpen, pushSoon, rambamCur, rambamDir, rambamLabel, readBarHTML,
          sLive, sPendKey, sPendKeyOf, sPick, sPickSet, sQ, sStripRows, sSyncNow, sSyncPull,
          scanInto, sTableMeta, tanyaChapName, tanyaChapter, tanyaCur, tanyaLabel, tanyaSheet };

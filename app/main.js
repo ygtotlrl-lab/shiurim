@@ -6,10 +6,10 @@ import { MIRROR, mirrorKey, mirrorTables } from '../core/mirror.js';
 import { logAwait } from '../core/backup.js';
 import { bootRun } from '../core/boot-run.js';
 import { actWire, closeAsk, closeModal, shellBare, swApply, swHideUpdate, uiNoDialog } from '../core/ui.js';
-import { KEY_RAMBAM, KEY_TANYA, KV_TABLE, MSG_VIL_CLOSE, MSG_VIL_OPEN, PUSH_TABLES, SUPABASE_ANON_KEY,
+import { KEY_HAYOM, KEY_RAMBAM, KEY_TANYA, KV_TABLE, MSG_VIL_CLOSE, MSG_VIL_OPEN, PUSH_TABLES, SUPABASE_ANON_KEY,
          SUPABASE_URL, TABLES } from './constants.js';
 import { S, shell, view } from './state.js';
-import { lessonPickOpen, pickerFilter, pickerOpen, pinchEnd, pinchMove, pinchReset, pinchStart, rambamCur, sPendKey, sPendKeyOf, sPickSet, sQ, sStripRows, sSyncNow, sSyncPull,
+import { PICKERS, hayomCur, lessonPickOpen, pickerFilter, pickerOpen, pinchEnd, pinchMove, pinchReset, pinchStart, rambamCur, sPendKey, sPendKeyOf, sPickSet, sQ, sStripRows, sSyncNow, sSyncPull,
          sTableMeta, tanyaCur } from './domain.js';
 import { homeScreenHTML } from './screens/home.js';
 import { rambamMorehFill, rambamMount, rambamScreenHTML, rambamVilnaFill } from './screens/rambam.js';
@@ -128,14 +128,13 @@ function sRender() {
   var root = sQ('#view');
   if (!root) { uiNoDialog('sRender', 'view'); return; }
   var home = view.screen === 'home';
-  var hd = hyDate();
   var cur = home ? (rambamCur() + ':' + tanyaCur()) : view.screen === 'tanya' ? tanyaCur()
-    : view.screen === 'hayom' ? hd.toDateString() : rambamCur();
+    : view.screen === 'hayom' ? hayomCur() : rambamCur();
   if (view.shown[view.screen] !== cur || !root.firstChild || root.dataset.screen !== view.screen) {
     root.dataset.screen = view.screen;
     if (home) root.innerHTML = homeScreenHTML();
     else if (view.screen === 'tanya') { root.innerHTML = tanyaScreenHTML(); tanyaMount(); }
-    else if (view.screen === 'hayom') { root.innerHTML = hayomScreenHTML(hd); hayomMount(hd); }
+    else if (view.screen === 'hayom') { root.innerHTML = hayomScreenHTML(); hayomMount(); }
     else { root.innerHTML = rambamScreenHTML(); rambamMount(); }
     view.shown = { home: null, rambam: null, tanya: null, hayom: null };
     view.shown[view.screen] = cur;
@@ -146,16 +145,8 @@ function sRender() {
   shellBare(false);
 }
 
-// היום יום — התאריך של השעון, וההזזה שבמסך.
-function hyDate() {
-  var d = new Date();
-  d.setDate(d.getDate() + view.hyOff);
-  return d;
-}
-
 function go(screen) {
   view.screen = screen;
-  view.hyOff = 0;
   sRender();
   window.scrollTo({ top: 0 });
 }
@@ -187,11 +178,13 @@ var DOM_ACTIONS = {
   'pick-open': function (el) { pickerOpen(el.dataset.k); },
   'pick-go': function (el) {
     closeModal();
-    pickGo(el.dataset.k === 'tanya' ? KEY_TANYA : KEY_RAMBAM, +el.dataset.id);
+    var P = PICKERS[el.dataset.k];
+    if (!P) { uiNoDialog('pick-go', el.dataset.k); return; }
+    pickGo(P.key, +el.dataset.id);
   },
   'rambam-next': function (el) { pickGo(KEY_RAMBAM, +el.dataset.id); },
   'tanya-next':  function (el) { pickGo(KEY_TANYA, +el.dataset.id); },
-  'hy-day': function (el) { view.hyOff += +el.dataset.id; sRender(); window.scrollTo({ top: 0 }); },
+  'hayom-next': function (el) { pickGo(KEY_HAYOM, +el.dataset.id); },
   'moreh-open': function () {
     closeModal();
     var ms = sQ('#moreh'), box = sQ('#moreh-pages');
