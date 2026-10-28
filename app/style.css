@@ -152,7 +152,6 @@ body.reading main{padding:calc(var(--readbar-h) + env(safe-area-inset-top,0px)) 
 .rb-pick b .sep{color:var(--gold);padding:0 .3em}
 .rb-pick .ico{color:var(--gold)}
 .rb-static{cursor:default}
-.read-end .btn+.btn{margin-inline-start:var(--sp-4)}
 body.calm .readbar{transform:translateY(-100%)}
 .read .pages{gap:0;overflow-x:auto;direction:ltr;touch-action:pan-x pan-y}
 /* הגדלה — הדף נמתח לרוחב --z, והגלילה לצדדים בתוך רצף העמודים. */
@@ -160,7 +159,7 @@ body.calm .readbar{transform:translateY(-100%)}
 .read .pages .pg,.read .pages .sect{width:calc(var(--z,1) * 100%)}
 .read .pages .sect{direction:rtl}
 .read .leaf{box-shadow:none;border-radius:0;border-bottom:1px solid var(--border)}
-.read-end{display:flex;justify-content:center;padding:var(--sp-7) var(--sp-6)}
+.read-end{display:flex;flex-wrap:wrap;gap:var(--sp-4);justify-content:center;padding:var(--sp-7) var(--sp-6)}
 .moreh{padding:var(--sp-6) var(--sp-4);border-bottom:2px solid var(--gold-soft)}
 .moreh-hd{display:flex;align-items:center;gap:var(--sp-5);margin-bottom:var(--sp-3)}
 .moreh-hd h2{flex:1;font-family:var(--f-display);font-size:var(--fs-5);color:var(--brand-ink)}
