@@ -343,7 +343,7 @@ var failAt = 0;
 function scanFail() {
   if (Date.now() - failAt < 5000) return;
   failAt = Date.now();
-  toast(MSG_LOAD_FAIL, null, 'bad');
+  toast(MSG_LOAD_FAIL, TOAST_MS, 'bad');
 }
 
 // עמוד סרוק — נטען רק כשהוא מתקרב למסך, ועליו רצועות ההלבנה של מה שאינו שייך לשיעור.
@@ -380,6 +380,8 @@ function scanSheet(path, ratio, whites) {
 
 // עמוד שמחוץ לסריקה המרכזית — הושלם מדפוס אחר: טוסט קצר כשהוא נכנס למסך, פעם אחת לכל הצגה.
 // רמב״ם 7/234a (וילנא) · תניא 60b ו-61a (תר״ס) · הפטרות מקראות גדולות (g2) · הפטרות החגים, דיהרנפורט (h).
+// טוסט באפליקציה — חמש שניות.
+var TOAST_MS = 5000;
 var ALT_RE = /(^laam\/7\/234a|^p\/(60b|61a)|^g\d\/|^h\/)/;
 var altIO = null, altAt = 0;
 function altWatch(fig) {
@@ -389,9 +391,9 @@ function altWatch(fig) {
       if (!e.isIntersecting) return;
       altIO.unobserve(e.target);
       // עמודים סמוכים מאותו דפוס — טוסט אחד, ולא אחד לכל עמוד.
-      if (Date.now() - altAt < 8000) return;
+      if (Date.now() - altAt < TOAST_MS + 3000) return;
       altAt = Date.now();
-      toast(MSG_ALT_PAGE, 2500);
+      toast(MSG_ALT_PAGE, TOAST_MS);
     });
   }, { threshold: 0.3 });
   altIO.observe(fig);
@@ -421,7 +423,7 @@ function fixSections(pages, secs) {
   var io = new IntersectionObserver(function (es) {
     if (!es.some(function (e) { return e.isIntersecting; })) return;
     io.disconnect();
-    empty.forEach(function (m, i) { setTimeout(function () { toast(m, 2500); }, i * 1200); });
+    empty.forEach(function (m, i) { setTimeout(function () { toast(m, TOAST_MS); }, i * 1200); });
   });
   io.observe(end);
 }
@@ -467,7 +469,7 @@ function shnayimCur() { return sPick(KEY_SHNAYIM, PARSHIOT.length); }
 function shnayimGroups() {
   return TANYA_BOOKS.map(function (b, k) {
     var end = k + 1 < TANYA_BOOKS.length ? TANYA_BOOKS[k + 1][1] : PARSHIOT.length, items = [];
-    for (var i = b[1]; i < end; i++) items.push({ i: i, num: String(i + 1), name: PARSHIOT[i] });
+    for (var i = b[1]; i < end; i++) items.push({ i: i, num: hebGematria(i + 1, ''), name: PARSHIOT[i] });
     return { title: b[0], items: items };
   });
 }

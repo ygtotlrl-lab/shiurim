@@ -171,6 +171,8 @@ body.calm .readbar{transform:translateY(-100%)}
   transition:transform var(--dur-4)}
 body.reading .botbar{display:block}
 body.calm .botbar{transform:translateY(100%)}
+/* בשיעור הטוסטים מעל שורת הניווט — גם כשהיא נאספת בגלילה, כדי שלא תסתיר אותם כשהיא חוזרת. */
+body.reading #toasts{bottom:calc(var(--toast-bottom) + env(safe-area-inset-bottom) + var(--toasts-lift) + var(--readbar-h) + var(--sp-4))}
 /* כל כפתור שליש מרוחב השורה — מרחק בין השלושה ושטח לחיצה גדול. */
 .botbar .in{display:flex;align-items:stretch;height:var(--readbar-h);
   max-width:var(--col);margin:0 auto;padding:0 var(--sp-4)}
