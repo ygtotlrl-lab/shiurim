@@ -103,6 +103,9 @@ body.shelf{background:var(--shelf)}
 .shelf-hd{display:flex;align-items:center;gap:var(--sp-5);padding:0 var(--sp-2) var(--sp-6)}
 .shelf-hd img{width:42px;height:42px;border-radius:var(--r-4)}
 .shelf-hd h1{font-family:var(--f-display);font-weight:900;font-size:var(--fs-6);color:var(--brand-ink)}
+.shelf-date{margin-inline-start:auto;display:flex;flex-direction:column;align-items:flex-end;text-align:end;line-height:var(--lh-2)}
+.shelf-date b{font-family:var(--f-display);font-size:var(--fs-3);color:var(--brand-ink)}
+.shelf-date span{font-size:var(--fs-2);color:var(--gold);font-weight:700}
 .covers{display:grid;grid-template-columns:1fr 1fr;grid-auto-flow:dense;gap:var(--sp-5)}
 .cover{position:relative;height:94px;border:0;border-radius:var(--r-2) var(--r-4) var(--r-4) var(--r-2);
   padding:var(--sp-5) var(--sp-6);display:flex;flex-direction:column;justify-content:space-between;align-items:flex-start;
