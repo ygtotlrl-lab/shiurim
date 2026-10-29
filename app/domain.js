@@ -403,6 +403,29 @@ function scanInto(box, dir, from, to) {
   for (var k = a; k <= b; k++) box.appendChild(scanSheet(dir + '/' + k + '.png', rs[k - 1]));
 }
 
+// לוח התיקון והערות ותיקונים אחרי השיעור — לכל אחד: כותרת ועמודיו, רק כשיש בו שורות לשיעור;
+// ובלי שורות — אין כותרת ואין עמוד, אלא טוסט כשסוף השיעור נכנס למסך. secs — [[כותרת, פריטים, הודעה]].
+function fixSections(pages, secs) {
+  var empty = [];
+  secs.forEach(function (sec) {
+    var items = sec[1].filter(function (it) { return it.has; });
+    if (!items.length) { empty.push(sec[2]); return; }
+    var hd = el('div', 'sect');
+    hd.appendChild(el('h3', null, sec[0]));
+    pages.appendChild(hd);
+    items.forEach(function (it) { pages.appendChild(tanyaSheet(it)); });
+  });
+  if (!empty.length) return;
+  var end = sQ('.read-end');
+  if (!end || !('IntersectionObserver' in window)) return;
+  var io = new IntersectionObserver(function (es) {
+    if (!es.some(function (e) { return e.isIntersecting; })) return;
+    io.disconnect();
+    empty.forEach(function (m, i) { setTimeout(function () { toast(m, 2500); }, i * 1200); });
+  });
+  io.observe(end);
+}
+
 function tanyaSheet(item) { return scanSheet('p/' + item.p + '.png', 1 / (TANYA_RATIO[item.p] || 1.25), item.w); }
 
 // ── היום יום ──
@@ -552,6 +575,6 @@ function pinchReset() {
 
 function tanyaChapter(c) { return TANYA_CHAPTERS[c]; }
 
-export { PICKERS, topSecHTML, haftaraOf, haftaraSheets, shnayimCur, shnayimSheets, chLabel, chSheets, chumashCur, el, fileUrl, hayomCur, hyHeSheets, hyLabel, hyStep, hyYiSheet, lessonAppHref, lessonOpen, lessonPickOpen, localPut, pickerFilter, pinchEnd, pinchMove, pinchReset, pinchStart, pickerOpen, pushSoon, rambamCur, rambamInto, rambamLabel, readBarHTML,
+export { fixSections, PICKERS, topSecHTML, haftaraOf, haftaraSheets, shnayimCur, shnayimSheets, chLabel, chSheets, chumashCur, el, fileUrl, hayomCur, hyHeSheets, hyLabel, hyStep, hyYiSheet, lessonAppHref, lessonOpen, lessonPickOpen, localPut, pickerFilter, pinchEnd, pinchMove, pinchReset, pinchStart, pickerOpen, pushSoon, rambamCur, rambamInto, rambamLabel, readBarHTML,
          sLive, sPendKey, sPendKeyOf, sPick, sPickSet, sQ, sStripRows, sSyncNow, sSyncPull,
          scanInto, sTableMeta, tanyaChapName, tanyaChapter, tanyaCur, tanyaLabel, tanyaSheet, tyCur, tyDay, tyLabel, tyShowSet, tyStep };

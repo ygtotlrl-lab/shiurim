@@ -1,7 +1,7 @@
 // app/screens/tanyay.js — תניא יומי: השיעור של היום לפי מורה השיעור, ואחריו לוח התיקון והערות ותיקונים
 import { esc } from '../../core/ui.js';
-import { MSG_LUACH, MSG_NEXT_DAY, MSG_NOTES, MSG_NO_FIXES, MSG_NO_FIXES_DAY, MSG_PREV_DAY, MSG_TANYA_DAY, MSG_YEAR_LEAP, MSG_YEAR_REG } from '../constants.js';
-import { el, readBarHTML, sQ, tanyaChapter, tanyaSheet, tyCur, tyDay, tyLabel, tyStep } from '../domain.js';
+import { MSG_LUACH, MSG_NEXT_DAY, MSG_NOTES, MSG_NO_LUACH_DAY, MSG_NO_NOTES_DAY, MSG_PREV_DAY, MSG_TANYA_DAY, MSG_YEAR_LEAP, MSG_YEAR_REG } from '../constants.js';
+import { el, fixSections, readBarHTML, sQ, tanyaChapter, tanyaSheet, tyCur, tyDay, tyLabel, tyStep } from '../domain.js';
 
 function tanyayScreenHTML() {
   var c = tyCur();
@@ -13,21 +13,17 @@ function tanyayScreenHTML() {
 }
 
 // עמודי השיעור, ומה שלפניו ואחריו מולבן; ואחריהם — לוח התיקון והערות ותיקונים: לכל פרק של לקוטי אמרים שבשיעור — שורותיו,
-// ומשאר החלקים — שורות השיעור עצמו (x[4]). עמוד שמופיע פעמיים — בהלבנה המשותפת.
+// ומשאר החלקים — שורות השיעור עצמו (x[4]); בלי שורות — טוסט. עמוד שמופיע פעמיים — בהלבנה המשותפת.
 function tanyayFill(box) {
   var x = tyDay(+box.dataset.id), pages = el('div', 'pages'), own = x[4] || [[], []];
   x[2].forEach(function (pg) { pages.appendChild(tanyaSheet({ p: pg[0], w: pg[1] })); });
-  [[MSG_LUACH, 'luach', own[0]], [MSG_NOTES, 'notes', own[1]]].forEach(function (sec) {
+  var secs = [[MSG_LUACH, 'luach', own[0], MSG_NO_LUACH_DAY], [MSG_NOTES, 'notes', own[1], MSG_NO_NOTES_DAY]].map(function (sec) {
     var items = [];
     x[3].forEach(function (ch) { items = items.concat(tanyaChapter(ch)[sec[1]]); });
     sec[2].forEach(function (it) { items.push({ p: it[0], w: it[1], has: true }); });
-    items = tyMerge(items);
-    var hd = el('div', 'sect');
-    hd.appendChild(el('h3', null, sec[0]));
-    if (!items.some(function (it) { return it.has; })) hd.appendChild(el('span', null, x[3].length ? MSG_NO_FIXES : MSG_NO_FIXES_DAY));
-    pages.appendChild(hd);
-    items.forEach(function (it) { if (it.has || !items.some(function (o) { return o.has; })) pages.appendChild(tanyaSheet(it)); });
+    return [sec[0], tyMerge(items.filter(function (it) { return it.has; })), sec[3]];
   });
+  fixSections(pages, secs);
   box.appendChild(pages);
 }
 
