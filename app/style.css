@@ -20,8 +20,8 @@
   --bad:#9D2541; --bad-soft:#F9EBEF;
   /* הדף עצמו לבן בשתי הערכות — סריקה על נייר לבן, וההלבנה מכסה בלבן. */
   --leaf:#FFFFFF;
-  /* באנר העדכון — בגווני השמנת והזהב של המדף, ולא בכחול הרך. */
-  --upd-bg:var(--gold-soft); --upd-line:var(--gold);
+  /* באנר העדכון — עור חום והטבעת זהב, כמו הכריכות במדף. */
+  --upd-bg:var(--cv-brown); --upd-ink:var(--emboss);
   /* מדף הכריכות — עור, הטבעת זהב ובד; העור והזהב זהים בשתי הערכות, כמו כריכה אמיתית. */
   --shelf:#EFE9DC; --cloth:#E4DCCB; --cloth-ink:#9A8F7A; --cloth-line:#CFC3A8;
   --cv-navy:#1E3A6E; --cv-bord:#6E1E2A; --cv-brown:#5B3A22; --cv-green:#2E4A3A;
