@@ -229,3 +229,8 @@ body.calm .botbar{transform:translateY(100%)}
 /* העובי נקבע כאן ולא ב-icon() — גוף הפונקציה אינו נערך לאפליקציה אחת. */
 .ico{width:1.15em;height:1.15em;flex:none;stroke-width:1.75}
 
+
+/* מתג השנה בבורר של תניא יומי — שתי אפשרויות, והנבחרת בכחול. */
+.ty-seg{display:flex;gap:var(--sp-2);margin:0 var(--sp-6) var(--sp-4);padding:3px;border:1px solid var(--border);border-radius:var(--r-5);background:var(--bg)}
+.ty-opt{flex:1;border:0;background:none;border-radius:var(--r-4);padding:var(--sp-3);font:600 var(--fs-3)/1.2 var(--f-body);color:var(--text-2);cursor:pointer}
+.ty-opt.on{background:var(--brand-fill);color:var(--on-brand)}

@@ -5,11 +5,11 @@ import { ctxEpoch, ctxStale, idEq, mergeCore, pendHas, pendMark, pushDirty,
 import { MIRROR, mirrorSave } from '../core/mirror.js';
 import { logAction } from '../core/backup.js';
 import { esc, openModal, pullRender, toast, uiNoDialog } from '../core/ui.js';
-import { hebDayLabel, hebGematria } from '../core/hebrew.js';
+import { hebDate, hebDayLabel, hebGematria, hebIsLeap, hebMonthNames } from '../core/hebrew.js';
 import { ALIYOT, CH, CH_URL, HAFTAROT, KEY_CHUMASH, KEY_SHNAYIM, MSG_PICK_ALIYAH_TITLE, HY, HY_MONTHS, HY_NAMES, HY_URL, KEY_HAYOM, KEY_RAMBAM, KEY_TANYA, MSG_PICK_DAY_TITLE, KV_TABLE, MSG_HAKDAMA, MSG_LOAD_FAIL,
          MSG_MINHAG_OPEN, MSG_MOREH_CLOSE, MSG_MOREH_OPEN, MSG_PEREK, MSG_SPECIAL_OPEN, MSG_PICK_CUR, MSG_PICK_NONE, MSG_PICK_PARASHA_TITLE, MSG_PICK_SEARCH,
          MSG_PICK_TITLE, MSG_RAMBAM_OPENING, PARSHIOT, PUSH_TABLES, MT_URL, RAMBAM_LESSONS, RAMBAM_MAP, RAMBAM_VOLS, RAMBAM_X, SCAN, SCAN_W, TABLES,
-         LESSONS, MSG_ALT_PAGE, MSG_BOOKS_TITLE, MSG_SOON, TANYA_BOOKS, TANYA_CHAPTERS, TANYA_RATIO, TANYA_URL } from './constants.js';
+         KEY_TANYA_DAY, MSG_YEAR_LEAP, MSG_YEAR_REG, TY, TY_MONTHS, LESSONS, MSG_ALT_PAGE, MSG_BOOKS_TITLE, MSG_SOON, TANYA_BOOKS, TANYA_CHAPTERS, TANYA_RATIO, TANYA_URL } from './constants.js';
 import { S, shell } from './state.js';
 import { icon } from './icons.js';
 
@@ -111,6 +111,17 @@ function sPick(key, max) {
   return 0;
 }
 
+// הערך השמור כמות שהוא, או null כשאין שורה — תניא יומי בוחר אז את היום של היום.
+function sPickRaw(key) {
+  var rows = sLive(MIRROR[KV_TABLE]), i, v;
+  for (i = 0; i < rows.length; i++) {
+    if (rows[i].key !== key) continue;
+    v = kvParse(key, rows[i].value).value;
+    return typeof v === 'number' ? v : null;
+  }
+  return null;
+}
+
 function sPickSet(key, v) {
   var rows = MIRROR[KV_TABLE], row = null, i;
   for (i = 0; i < rows.length; i++) if (rows[i].key === key) { row = rows[i]; break; }
@@ -125,6 +136,53 @@ function sPickSet(key, v) {
 function rambamCur() { return sPick(KEY_RAMBAM, RAMBAM_LESSONS.length); }
 
 function tanyaCur() { return sPick(KEY_TANYA, PARSHIOT.length); }
+
+// ── תניא יומי ──
+// הבחירה — מספר אחד: היום בשנה רגילה (0…), או 1000 ומעלה — בשנה מעוברת. המחזור מתחיל בי״ט כסלו,
+// והחלוקה — לפי השנה שבה התחיל: שנה מעוברת אם בה אדר שני.
+function tyToday() {
+  var h = hebDate(new Date());
+  if (!h.ok) return 0;
+  var y = h.year, mi = h.monthIndex, d = h.day;
+  if (mi < 2 || (mi === 2 && d < 19)) y -= 1;
+  var leap = hebIsLeap(y), names = hebMonthNames(h.year), mn = names[mi] || '';
+  var key = mn === 'אדר א׳' ? 6 : mn === 'אדר ב׳' ? 7 : TY_MONTHS.indexOf(mn === 'מנחם אב' ? 'אב' : mn);
+  var L = leap ? TY.L : TY.R, lab = hebDayLabel(d).replace(/[״׳]/g, '');
+  for (var i = 0; i < L.length; i++) if (L[i][1] === key && L[i][0] === lab) return (leap ? 1000 : 0) + i;
+  return leap ? 1000 : 0;
+}
+function tyCur() {
+  var v = sPickRaw(KEY_TANYA_DAY);
+  if (v === null) return tyToday();
+  if (v >= 1000 && v - 1000 < TY.L.length) return v;
+  return v >= 0 && v < TY.R.length ? v : 0;
+}
+function tyDay(v) { return v >= 1000 ? TY.L[v - 1000] : TY.R[v]; }
+function tyLabel(v) { var x = tyDay(v); return hebDayLabel(tyNum(x[0])) + ' ' + TY_MONTHS[x[1]]; }
+function tyNum(t) { var G = { 'א': 1, 'ב': 2, 'ג': 3, 'ד': 4, 'ה': 5, 'ו': 6, 'ז': 7, 'ח': 8, 'ט': 9, 'י': 10, 'כ': 20, 'ל': 30 }, n = 0; for (var k = 0; k < t.length; k++) n += G[t[k]] || 0; return n; }
+// הקודם והבא — בתוך אותה חלוקה, ואחרי כ״ט אלול חוזרים לא׳ תשרי.
+function tyStep(v, d) {
+  var base = v >= 1000 ? 1000 : 0, n = base ? TY.L.length : TY.R.length;
+  return base + ((v - base + d + n) % n);
+}
+// הבורר מציג חלוקה אחת — של היום הנבחר, או זו שהמתג שבראשו בחר.
+var tyShow = null;
+function tyShowSet(t) { tyShow = t; }
+function tyGroups() {
+  var cur = tyCur(), leap = tyShow ? tyShow === 'L' : cur >= 1000, L = leap ? TY.L : TY.R, base = leap ? 1000 : 0, out = [], last = null;
+  L.forEach(function (x, i) {
+    if (!last || last.m !== x[1]) { last = { m: x[1], title: TY_MONTHS[x[1]], items: [] }; out.push(last); }
+    last.items.push({ i: base + i, num: hebDayLabel(tyNum(x[0])), name: TY_MONTHS[x[1]] });
+  });
+  return out;
+}
+function tyHead() {
+  var leap = tyShow ? tyShow === 'L' : tyCur() >= 1000;
+  return '<div class="ty-seg">' + [['R', MSG_YEAR_REG], ['L', MSG_YEAR_LEAP]].map(function (o) {
+    var on = (o[0] === 'L') === leap;
+    return '<button class="ty-opt' + (on ? ' on' : '') + '" data-act="ty-type" data-id="' + o[0] + '">' + esc(o[1]) + '</button>';
+  }).join('') + '</div>';
+}
 
 // ── תוויות ──
 function rambamLabel(i) { return hebGematria(i + 1, '') + '. ' + RAMBAM_LESSONS[i][0]; }
@@ -169,14 +227,15 @@ var PICKERS = {
   tanya: { key: KEY_TANYA, cur: tanyaCur, groups: tanyaGroups, title: MSG_PICK_PARASHA_TITLE },
   hayom: { key: KEY_HAYOM, cur: hayomCur, groups: hayomGroups, title: MSG_PICK_DAY_TITLE },
   chumash: { key: KEY_CHUMASH, cur: chumashCur, groups: chumashGroups, title: MSG_PICK_ALIYAH_TITLE },
-  shnayim: { key: KEY_SHNAYIM, cur: shnayimCur, groups: shnayimGroups, title: MSG_PICK_PARASHA_TITLE }
+  shnayim: { key: KEY_SHNAYIM, cur: shnayimCur, groups: shnayimGroups, title: MSG_PICK_PARASHA_TITLE },
+  tanyay: { key: KEY_TANYA_DAY, cur: tyCur, groups: tyGroups, title: MSG_PICK_DAY_TITLE, head: tyHead }
 };
 
 function pickerOpen(kind) {
   var P = PICKERS[kind], isR = kind === 'rambam';
   if (!P) { uiNoDialog('pickerOpen', kind); return; }
   var cur = P.cur();
-  var h = '<label class="pk-search">' + icon('search') + '<input type="search" data-inp="pick-q" aria-label="' +
+  var h = (P.head ? P.head() : '') + '<label class="pk-search">' + icon('search') + '<input type="search" data-inp="pick-q" aria-label="' +
           esc(MSG_PICK_SEARCH) + '" placeholder="' + esc(MSG_PICK_SEARCH) + '"></label><div class="pk-list" id="pk-list">';
   P.groups().forEach(function (g) {
     h += '<div class="pk-grp"><div class="pk-gt">' + esc(g.title) + '</div>' + g.items.map(function (it) {
@@ -495,4 +554,4 @@ function tanyaChapter(c) { return TANYA_CHAPTERS[c]; }
 
 export { PICKERS, topSecHTML, haftaraOf, haftaraSheets, shnayimCur, shnayimSheets, chLabel, chSheets, chumashCur, el, fileUrl, hayomCur, hyHeSheets, hyLabel, hyStep, hyYiSheet, lessonAppHref, lessonOpen, lessonPickOpen, localPut, pickerFilter, pinchEnd, pinchMove, pinchReset, pinchStart, pickerOpen, pushSoon, rambamCur, rambamInto, rambamLabel, readBarHTML,
          sLive, sPendKey, sPendKeyOf, sPick, sPickSet, sQ, sStripRows, sSyncNow, sSyncPull,
-         scanInto, sTableMeta, tanyaChapName, tanyaChapter, tanyaCur, tanyaLabel, tanyaSheet };
+         scanInto, sTableMeta, tanyaChapName, tanyaChapter, tanyaCur, tanyaLabel, tanyaSheet, tyCur, tyDay, tyLabel, tyShowSet, tyStep };

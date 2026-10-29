@@ -6,14 +6,15 @@ import { MIRROR, mirrorKey, mirrorTables } from '../core/mirror.js';
 import { logAwait } from '../core/backup.js';
 import { bootRun } from '../core/boot-run.js';
 import { actWire, closeAsk, closeModal, esc, shellBare, swApply, swHideUpdate, uiNoDialog } from '../core/ui.js';
-import { KEY_CHUMASH, KEY_SHNAYIM, KEY_HAYOM, KEY_RAMBAM, KEY_TANYA, KV_TABLE, MSG_NAV_BACK, MSG_NAV_EXIT, MSG_NAV_HOME, MSG_VIL_CLOSE, MSG_VIL_OPEN, PUSH_TABLES, SUPABASE_ANON_KEY,
+import { KEY_CHUMASH, KEY_SHNAYIM, KEY_TANYA_DAY, KEY_HAYOM, KEY_RAMBAM, KEY_TANYA, KV_TABLE, MSG_NAV_BACK, MSG_NAV_EXIT, MSG_NAV_HOME, MSG_VIL_CLOSE, MSG_VIL_OPEN, PUSH_TABLES, SUPABASE_ANON_KEY,
          SUPABASE_URL, TABLES } from './constants.js';
 import { S, shell, view } from './state.js';
 import { PICKERS, chumashCur, shnayimCur, hayomCur, lessonPickOpen, pickerFilter, pickerOpen, pinchEnd, pinchMove, pinchReset, pinchStart, rambamCur, sPendKey, sPendKeyOf, sPickSet, sQ, sStripRows, sSyncNow, sSyncPull,
-         sTableMeta, tanyaCur } from './domain.js';
+         sTableMeta, tanyaCur, tyCur, tyShowSet } from './domain.js';
 import { booksPick, homeScreenHTML } from './screens/home.js';
 import { rambamMorehFill, rambamMount, rambamScreenHTML, rambamVilnaFill } from './screens/rambam.js';
 import { chumashMount, chumashScreenHTML } from './screens/chumash.js';
+import { tanyayMount, tanyayScreenHTML } from './screens/tanyay.js';
 import { minhagFill, shnayimMount, shnayimScreenHTML, specialFill, specialPick } from './screens/shnayim.js';
 import { hayomMount, hayomScreenHTML } from './screens/hayom.js';
 import { tanyaMount, tanyaScreenHTML } from './screens/tanya.js';
@@ -132,7 +133,7 @@ function sRender() {
   if (!root) { uiNoDialog('sRender', 'view'); return; }
   var home = view.screen === 'home';
   var cur = home ? (rambamCur() + ':' + tanyaCur()) : view.screen === 'tanya' ? tanyaCur()
-    : view.screen === 'hayom' ? hayomCur() : view.screen === 'chumash' ? chumashCur() : view.screen === 'shnayim' ? shnayimCur() : rambamCur();
+    : view.screen === 'hayom' ? hayomCur() : view.screen === 'chumash' ? chumashCur() : view.screen === 'shnayim' ? shnayimCur() : view.screen === 'tanyay' ? tyCur() : rambamCur();
   if (view.shown[view.screen] !== cur || !root.firstChild || root.dataset.screen !== view.screen) {
     root.dataset.screen = view.screen;
     if (home) root.innerHTML = homeScreenHTML();
@@ -140,8 +141,9 @@ function sRender() {
     else if (view.screen === 'hayom') { root.innerHTML = hayomScreenHTML(); hayomMount(); }
     else if (view.screen === 'chumash') { root.innerHTML = chumashScreenHTML(); chumashMount(); }
     else if (view.screen === 'shnayim') { root.innerHTML = shnayimScreenHTML(); shnayimMount(); }
+    else if (view.screen === 'tanyay') { root.innerHTML = tanyayScreenHTML(); tanyayMount(); }
     else { root.innerHTML = rambamScreenHTML(); rambamMount(); }
-    view.shown = { home: null, rambam: null, tanya: null, hayom: null, chumash: null, shnayim: null };
+    view.shown = { home: null, rambam: null, tanya: null, hayom: null, chumash: null, shnayim: null, tanyay: null };
     view.shown[view.screen] = cur;
   }
   document.body.classList.toggle('reading', !home);
@@ -229,7 +231,7 @@ var DOM_ACTIONS = {
   'lesson-pick': function (el) { lessonPickOpen(el.dataset.id); },
   'lesson-go': function (el) { closeModal(); go(el.dataset.id); },
   'read-toggle': function () { if (!pinchReset()) document.body.classList.toggle('calm'); },
-  'pick-open': function (el) { pickerOpen(el.dataset.k); },
+  'pick-open': function (el) { tyShowSet(null); pickerOpen(el.dataset.k); },
   'pick-go': function (el) {
     closeModal();
     var P = PICKERS[el.dataset.k];
@@ -241,6 +243,9 @@ var DOM_ACTIONS = {
   'hayom-next': function (el) { pickGo(KEY_HAYOM, +el.dataset.id); },
   'chumash-next': function (el) { pickGo(KEY_CHUMASH, +el.dataset.id); },
   'shnayim-next': function (el) { pickGo(KEY_SHNAYIM, +el.dataset.id); },
+  'tanyay-next': function (el) { pickGo(KEY_TANYA_DAY, +el.dataset.id); },
+  // מתג השנה בבורר — מחליף את החלוקה המוצגת; הבחירה נשמרת רק בלחיצה על יום.
+  'ty-type': function (el) { tyShowSet(el.dataset.id); pickerOpen('tanyay'); },
   // התוספות בראש השיעור — נפתחות מתחתית הבורר ונסגרות ב-✕.
   'minhag-open': function () { secOpen('minhag', minhagFill); },
   'special-open': function () { specialPick(); },
