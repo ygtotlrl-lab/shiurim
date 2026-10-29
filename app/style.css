@@ -166,9 +166,10 @@ body.calm .readbar{transform:translateY(-100%)}
   transition:transform var(--dur-4)}
 body.reading .botbar{display:block}
 body.calm .botbar{transform:translateY(100%)}
-.botbar .in{display:flex;align-items:center;justify-content:center;gap:var(--sp-7);height:var(--readbar-h);
-  max-width:var(--col);margin:0 auto}
-.bb-it{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;min-width:64px;
+/* כל כפתור שליש מרוחב השורה — מרחק בין השלושה ושטח לחיצה גדול. */
+.botbar .in{display:flex;align-items:stretch;height:var(--readbar-h);
+  max-width:var(--col);margin:0 auto;padding:0 var(--sp-4)}
+.bb-it{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;min-width:0;
   border:0;background:none;color:var(--brand-ink);font:600 var(--fs-2)/1 var(--f-body);text-decoration:none;cursor:pointer}
 .bb-it .ico{width:22px;height:22px}
 .read .pages{gap:0;overflow-x:auto;direction:ltr;touch-action:pan-x pan-y}
@@ -222,3 +223,8 @@ body.calm .botbar{transform:translateY(100%)}
 /* ── אייקונים ── */
 /* העובי נקבע כאן ולא ב-icon() — גוף הפונקציה אינו נערך לאפליקציה אחת. */
 .ico{width:1.15em;height:1.15em;flex:none;stroke-width:1.75}
+
+/* באנר העדכון — בגווני השמנת של האפליקציה ולא בכחול מלא; הכפתור בכחול המלכותי. */
+#updater .in{background:var(--gold-soft);color:var(--brand-ink);border:1px solid var(--gold)}
+#updater button{background:var(--brand-fill);color:var(--on-brand)}
+#updater button.x{background:none;color:var(--brand-ink)}
