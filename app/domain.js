@@ -301,7 +301,7 @@ function topSecHTML(id, title) {
 // כל הסריקות בתקן אחד — תמונה מוכנה לכל עמוד, ולא קובץ שהמכשיר מפענח.
 // p/ — מאגר התניא; yi/ he/ — היום יום; 1/–5/ ו-m/ — החומש וספר המנהגים; laam/ vilna/ — מאגר משנה תורה.
 function fileUrl(path) {
-  return (/^p\//.test(path) ? TANYA_URL : /^(yi|he)\//.test(path) ? HY_URL : /^([1-5]|m|g[1-5])\//.test(path) ? CH_URL : MT_URL) + path;
+  return (/^p\//.test(path) ? TANYA_URL : /^(yi|he)\//.test(path) ? HY_URL : /^([1-5]|m|h|g[1-5])\//.test(path) ? CH_URL : MT_URL) + path;
 }
 
 // שיעור רמב״ם — העמודים מהספרים השלמים של רמב״ם לעם, וההלבנה של השיעור הסמוך מעליהם (RAMBAM_MAP).
@@ -379,8 +379,8 @@ function scanSheet(path, ratio, whites) {
 }
 
 // עמוד שמחוץ לסריקה המרכזית — הושלם מדפוס אחר: טוסט קצר כשהוא נכנס למסך, פעם אחת לכל הצגה.
-// רמב״ם 7/234a (וילנא) · תניא 60b ו-61a (תר״ס) · הפטרות מקראות גדולות (g2).
-var ALT_RE = /(^laam\/7\/234a|^p\/(60b|61a)|^g\d\/)/;
+// רמב״ם 7/234a (וילנא) · תניא 60b ו-61a (תר״ס) · הפטרות מקראות גדולות (g2) · הפטרות החגים, דיהרנפורט (h).
+var ALT_RE = /(^laam\/7\/234a|^p\/(60b|61a)|^g\d\/|^h\/)/;
 var altIO = null, altAt = 0;
 function altWatch(fig) {
   if (!('IntersectionObserver' in window)) return;
