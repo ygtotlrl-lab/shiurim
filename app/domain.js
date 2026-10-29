@@ -9,7 +9,7 @@ import { hebDayLabel, hebGematria } from '../core/hebrew.js';
 import { ALIYOT, CH, CH_URL, HAFTAROT, KEY_CHUMASH, KEY_SHNAYIM, MSG_PICK_ALIYAH_TITLE, HY, HY_MONTHS, HY_NAMES, HY_URL, KEY_HAYOM, KEY_RAMBAM, KEY_TANYA, MSG_PICK_DAY_TITLE, KV_TABLE, MSG_HAKDAMA, MSG_LOAD_FAIL,
          MSG_MINHAG_OPEN, MSG_MOREH_CLOSE, MSG_MOREH_OPEN, MSG_PEREK, MSG_SPECIAL_OPEN, MSG_PICK_CUR, MSG_PICK_NONE, MSG_PICK_PARASHA_TITLE, MSG_PICK_SEARCH,
          MSG_PICK_TITLE, MSG_RAMBAM_OPENING, PARSHIOT, PUSH_TABLES, MT_URL, RAMBAM_LESSONS, RAMBAM_MAP, RAMBAM_VOLS, RAMBAM_X, SCAN, SCAN_W, TABLES,
-         LESSONS, MSG_BOOKS_TITLE, MSG_SOON, TANYA_BOOKS, TANYA_CHAPTERS, TANYA_RATIO, TANYA_URL } from './constants.js';
+         LESSONS, MSG_ALT_PAGE, MSG_BOOKS_TITLE, MSG_SOON, TANYA_BOOKS, TANYA_CHAPTERS, TANYA_RATIO, TANYA_URL } from './constants.js';
 import { S, shell } from './state.js';
 import { icon } from './icons.js';
 
@@ -305,6 +305,7 @@ function scanSheet(path, ratio, whites) {
   im.onerror = scanFail;
   im.src = fileUrl(path);
   sh.sheet.appendChild(im);
+  if (ALT_RE.test(path)) altWatch(sh.fig);
   (whites || []).forEach(function (r) {
     var w = el('div', 'wh');
     w.style.setProperty('--top', r[0] + '%');
@@ -316,6 +317,25 @@ function scanSheet(path, ratio, whites) {
     sh.sheet.appendChild(w);
   });
   return sh.fig;
+}
+
+// עמוד שמחוץ לסריקה המרכזית — הושלם מדפוס אחר: טוסט קצר כשהוא נכנס למסך, פעם אחת לכל הצגה.
+// רמב״ם 7/234a (וילנא) · תניא 60b ו-61a (תר״ס) · הפטרות מקראות גדולות (g2).
+var ALT_RE = /(^laam\/7\/234a|^p\/(60b|61a)|^g\d\/)/;
+var altIO = null, altAt = 0;
+function altWatch(fig) {
+  if (!('IntersectionObserver' in window)) return;
+  if (!altIO) altIO = new IntersectionObserver(function (es) {
+    es.forEach(function (e) {
+      if (!e.isIntersecting) return;
+      altIO.unobserve(e.target);
+      // עמודים סמוכים מאותו דפוס — טוסט אחד, ולא אחד לכל עמוד.
+      if (Date.now() - altAt < 8000) return;
+      altAt = Date.now();
+      toast(MSG_ALT_PAGE, 2500);
+    });
+  }, { threshold: 0.3 });
+  altIO.observe(fig);
 }
 
 // כל עמודי תיקייה, או טווח ממנה.
