@@ -357,6 +357,16 @@ function scanSheet(path, ratio, whites) {
   if (ALT_RE.test(path)) altWatch(sh.fig);
   (whites || []).forEach(function (r) {
     var w = el('div', 'wh');
+    if (r.length === 3) {
+      // רצועה משופעת — [ראש, תחתית] בקצה הימני, ו-r[2] — ההסטה בקצה השמאלי (עמוד שנסרק עקום).
+      var t = Math.min(r[0], r[0] + r[2]), b = Math.max(r[1], r[1] + r[2]), H = b - t;
+      var q = function (y) { return ((y - t) / H * 100).toFixed(3) + '%'; };
+      w.style.setProperty('--top', t + '%');
+      w.style.setProperty('--h', H + '%');
+      w.style.setProperty('--clip', 'polygon(100% ' + q(r[0]) + ', 0 ' + q(r[0] + r[2]) + ', 0 ' + q(r[1] + r[2]) + ', 100% ' + q(r[1]) + ')');
+      sh.sheet.appendChild(w);
+      return;
+    }
     w.style.setProperty('--top', r[0] + '%');
     w.style.setProperty('--h', (r[1] - r[0]) + '%');
     if (r.length > 2) {

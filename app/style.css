@@ -86,7 +86,7 @@ main{padding:0 var(--sp-6); padding-bottom:calc(var(--sp-6) + env(safe-area-inse
 .leaf img,.leaf canvas{display:block;width:100%;height:auto}
 /* רצועת הלבנה — מיקומה נגזר מנתוני הפרק ונכתב למשתנים. */
 .leaf .wh{position:absolute;top:var(--top);height:var(--h);left:var(--left,0);width:var(--w,100%);
-  background:var(--leaf);box-shadow:0 0 0 1px var(--leaf)}
+  background:var(--leaf);box-shadow:0 0 0 1px var(--leaf);clip-path:var(--clip,none)}
 
 /* ── מסכים ── */
 .sub{color:var(--text-2);font-size:var(--fs-3);margin:0 0 var(--sp-4)}
