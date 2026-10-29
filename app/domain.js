@@ -9,7 +9,7 @@ import { hebDayLabel, hebGematria } from '../core/hebrew.js';
 import { ALIYOT, CH, CH_URL, HAFTAROT, KEY_CHUMASH, KEY_SHNAYIM, MSG_PICK_ALIYAH_TITLE, HY, HY_MONTHS, HY_NAMES, HY_URL, KEY_HAYOM, KEY_RAMBAM, KEY_TANYA, MSG_PICK_DAY_TITLE, KV_TABLE, MSG_HAKDAMA, MSG_LOAD_FAIL,
          MSG_MINHAG_OPEN, MSG_MOREH_CLOSE, MSG_MOREH_OPEN, MSG_PEREK, MSG_SPECIAL_OPEN, MSG_PICK_CUR, MSG_PICK_NONE, MSG_PICK_PARASHA_TITLE, MSG_PICK_SEARCH,
          MSG_PICK_TITLE, MSG_RAMBAM_OPENING, PARSHIOT, PUSH_TABLES, MT_URL, RAMBAM_LESSONS, RAMBAM_MAP, RAMBAM_VOLS, RAMBAM_X, SCAN, SCAN_W, TABLES,
-         LESSONS, MSG_SOON, TANYA_BOOKS, TANYA_CHAPTERS, TANYA_RATIO, TANYA_URL } from './constants.js';
+         LESSONS, MSG_BOOKS_TITLE, MSG_SOON, TANYA_BOOKS, TANYA_CHAPTERS, TANYA_RATIO, TANYA_URL } from './constants.js';
 import { S, shell } from './state.js';
 import { icon } from './icons.js';
 
@@ -137,7 +137,9 @@ function tanyaLabel(c) { return PARSHIOT[c] + ' — ' + tanyaChapName(c); }
 function readBarHTML(kind, kicker, title) {
   return '<div class="readbar" id="readbar"><div class="in">' +
     '<button class="rb-pick" data-act="pick-open" data-k="' + kind + '"><span class="rb-k">' + esc(kicker) + '</span>' +
-    '<b>' + title + '</b>' + icon('down') + '</button></div></div>';
+    '<b>' + title + '</b>' + icon('down') + '</button>' +
+    '<button class="rb-books" data-act="books-open" aria-label="' + esc(MSG_BOOKS_TITLE) + '" title="' + esc(MSG_BOOKS_TITLE) + '">' +
+    icon('books') + '</button></div></div>';
 }
 
 // ── בחירת שיעור — גיליון מלמטה ──

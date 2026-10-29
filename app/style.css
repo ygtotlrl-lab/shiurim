@@ -118,6 +118,12 @@ body.shelf{background:var(--shelf)}
 .cover:not(.off):active{filter:brightness(1.12)}
 .cover.off{cursor:default;background:var(--cloth);color:var(--cloth-ink);box-shadow:inset 6px 0 0 rgba(0,0,0,.05),0 1px 2px rgba(40,25,10,.08)}
 .cover.off::after{border-color:var(--cloth-line)}
+/* בגיליון החלפת הספר — אותן כריכות, נמוכות יותר, והספר הפתוח בטבעת זהב. */
+.covers.mini{overflow-y:auto;padding:var(--sp-4) var(--sp-6) var(--sp-6)}
+.covers.mini .cover{height:64px}
+.covers.mini .cover.wide{height:58px}
+.covers.mini .cv-t{font-size:var(--fs-4)}
+.cover.cur{box-shadow:inset 6px 0 0 rgba(0,0,0,.18),0 0 0 3px var(--gold)}
 
 /* בחירת חלק — גיליון מלמטה; חלק בלי תוכן — באפור ו«בקרוב». */
 .lp-soon{flex:none;font-size:var(--fs-2);color:var(--text-3);border:1px solid var(--border);border-radius:var(--r-7);
@@ -139,8 +145,13 @@ body.reading main{padding:calc(var(--readbar-h) + env(safe-area-inset-top,0px)) 
 .readbar{position:fixed;inset-block-start:0;inset-inline:0;z-index:var(--z-2);
   padding-top:env(safe-area-inset-top,0px);background:var(--card);border-bottom:1px solid var(--border);
   transition:transform var(--dur-4)}
-.readbar .in{display:flex;align-items:center;justify-content:center;height:var(--readbar-h);
-  max-width:var(--col);margin:0 auto;padding:0 var(--sp-4)}
+.readbar .in{position:relative;display:flex;align-items:center;justify-content:center;height:var(--readbar-h);
+  max-width:var(--col);margin:0 auto;padding:0 48px}
+/* החלפת ספר — כפתור קטן בקצה השמאלי של הסרגל; הריפוד שמשני הצדדים שומר את שם השיעור באמצע. */
+.rb-books{position:absolute;inset-inline-end:var(--sp-3);top:50%;transform:translateY(-50%);width:38px;height:38px;
+  display:grid;place-items:center;border:1px solid var(--border);border-radius:var(--r-4);background:var(--bg);
+  color:var(--gold);cursor:pointer;padding:0}
+.rb-books .ico{width:20px;height:20px}
 .rb-pick{flex:0 1 auto;min-width:0;max-width:100%;display:flex;align-items:center;gap:var(--sp-3);background:var(--bg);
   border:1px solid var(--border);border-radius:var(--r-5);padding:var(--sp-3) var(--sp-5);cursor:pointer;text-align:start}
 .rb-k{flex:none;font-size:var(--fs-2);font-weight:700;color:var(--gold)}
@@ -183,6 +194,9 @@ body.calm .botbar{transform:translateY(100%)}
 #modal .sheet-hd h3{flex:1;font-family:var(--f-display);font-size:var(--fs-5);color:var(--brand-ink)}
 #modal .sheet-bd{flex:1;min-height:0;display:flex;flex-direction:column}
 #modal .sheet-ft{justify-content:center;padding:var(--sp-4) var(--sp-6);border-top:1px solid var(--border)}
+/* כפתורי התחתית אחד מעל השני, ברוחב הגיליון — כולם באותו גודל, ברמב״ם ובשניים מקרא. */
+#modal .sheet-ft:not(:empty){flex-direction:column;align-items:stretch;gap:var(--sp-3)}
+#modal .sheet-ft .btn{width:100%;justify-content:center}
 .pk-search{display:flex;align-items:center;gap:var(--sp-4);margin:0 var(--sp-6) var(--sp-4);padding:0 var(--sp-5);
   background:var(--bg);border:1px solid var(--border);border-radius:var(--r-5);color:var(--text-3)}
 .pk-search:focus-within{border-color:var(--gold)}

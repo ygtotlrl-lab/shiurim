@@ -11,7 +11,7 @@ import { KEY_CHUMASH, KEY_SHNAYIM, KEY_HAYOM, KEY_RAMBAM, KEY_TANYA, KV_TABLE, M
 import { S, shell, view } from './state.js';
 import { PICKERS, chumashCur, shnayimCur, hayomCur, lessonPickOpen, pickerFilter, pickerOpen, pinchEnd, pinchMove, pinchReset, pinchStart, rambamCur, sPendKey, sPendKeyOf, sPickSet, sQ, sStripRows, sSyncNow, sSyncPull,
          sTableMeta, tanyaCur } from './domain.js';
-import { homeScreenHTML } from './screens/home.js';
+import { booksPick, homeScreenHTML } from './screens/home.js';
 import { rambamMorehFill, rambamMount, rambamScreenHTML, rambamVilnaFill } from './screens/rambam.js';
 import { chumashMount, chumashScreenHTML } from './screens/chumash.js';
 import { minhagFill, shnayimMount, shnayimScreenHTML, specialFill, specialPick } from './screens/shnayim.js';
@@ -222,7 +222,8 @@ function secOpen(id, fill) {
 
 // ── מפת הפעולות ──
 var DOM_ACTIONS = {
-  'tab-go': function (el) { go(el.dataset.id); },
+  'tab-go': function (el) { closeModal(); go(el.dataset.id); },
+  'books-open': function () { booksPick(view.screen); },
   'go-home': function () { go('home'); },
   'nav-back': function () { navBack(); },
   'lesson-pick': function (el) { lessonPickOpen(el.dataset.id); },
