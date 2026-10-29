@@ -5,7 +5,7 @@ import { ctxEpoch, ctxStale, idEq, mergeCore, pendHas, pendMark, pushDirty,
 import { MIRROR, mirrorSave } from '../core/mirror.js';
 import { logAction } from '../core/backup.js';
 import { esc, openModal, pullRender, toast, uiNoDialog } from '../core/ui.js';
-import { hebDate, hebDayLabel, hebGematria, hebIsLeap } from '../core/hebrew.js';
+import { hebDayLabel, hebGematria } from '../core/hebrew.js';
 import { ALIYOT, CH, CH_URL, HAFTAROT, KEY_CHUMASH, KEY_SHNAYIM, MSG_PICK_ALIYAH_TITLE, HY, HY_MONTHS, HY_NAMES, HY_URL, KEY_HAYOM, KEY_RAMBAM, KEY_TANYA, MSG_PICK_DAY_TITLE, KV_TABLE, MSG_HAKDAMA, MSG_LOAD_FAIL,
          MSG_MINHAG_OPEN, MSG_MOREH_CLOSE, MSG_MOREH_OPEN, MSG_PEREK, MSG_SPECIAL_OPEN, MSG_PICK_CUR, MSG_PICK_NONE, MSG_PICK_PARASHA_TITLE, MSG_PICK_SEARCH,
          MSG_PICK_TITLE, MSG_RAMBAM_OPENING, PARSHIOT, PUSH_TABLES, MT_URL, RAMBAM_LESSONS, RAMBAM_MAP, RAMBAM_VOLS, RAMBAM_X, SCAN, SCAN_W, TABLES,
@@ -111,7 +111,7 @@ function sPick(key, max) {
   return 0;
 }
 
-// הערך השמור כמות שהוא, או null כשאין שורה — תניא יומי בוחר אז את היום של היום.
+// הערך השמור כמות שהוא, או null כשאין שורה — לתניא יומי, שבו 1000 ומעלה הוא שנה מעוברת.
 function sPickRaw(key) {
   var rows = sLive(MIRROR[KV_TABLE]), i, v;
   for (i = 0; i < rows.length; i++) {
@@ -140,17 +140,10 @@ function tanyaCur() { return sPick(KEY_TANYA, PARSHIOT.length); }
 // ── תניא יומי ──
 // הבחירה — מספר אחד: היום בשנה רגילה (0…), או 1000 ומעלה — בשנה מעוברת. המחזור מתחיל בי״ט כסלו,
 // והחלוקה — לפי השנה שבה התחיל: שנה מעוברת אם בה אדר שני.
-function tyYearLeap() {
-  var h = hebDate(new Date());
-  if (!h.ok) return false;
-  var y = h.year;
-  if (h.monthIndex < 2 || (h.monthIndex === 2 && h.day < 19)) y -= 1;
-  return hebIsLeap(y);
-}
-// בלי בחירה — א׳ תשרי, בחלוקה של השנה הנוכחית; האפליקציה אינה קוראת את הלוח מעבר לזה.
+// בלי בחירה — א׳ תשרי בשנה רגילה; האפליקציה אינה בוחרת לבד לפי הלוח.
 function tyCur() {
   var v = sPickRaw(KEY_TANYA_DAY);
-  if (v === null) return tyYearLeap() ? 1000 : 0;
+  if (v === null) return 0;
   if (v >= 1000 && v - 1000 < TY.L.length) return v;
   return v >= 0 && v < TY.R.length ? v : 0;
 }
