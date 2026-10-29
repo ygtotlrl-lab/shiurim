@@ -1,15 +1,13 @@
 // app/screens/rambam.js — רמב״ם: שלושה פרקים ליום, לפי מורה השיעור
 import { esc } from '../../core/ui.js';
-import { MSG_MOREH, MSG_MOREH_CLOSE, MSG_NEXT_LESSON, MSG_PREV_LESSON, MSG_RAMBAM, MSG_VIL_OPEN,
+import { MSG_MOREH, MSG_NEXT_LESSON, MSG_PREV_LESSON, MSG_RAMBAM, MSG_VIL_OPEN,
          RAMBAM_LESSONS, VILNA } from '../constants.js';
-import { el, rambamCur, rambamInto, rambamLabel, readBarHTML, scanInto, sQ } from '../domain.js';
+import { el, rambamCur, rambamInto, rambamLabel, readBarHTML, scanInto, sQ, topSecHTML } from '../domain.js';
 
 function rambamScreenHTML() {
   var c = rambamCur();
   return readBarHTML('rambam', MSG_RAMBAM, esc(rambamLabel(c))) +
-    '<section id="moreh" class="moreh read hidden" data-act="read-toggle"><div class="moreh-hd"><h2>' + esc(MSG_MOREH) + '</h2>' +
-    '<button class="btn ghost" data-act="moreh-close">' + esc(MSG_MOREH_CLOSE) + '</button></div>' +
-    '<div class="pages" id="moreh-pages"></div></section>' +
+    topSecHTML('moreh', MSG_MOREH) +
     '<div class="lesson read" id="now-body" data-id="' + c + '" data-act="read-toggle"></div>' +
     '<div class="read-end">' +
     (c > 0 ? '<button class="btn ghost" data-act="rambam-next" data-id="' + (c - 1) + '">' + esc(MSG_PREV_LESSON) + '</button>' : '') +

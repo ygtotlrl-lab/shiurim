@@ -1,12 +1,14 @@
 // app/screens/shnayim.js — שניים מקרא: הפרשה מראשון עד שביעי, ובסופה ההפטרה לפי מנהג חב״ד
 import { esc, openModal } from '../../core/ui.js';
-import { HAFTAROT, MSG_HAFTARA, MSG_MINHAG_OPEN, MSG_NEXT_PARASHA, MSG_NO_HAFTARA, MSG_PREV_PARASHA, MSG_SHNAYIM,
-         MSG_SPECIAL_OPEN, MSG_SPECIAL_TITLE, PARSHIOT } from '../constants.js';
-import { el, haftaraOf, haftaraSheets, readBarHTML, scanInto, shnayimCur, shnayimSheets, sQ } from '../domain.js';
+import { HAFTAROT, MSG_HAFTARA, MSG_MINHAG_TITLE, MSG_NEXT_PARASHA, MSG_NO_HAFTARA, MSG_PREV_PARASHA, MSG_SHNAYIM,
+         MSG_SPECIAL_TITLE, PARSHIOT } from '../constants.js';
+import { el, haftaraOf, haftaraSheets, readBarHTML, scanInto, shnayimCur, shnayimSheets, sQ, topSecHTML } from '../domain.js';
 
+// בראש השיעור — מנהגי חב״ד בהפטרות וההפטרה המיוחדת, נפתחים מתחתית הבורר ונסגרים ב-✕.
 function shnayimScreenHTML() {
   var c = shnayimCur();
   return readBarHTML('shnayim', MSG_SHNAYIM, '<span class="ps">' + esc(PARSHIOT[c]) + '</span>') +
+    topSecHTML('minhag', MSG_MINHAG_TITLE) + topSecHTML('special', MSG_SPECIAL_TITLE) +
     '<div class="lesson read" id="now-body" data-id="' + c + '" data-act="read-toggle"></div>' +
     '<div class="read-end">' +
     (c > 0 ? '<button class="btn ghost" data-act="shnayim-next" data-id="' + (c - 1) + '">' +
@@ -23,22 +25,13 @@ function sectEl(title, note) {
   return hd;
 }
 
-// הפרשה, ההפטרה, ושני כפתורי «פתיחת…»: ספר המנהגים, וההפטרות המיוחדות — כל אחד נפתח בתוך השיעור.
+// הפרשה, ואחריה ההפטרה.
 function shnayimFill(box) {
   var c = +box.dataset.id, pages = el('div', 'pages'), h = haftaraOf(c);
   shnayimSheets(c).forEach(function (f) { pages.appendChild(f); });
   pages.appendChild(sectEl(MSG_HAFTARA + PARSHIOT[c], h ? '' : MSG_NO_HAFTARA));
   haftaraSheets(h).forEach(function (f) { pages.appendChild(f); });
   box.appendChild(pages);
-  var row = el('div', 'nextrow opens');
-  [['minhag-toggle', MSG_MINHAG_OPEN], ['special-open', MSG_SPECIAL_OPEN]].forEach(function (b) {
-    var x = el('button', 'btn ghost', b[1]);
-    x.setAttribute('data-act', b[0]);
-    row.appendChild(x);
-  });
-  box.appendChild(row);
-  var mn = el('section', 'vil hidden'); mn.setAttribute('data-minhag', ''); box.appendChild(mn);
-  var sp = el('section', 'vil hidden'); sp.setAttribute('data-special', ''); box.appendChild(sp);
 }
 
 function shnayimMount() {
@@ -47,11 +40,7 @@ function shnayimMount() {
 }
 
 // ספר המנהגים, «סדר ההפטרות שיש בהם חלוקי מנהגים» — שני עמודים שלמים.
-function minhagFill(sec) {
-  var pages = el('div', 'pages');
-  scanInto(pages, 'm');
-  sec.appendChild(pages);
-}
+function minhagFill(box) { scanInto(box, 'm'); }
 
 function specialPick() {
   openModal(MSG_SPECIAL_TITLE, '<div class="pk-list">' + HAFTAROT.S.map(function (s, i) {
@@ -59,13 +48,14 @@ function specialPick() {
   }).join('') + '</div>', '');
 }
 
-function specialFill(sec, i) {
-  var s = HAFTAROT.S[i];
-  sec.textContent = '';
-  var pages = el('div', 'pages');
-  pages.appendChild(sectEl(MSG_HAFTARA + s[0]));
-  haftaraSheets(s[1]).forEach(function (f) { pages.appendChild(f); });
-  sec.appendChild(pages);
+// ההפטרה המיוחדת — הכותרת ועמודיה, במקום הקודמת.
+function specialFill(i) {
+  var s = HAFTAROT.S[i], t = sQ('#special-t'), box = sQ('#special-pages');
+  if (!s || !box) return false;
+  if (t) t.textContent = MSG_HAFTARA + s[0];
+  box.textContent = '';
+  haftaraSheets(s[1]).forEach(function (f) { box.appendChild(f); });
+  return true;
 }
 
 export { minhagFill, shnayimMount, shnayimScreenHTML, specialFill, specialPick };

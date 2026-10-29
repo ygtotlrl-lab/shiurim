@@ -6,7 +6,7 @@ import { MIRROR, mirrorKey, mirrorTables } from '../core/mirror.js';
 import { logAwait } from '../core/backup.js';
 import { bootRun } from '../core/boot-run.js';
 import { actWire, closeAsk, closeModal, esc, shellBare, swApply, swHideUpdate, uiNoDialog } from '../core/ui.js';
-import { KEY_CHUMASH, KEY_SHNAYIM, MSG_MINHAG_CLOSE, MSG_MINHAG_OPEN, KEY_HAYOM, KEY_RAMBAM, KEY_TANYA, KV_TABLE, MSG_NAV_BACK, MSG_NAV_EXIT, MSG_NAV_HOME, MSG_VIL_CLOSE, MSG_VIL_OPEN, PUSH_TABLES, SUPABASE_ANON_KEY,
+import { KEY_CHUMASH, KEY_SHNAYIM, KEY_HAYOM, KEY_RAMBAM, KEY_TANYA, KV_TABLE, MSG_NAV_BACK, MSG_NAV_EXIT, MSG_NAV_HOME, MSG_VIL_CLOSE, MSG_VIL_OPEN, PUSH_TABLES, SUPABASE_ANON_KEY,
          SUPABASE_URL, TABLES } from './constants.js';
 import { S, shell, view } from './state.js';
 import { PICKERS, chumashCur, shnayimCur, hayomCur, lessonPickOpen, pickerFilter, pickerOpen, pinchEnd, pinchMove, pinchReset, pinchStart, rambamCur, sPendKey, sPendKeyOf, sPickSet, sQ, sStripRows, sSyncNow, sSyncPull,
@@ -210,6 +210,16 @@ function calmOnScroll() {
   lastY = y;
 }
 
+// תוספת בראש השיעור — הגיליון נסגר, התוספת נפתחת (ומתמלאת בפעם הראשונה) והמסך עולה אליה.
+function secOpen(id, fill) {
+  closeModal();
+  var sec = sQ('#' + id), box = sQ('#' + id + '-pages');
+  if (!sec || !box) { uiNoDialog('secOpen', id); return; }
+  sec.classList.remove('hidden');
+  if (fill && !box.firstChild) fill(box);
+  sec.scrollIntoView({ block: 'start' });
+}
+
 // ── מפת הפעולות ──
 var DOM_ACTIONS = {
   'tab-go': function (el) { go(el.dataset.id); },
@@ -230,32 +240,15 @@ var DOM_ACTIONS = {
   'hayom-next': function (el) { pickGo(KEY_HAYOM, +el.dataset.id); },
   'chumash-next': function (el) { pickGo(KEY_CHUMASH, +el.dataset.id); },
   'shnayim-next': function (el) { pickGo(KEY_SHNAYIM, +el.dataset.id); },
-  'minhag-toggle': function (el) {
-    var sec = sQ('[data-minhag]');
-    if (!sec) { uiNoDialog('minhag-toggle', 'minhag'); return; }
-    var open = sec.classList.toggle('hidden') === false;
-    el.textContent = open ? MSG_MINHAG_CLOSE : MSG_MINHAG_OPEN;
-    if (open && !sec.firstChild) minhagFill(sec);
-    if (open) sec.scrollIntoView({ behavior: 'smooth', block: 'start' });
-  },
+  // התוספות בראש השיעור — נפתחות מתחתית הבורר ונסגרות ב-✕.
+  'minhag-open': function () { secOpen('minhag', minhagFill); },
   'special-open': function () { specialPick(); },
   'special-go': function (el) {
-    closeModal();
-    var sec = sQ('[data-special]');
-    if (!sec) { uiNoDialog('special-go', 'special'); return; }
-    specialFill(sec, +el.dataset.id);
-    sec.classList.remove('hidden');
-    sec.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    if (!specialFill(+el.dataset.id)) { uiNoDialog('special-go', 'special'); return; }
+    secOpen('special');
   },
-  'moreh-open': function () {
-    closeModal();
-    var ms = sQ('#moreh'), box = sQ('#moreh-pages');
-    if (!ms || !box) { uiNoDialog('moreh-open', 'moreh'); return; }
-    ms.classList.remove('hidden');
-    if (!box.firstChild) rambamMorehFill(box);
-    ms.scrollIntoView({ block: 'start' });
-  },
-  'moreh-close': function () { var ms = sQ('#moreh'); if (ms) ms.classList.add('hidden'); },
+  'sec-close': function (el) { var x = sQ('#' + el.dataset.id); if (x) x.classList.add('hidden'); },
+  'moreh-open': function () { secOpen('moreh', rambamMorehFill); },
   'vilna-toggle': function (el) {
     var lesson = el.closest('.lesson'), vs = lesson && lesson.querySelector('[data-vil]');
     if (!vs) { uiNoDialog('vilna-toggle', el.dataset.id); return; }

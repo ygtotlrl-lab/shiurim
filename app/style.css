@@ -89,8 +89,6 @@ main{padding:0 var(--sp-6); padding-bottom:calc(var(--sp-6) + env(safe-area-inse
 /* ── מסכים ── */
 .sub{color:var(--text-2);font-size:var(--fs-3);margin:0 0 var(--sp-4)}
 .nextrow{display:flex;justify-content:center;margin-top:var(--sp-6)}
-.nextrow.opens{flex-direction:column;align-items:center;gap:var(--sp-3)}
-.nextrow.opens .btn{min-width:min(100%,20rem)}
 .sect{width:100%;display:flex;align-items:baseline;gap:var(--sp-5);margin-top:var(--sp-6);
   padding:var(--sp-5) var(--sp-6) 0;border-top:2px solid var(--gold-soft)}
 .sect h3{font-family:var(--f-display);font-weight:900;font-size:var(--fs-5);color:var(--brand-ink)}
@@ -169,9 +167,11 @@ body.calm .botbar{transform:translateY(100%)}
 .read .pages .sect{direction:rtl}
 .read .leaf{box-shadow:none;border-radius:0;border-bottom:1px solid var(--border)}
 .read-end{display:flex;flex-wrap:wrap;gap:var(--sp-4);justify-content:center;padding:var(--sp-7) var(--sp-6)}
-.moreh{padding:var(--sp-6) var(--sp-4);border-bottom:2px solid var(--gold-soft)}
+.moreh{padding:var(--sp-6) var(--sp-4);border-bottom:2px solid var(--gold-soft);scroll-margin-top:calc(var(--readbar-h) + 8px)}
 .moreh-hd{display:flex;align-items:center;gap:var(--sp-5);margin-bottom:var(--sp-3)}
 .moreh-hd h2{flex:1;font-family:var(--f-display);font-size:var(--fs-5);color:var(--brand-ink)}
+.x-btn{flex:none;width:40px;height:40px;border:1px solid var(--border);border-radius:50%;background:var(--card);color:var(--text-2);display:grid;place-items:center;cursor:pointer}
+.x-btn .ico{width:20px;height:20px}
 
 /* בחירת שיעור — גיליון מלמטה: חיפוש, קבוצה לכל הלכות או חומש, והנוכחי בזהב. */
 #modal{align-items:flex-end}

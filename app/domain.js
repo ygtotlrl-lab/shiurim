@@ -7,7 +7,7 @@ import { logAction } from '../core/backup.js';
 import { esc, openModal, pullRender, toast, uiNoDialog } from '../core/ui.js';
 import { hebDayLabel, hebGematria } from '../core/hebrew.js';
 import { ALIYOT, CH, CH_URL, HAFTAROT, KEY_CHUMASH, KEY_SHNAYIM, MSG_PICK_ALIYAH_TITLE, HY, HY_MONTHS, HY_NAMES, HY_URL, KEY_HAYOM, KEY_RAMBAM, KEY_TANYA, MSG_PICK_DAY_TITLE, KV_TABLE, MSG_HAKDAMA, MSG_LOAD_FAIL,
-         MSG_MOREH_OPEN, MSG_PEREK, MSG_PICK_CUR, MSG_PICK_NONE, MSG_PICK_PARASHA_TITLE, MSG_PICK_SEARCH,
+         MSG_MINHAG_OPEN, MSG_MOREH_CLOSE, MSG_MOREH_OPEN, MSG_PEREK, MSG_SPECIAL_OPEN, MSG_PICK_CUR, MSG_PICK_NONE, MSG_PICK_PARASHA_TITLE, MSG_PICK_SEARCH,
          MSG_PICK_TITLE, MSG_RAMBAM_OPENING, PARSHIOT, PUSH_TABLES, MT_URL, RAMBAM_LESSONS, RAMBAM_MAP, RAMBAM_VOLS, RAMBAM_X, SCAN, SCAN_W, TABLES,
          LESSONS, MSG_SOON, TANYA_BOOKS, TANYA_CHAPTERS, TANYA_RATIO, TANYA_URL } from './constants.js';
 import { S, shell } from './state.js';
@@ -186,8 +186,10 @@ function pickerOpen(kind) {
     }).join('') + '</div>';
   });
   h += '<p class="pk-none hidden" id="pk-none">' + esc(MSG_PICK_NONE) + '</p></div>';
-  openModal(P.title, h,
-            isR ? '<button class="btn ghost" data-act="moreh-open">' + esc(MSG_MOREH_OPEN) + '</button>' : '');
+  var foot = isR ? '<button class="btn ghost" data-act="moreh-open">' + esc(MSG_MOREH_OPEN) + '</button>'
+    : kind === 'shnayim' ? '<button class="btn ghost" data-act="minhag-open">' + esc(MSG_MINHAG_OPEN) + '</button>' +
+      '<button class="btn ghost" data-act="special-open">' + esc(MSG_SPECIAL_OPEN) + '</button>' : '';
+  openModal(P.title, h, foot);
   var on = sQ('#pk-list .pk-it.on');
   if (on) on.scrollIntoView({ block: 'center' });
 }
@@ -234,6 +236,14 @@ function lessonPickOpen(k) {
     return '<button class="lp-it" data-act="lesson-go" data-id="' + esc(s.screen) + '"><span class="lp-t">' + esc(s.lab) +
       '</span><span class="lp-go">' + icon('down') + '</span></button>';
   }).join('') + '</div>', '');
+}
+
+// ── תוספת בראש השיעור ──
+// מורה השיעור, מנהגי חב״ד בהפטרות וההפטרה המיוחדת — נפתחים מתחתית הבורר, בראש המסך, ונסגרים ב-✕.
+function topSecHTML(id, title) {
+  return '<section id="' + id + '" class="moreh read hidden" data-act="read-toggle"><div class="moreh-hd"><h2 id="' + id + '-t">' + esc(title) + '</h2>' +
+    '<button class="x-btn" data-act="sec-close" data-id="' + id + '" aria-label="' + esc(MSG_MOREH_CLOSE) + '">' + icon('close') + '</button></div>' +
+    '<div class="pages" id="' + id + '-pages"></div></section>';
 }
 
 // ── הסריקות ──
@@ -461,6 +471,6 @@ function pinchReset() {
 
 function tanyaChapter(c) { return TANYA_CHAPTERS[c]; }
 
-export { PICKERS, haftaraOf, haftaraSheets, shnayimCur, shnayimSheets, chLabel, chSheets, chumashCur, el, fileUrl, hayomCur, hyHeSheets, hyLabel, hyStep, hyYiSheet, lessonAppHref, lessonOpen, lessonPickOpen, localPut, pickerFilter, pinchEnd, pinchMove, pinchReset, pinchStart, pickerOpen, pushSoon, rambamCur, rambamInto, rambamLabel, readBarHTML,
+export { PICKERS, topSecHTML, haftaraOf, haftaraSheets, shnayimCur, shnayimSheets, chLabel, chSheets, chumashCur, el, fileUrl, hayomCur, hyHeSheets, hyLabel, hyStep, hyYiSheet, lessonAppHref, lessonOpen, lessonPickOpen, localPut, pickerFilter, pinchEnd, pinchMove, pinchReset, pinchStart, pickerOpen, pushSoon, rambamCur, rambamInto, rambamLabel, readBarHTML,
          sLive, sPendKey, sPendKeyOf, sPick, sPickSet, sQ, sStripRows, sSyncNow, sSyncPull,
          scanInto, sTableMeta, tanyaChapName, tanyaChapter, tanyaCur, tanyaLabel, tanyaSheet };
