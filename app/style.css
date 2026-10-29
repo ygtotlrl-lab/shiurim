@@ -20,6 +20,8 @@
   --bad:#9D2541; --bad-soft:#F9EBEF;
   /* הדף עצמו לבן בשתי הערכות — סריקה על נייר לבן, וההלבנה מכסה בלבן. */
   --leaf:#FFFFFF;
+  /* באנר העדכון — בגווני השמנת והזהב של המדף, ולא בכחול הרך. */
+  --upd-bg:var(--gold-soft); --upd-line:var(--gold);
   /* מדף הכריכות — עור, הטבעת זהב ובד; העור והזהב זהים בשתי הערכות, כמו כריכה אמיתית. */
   --shelf:#EFE9DC; --cloth:#E4DCCB; --cloth-ink:#9A8F7A; --cloth-line:#CFC3A8;
   --cv-navy:#1E3A6E; --cv-bord:#6E1E2A; --cv-brown:#5B3A22; --cv-green:#2E4A3A;
@@ -224,7 +226,3 @@ body.calm .botbar{transform:translateY(100%)}
 /* העובי נקבע כאן ולא ב-icon() — גוף הפונקציה אינו נערך לאפליקציה אחת. */
 .ico{width:1.15em;height:1.15em;flex:none;stroke-width:1.75}
 
-/* באנר העדכון — בגווני השמנת של האפליקציה ולא בכחול מלא; הכפתור בכחול המלכותי. */
-#updater .in{background:var(--gold-soft);color:var(--brand-ink);border:1px solid var(--gold)}
-#updater button{background:var(--brand-fill);color:var(--on-brand)}
-#updater button.x{background:none;color:var(--brand-ink)}
