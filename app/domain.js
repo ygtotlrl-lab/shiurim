@@ -252,7 +252,7 @@ function topSecHTML(id, title) {
 // כל הסריקות בתקן אחד — תמונה מוכנה לכל עמוד, ולא קובץ שהמכשיר מפענח.
 // p/ — מאגר התניא; yi/ he/ — היום יום; 1/–5/ ו-m/ — החומש וספר המנהגים; laam/ vilna/ — מאגר משנה תורה.
 function fileUrl(path) {
-  return (/^p\//.test(path) ? TANYA_URL : /^(yi|he)\//.test(path) ? HY_URL : /^([1-5]|m)\//.test(path) ? CH_URL : MT_URL) + path;
+  return (/^p\//.test(path) ? TANYA_URL : /^(yi|he)\//.test(path) ? HY_URL : /^([1-5]|m|g[1-5])\//.test(path) ? CH_URL : MT_URL) + path;
 }
 
 // שיעור רמב״ם — העמודים מהספרים השלמים של רמב״ם לעם, וההלבנה של השיעור הסמוך מעליהם (RAMBAM_MAP).
