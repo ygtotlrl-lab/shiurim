@@ -11,6 +11,7 @@ import { ALIYOT, CH, CH_URL, HAFTAROT, KEY_CHUMASH, KEY_SHNAYIM, MSG_PICK_ALIYAH
          MSG_PICK_TITLE, MSG_RAMBAM_OPENING, PARSHIOT, PUSH_TABLES, MT_URL, RAMBAM_LESSONS, RAMBAM_MAP, RAMBAM_VOLS, RAMBAM_X, SCAN, SCAN_W, TABLES,
          KEY_TANYA_DAY, MSG_YEAR_LEAP, MSG_YEAR_REG, TY, TY_MONTHS, LESSONS, MSG_ALT_PAGE, MSG_BOOKS_TITLE, MSG_SOON, TANYA_BOOKS, TANYA_CHAPTERS, TANYA_RATIO, TANYA_URL } from './constants.js';
 import { S, shell } from './state.js';
+import { BOOK_URL } from './bookdata.js';
 import { icon } from './icons.js';
 
 // ── מטא ──
@@ -119,6 +120,13 @@ function sPickRaw(key) {
     v = kvParse(key, rows[i].value).value;
     return typeof v === 'number' ? v : null;
   }
+  return null;
+}
+
+// הערך השמור כמות שהוא (מערך, אובייקט) — לרשימת האנשים בתהלים; null כשאין שורה.
+function sPickRawAny(key) {
+  var rows = sLive(MIRROR[KV_TABLE]), i;
+  for (i = 0; i < rows.length; i++) if (rows[i].key === key) return kvParse(key, rows[i].value).value;
   return null;
 }
 
@@ -301,6 +309,8 @@ function topSecHTML(id, title) {
 // כל הסריקות בתקן אחד — תמונה מוכנה לכל עמוד, ולא קובץ שהמכשיר מפענח.
 // p/ — מאגר התניא; yi/ he/ — היום יום; 1/–5/ ו-m/ — החומש וספר המנהגים; laam/ vilna/ — מאגר משנה תורה.
 function fileUrl(path) {
+  var d = path.split('/')[0];
+  if (BOOK_URL[d]) return BOOK_URL[d] + path;
   return (/^p\//.test(path) ? TANYA_URL : /^(yi|he)\//.test(path) ? HY_URL : /^([1-5]|m|h|g[1-5])\//.test(path) ? CH_URL : MT_URL) + path;
 }
 
@@ -347,7 +357,7 @@ function scanFail() {
 }
 
 // עמוד סרוק — נטען רק כשהוא מתקרב למסך, ועליו רצועות ההלבנה של מה שאינו שייך לשיעור.
-function scanSheet(path, ratio, whites) {
+function scanSheet(path, ratio, whites, shade) {
   var sh = sheetEl(ratio);
   var im = new Image();
   im.loading = 'lazy'; im.decoding = 'async'; im.alt = '';
@@ -356,7 +366,7 @@ function scanSheet(path, ratio, whites) {
   sh.sheet.appendChild(im);
   if (ALT_RE.test(path)) altWatch(sh.fig);
   (whites || []).forEach(function (r) {
-    var w = el('div', 'wh');
+    var w = el('div', shade ? 'wh shade' : 'wh');
     if (r.length === 3) {
       // רצועה משופעת — [ראש, תחתית] בקצה הימני, ו-r[2] — ההסטה בקצה השמאלי (עמוד שנסרק עקום).
       var t = Math.min(r[0], r[0] + r[2]), b = Math.max(r[1], r[1] + r[2]), H = b - t;
@@ -577,6 +587,6 @@ function pinchReset() {
 
 function tanyaChapter(c) { return TANYA_CHAPTERS[c]; }
 
-export { fixSections, PICKERS, topSecHTML, haftaraOf, haftaraSheets, shnayimCur, shnayimSheets, chLabel, chSheets, chumashCur, el, fileUrl, hayomCur, hyHeSheets, hyLabel, hyStep, hyYiSheet, lessonAppHref, lessonOpen, lessonPickOpen, localPut, pickerFilter, pinchEnd, pinchMove, pinchReset, pinchStart, pickerOpen, pushSoon, rambamCur, rambamInto, rambamLabel, readBarHTML,
+export { scanSheet, sPickRawAny, fixSections, PICKERS, topSecHTML, haftaraOf, haftaraSheets, shnayimCur, shnayimSheets, chLabel, chSheets, chumashCur, el, fileUrl, hayomCur, hyHeSheets, hyLabel, hyStep, hyYiSheet, lessonAppHref, lessonOpen, lessonPickOpen, localPut, pickerFilter, pinchEnd, pinchMove, pinchReset, pinchStart, pickerOpen, pushSoon, rambamCur, rambamInto, rambamLabel, readBarHTML,
          sLive, sPendKey, sPendKeyOf, sPick, sPickSet, sQ, sStripRows, sSyncNow, sSyncPull,
          scanInto, sTableMeta, tanyaChapName, tanyaChapter, tanyaCur, tanyaLabel, tanyaSheet, tyCur, tyDay, tyLabel, tyShowSet, tyStep };

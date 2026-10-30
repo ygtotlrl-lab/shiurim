@@ -148,20 +148,27 @@ var LESSONS = [
   { k: 'chumash', lab: 'חומש', cover: 'brown', subs: [
     { k: 'chumash-yomi', lab: MSG_CHUMASH, screen: 'chumash' },
     { k: 'shnayim-mikra', lab: MSG_SHNAYIM, screen: 'shnayim' },
-    { k: 'tanach', lab: 'תנ״ך' }
+    { k: 'tanach', lab: 'תנ״ך', screen: 'bk-tanach' }
   ] },
-  { k: 'tehillim', lab: 'תהלים', cover: 'green', app: self.APP.android.launch.tehillim },
+  { k: 'tehillim', lab: 'תהלים', cover: 'green', subs: [
+    { k: 'tehillim-yomi', lab: 'תהלים יומי', screen: 'bk-thd' },
+    { k: 'tehillim-people', lab: 'פרקים אישיים', screen: 'bk-thp' },
+    { k: 'tehillim-week', lab: 'תהלים ימי השבוע', screen: 'bk-thw' }
+  ] },
   { k: 'tanya', lab: 'תניא', cover: 'bord', subs: [
     { k: 'tanya-yomi', lab: MSG_TANYA_DAY, screen: 'tanyay' },
     { k: 'tanya-week', lab: MSG_TANYA_WEEK, screen: 'tanya' }
   ] },
   { k: 'rambam', lab: MSG_RAMBAM, cover: 'navy', wide: true, screen: 'rambam' },
-  { k: 'chassidishe-parsha', lab: 'החסידישע פרשה', cover: 'bord' },
-  { k: 'mishnayot', lab: 'משניות', cover: 'navy' },
-  { k: 'shulchan-aruch', lab: 'שולחן ערוך הרב', cover: 'brown' },
-  { k: 'ein-yaakov', lab: 'עין יעקב', cover: 'green' },
+  { k: 'chassidishe-parsha', lab: 'החסידישע פרשה', cover: 'bord', screen: 'bk-chassidus' },
+  { k: 'mishnayot', lab: 'משניות', cover: 'navy', screen: 'bk-mishnayot' },
+  { k: 'shulchan-aruch', lab: 'שולחן ערוך הרב', cover: 'brown', screen: 'bk-sa' },
+  { k: 'ein-yaakov', lab: 'עין יעקב', cover: 'green', screen: 'bk-ey' },
   { k: 'shas', lab: 'ש״ס', cover: 'brown', app: self.APP.android.launch.shas },
-  { k: 'siddur', lab: 'סידור', cover: 'bord' }
+  { k: 'siddur', lab: 'סידור', cover: 'bord', subs: [
+    { k: 'siddur-tefilot', lab: 'תפילות', screen: 'bk-sid' },
+    { k: 'siddur-kria', lab: 'קריאת התורה', screen: 'bk-sidk' }
+  ] }
 ];
 
 // ── שניים מקרא ──

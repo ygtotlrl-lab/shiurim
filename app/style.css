@@ -236,3 +236,17 @@ body.reading #toasts{bottom:calc(var(--toast-bottom) + env(safe-area-inset-botto
 .ty-seg{display:flex;gap:var(--sp-2);margin:0 var(--sp-6) var(--sp-4);padding:3px;border:1px solid var(--border);border-radius:var(--r-5);background:var(--bg)}
 .ty-opt{flex:1;border:0;background:none;border-radius:var(--r-4);padding:var(--sp-3);font:600 var(--fs-3)/1.2 var(--f-body);color:var(--text-2);cursor:pointer}
 .ty-opt.on{background:var(--brand-fill);color:var(--on-brand)}
+
+/* ── הספרים החדשים ── */
+/* הצללה בסידור — מה שמחוץ לתפילה שנבחרה באפור שקוף, והטקסט נראה דרכו. */
+.leaf .wh.shade{background:rgba(120,120,120,.38)}
+/* תהלים — פרקים אישיים: שורה לכל אדם, ידית גרירה, שם, תאריך לידה ואחרי השקיעה. */
+.thp-list{display:grid;gap:var(--sp-3);margin-bottom:var(--sp-4)}
+.thp-row{display:grid;grid-template-columns:auto 1fr auto;grid-template-areas:"g n x" "g d d" "g s s";gap:var(--sp-2) var(--sp-3);align-items:center;
+  padding:var(--sp-3);border:1px solid var(--border);border-radius:var(--r-4);background:var(--card)}
+.thp-row.drag{opacity:.6;outline:2px dashed var(--gold)}
+.thp-grip{grid-area:g;cursor:grab;color:var(--text-2);font-size:1.3em;touch-action:none;user-select:none;padding:0 var(--sp-2)}
+.thp-n{grid-area:n}.thp-d{grid-area:d}.thp-row .x-btn{grid-area:x}
+.thp-night{grid-area:s;display:flex;gap:var(--sp-2);align-items:center;font-size:.92em;color:var(--text-2)}
+.thp-row input[type=text],.thp-row input:not([type]),.thp-row input[type=date]{width:100%;font:inherit;padding:var(--sp-2) var(--sp-3);border:1px solid var(--border);border-radius:var(--r-4);background:var(--card);color:inherit}
+.th-none{padding:var(--sp-6);text-align:center;color:var(--text-2)}

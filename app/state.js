@@ -12,7 +12,7 @@ const S = {
 // ── מצב הריצה ──
 // הבחירה עצמה אינה כאן — היא שורה בטבלת ההגדרות, והמסך קורא אותה מהמראה.
 // shown — השיעור שמצויר עכשיו בראש המסך: ציור מחדש רק כשהבחירה זזה ממנו, והעמודים שנטענו נשארים.
-var view = { screen: 'home', shown: { home: null, rambam: null, tanya: null, hayom: null, chumash: null, shnayim: null, tanyay: null } };
+var view = { screen: 'home', shown: {} };
 
 // ── מה שמסך צריך מ-main ──
 // main רושם כאן בעלייה — מודול שמייבא מ-main סוגר מעגל, והרישום הוא הכיוון האחד.
