@@ -389,10 +389,10 @@ function scanSheet(path, ratio, whites, shade) {
 }
 
 // עמוד שמחוץ לסריקה המרכזית — הושלם מדפוס אחר: טוסט קצר כשהוא נכנס למסך, פעם אחת לכל הצגה.
-// רמב״ם 7/234a (וילנא) · תניא 60b ו-61a (תר״ס) · הפטרות מקראות גדולות (g2) · הפטרות החגים, דיהרנפורט (h).
+// רמב״ם 7/234a (וילנא) · תניא 60b ו-61a (תר״ס) · הפטרות מקראות גדולות (g2) · הפטרות החגים, דיהרנפורט (h) · חורי הנ״ך (thx · thv · ysv · dhv).
 // טוסט באפליקציה — חמש שניות.
 var TOAST_MS = 5000;
-var ALT_RE = /(^laam\/7\/234a|^p\/(60b|61a)|^g\d\/|^h\/)/;
+var ALT_RE = /(^laam\/7\/234a|^p\/(60b|61a)|^g\d\/|^h\/|^(thx|thv|ysv|dhv)\/)/;
 var altIO = null, altAt = 0;
 function altWatch(fig) {
   if (!('IntersectionObserver' in window)) return;
