@@ -1,7 +1,8 @@
 // app/screens/home.js — מדף הכריכות שממנו נכנסים לכל שיעור
 import { esc, openModal } from '../../core/ui.js';
 import { HEB_DOW, hebDate } from '../../core/hebrew.js';
-import { LESSONS, MSG_BOOKS_TITLE, MSG_HOME_TITLE, MSG_SOON } from '../constants.js';
+import { lsGet, lsSet } from '../../core/storage.js';
+import { LESSONS, LINKS, MSG_BOOKS_TITLE, MSG_DND, MSG_DND_OFF, MSG_DND_ON, MSG_HOME_TITLE, MSG_SOON } from '../constants.js';
 import { lessonAppHref, lessonOpen } from '../domain.js';
 import { icon } from '../icons.js';
 
@@ -39,10 +40,29 @@ function todayHTML() {
     '<span>' + esc(h.yearLabelFull) + '</span></div>';
 }
 
+// קישורים בתחתית המדף — אפליקציה אחרת (מהתצורה, `android.launch`) או אתר.
+function linksHTML() {
+  return '<nav class="shelf-links">' + LINKS.map(function (k) {
+    var href = k.app ? lessonAppHref(k) : k.url;
+    return '<a class="shelf-link" href="' + esc(href) + '">' + esc(k.lab) + icon('out') + '</a>';
+  }).join('') + '</nav>';
+}
+
+// השתקת התראות בזמן לימוד — רק באפליקציה המותקנת: המעטפת קולטת את הקישור ומדליקה «נא לא להפריע» כשהיא בחזית.
+// הבחירה נזכרת גם כאן, כדי שהמתג יציג אותה.
+var DND_KEY = 's_dnd';
+function dndHTML() {
+  if (!/\bwv\b/.test(navigator.userAgent)) return '';
+  var on = lsGet(DND_KEY, '') === '1';
+  return '<a class="shelf-dnd" href="app-dnd:' + (on ? 'off' : 'on') + '">' + esc(MSG_DND) + ' · <b>' + esc(on ? MSG_DND_ON : MSG_DND_OFF) + '</b></a>';
+}
+function dndToggle() { lsSet(DND_KEY, lsGet(DND_KEY, '') === '1' ? '' : '1'); }
+
 // הלוגו הוא הנכס שהמחולל מייצר — ציור שני של המאסטר היה מקור אמת שני.
 function homeScreenHTML() {
   return '<section class="shelf-pg"><header class="shelf-hd"><img src="icons/icon-192.b6655e27.png" alt="" width="42" height="42">' +
-    '<h1>' + esc(MSG_HOME_TITLE) + '</h1>' + todayHTML() + '</header><div class="covers">' + LESSONS.map(function (l) { return coverHTML(l); }).join('') + '</div></section>';
+    '<h1>' + esc(MSG_HOME_TITLE) + '</h1>' + todayHTML() + '</header><div class="covers">' + LESSONS.map(function (l) { return coverHTML(l); }).join('') + '</div>' +
+    linksHTML() + dndHTML() + '</section>';
 }
 
-export { booksPick, homeScreenHTML };
+export { DND_KEY, booksPick, dndToggle, homeScreenHTML };

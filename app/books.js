@@ -2,10 +2,11 @@
 // כל ספר — רשומה ב-BOOKS (bookdata.js): קבוצות, ובכל קבוצה פריטים, ולכל פריט קטעי עמודים.
 // קטע — [תיקייה, עמוד, הלבנות] לעמוד אחד, או [תיקייה, מעמוד, עד עמוד] לטווח שלם בלי הלבנה.
 import { esc, openModal, toast } from '../core/ui.js';
-import { hebDate, hebGematria, hebIsLeap, hebToGreg } from '../core/hebrew.js';
-import { BOOKS, BOOK_SCAN, MSG_TH_PEOPLE_TITLE, MSG_TH_PEOPLE_ADD, MSG_TH_PEOPLE_NAME, MSG_TH_PEOPLE_DATE, MSG_TH_PEOPLE_NIGHT,
+import { hebDate, hebGematria, hebIsLeap, hebMonthNames, hebToGreg, hebYearLabelFull } from '../core/hebrew.js';
+import { BOOKS, BOOK_SCAN, MSG_TH_PEOPLE_TITLE, MSG_TH_PEOPLE_ADD, MSG_TH_PEOPLE_NAME, MSG_TH_PEOPLE_DATE, MSG_TH_DAY, MSG_TH_MONTH, MSG_TH_YEAR,
          MSG_TH_PEOPLE_NONE, MSG_TH_PEOPLE_DEL, MSG_TH_PEOPLE_SAVE, MSG_TH_PEOPLE_OPEN, MSG_PEREK, KEY_TH_PEOPLE, TH_CHAPTERS } from './bookdata.js';
 import { SCAN } from './constants.js';
+import { tehillimAddThirty } from './calendar.js';
 import { el, readBarHTML, sPick, sPickRawAny, sPickSet, sQ, scanSheet } from './domain.js';
 
 // ── מרשם ──
@@ -68,6 +69,13 @@ function bookMount(screen) {
   if (b.people) { thPeopleMount(b, now); return; }
   var it = bookItems(b)[+now.dataset.id], pages = el('div', 'pages');
   segSheets(it.segs, b.shade).forEach(function (f) { pages.appendChild(f); });
+  // תהלים יומי — בכ״ט בחודש חסר אומרים גם את הפרקים של ל׳.
+  if (b.k === 'thd' && +now.dataset.id === 28 && tehillimAddThirty()) {
+    var t = bookItems(b)[29], hd = el('div', 'sect');
+    hd.appendChild(el('h3', null, t.lab.split(' · ')[0]));
+    pages.appendChild(hd);
+    segSheets(t.segs, b.shade).forEach(function (f) { pages.appendChild(f); });
+  }
   now.appendChild(pages);
   if (b.fixT && it.fix) bookFix(b, it.fix, pages);
 }
@@ -94,37 +102,61 @@ function bookFix(b, fix, pages) {
 }
 
 // ── תהלים — פרקים אישיים ──
-// לכל אדם — שם ויום לידה לועזי, ו«אחרי השקיעה» מעביר ליום העברי הבא. הפרק — מספר השנים שמלאו ועוד אחד,
-// והוא מתחלף ביום ההולדת העברי; סדר האנשים — כפי שנגרר בהגדרה.
-function thPeople() {
-  var v = sPickRawAny(KEY_TH_PEOPLE);
-  return Array.isArray(v) ? v.filter(function (p) { return p && p.d; }) : [];
+// לכל אדם — שם ותאריך לידה עברי (יום · חודש · שנה). הפרק — מספר השנים שמלאו ועוד אחד, והוא מתחלף
+// ביום ההולדת העברי, עם השקיעה שלפניו; סדר האנשים — כפי שנגרר בהגדרה.
+// החודשים בשם ולא במספר — מספר החודש תלוי בשנה (אדר א׳ וב׳); אדר של שנה רגילה — אדר ב׳ בשנה מעוברת.
+var TH_MONTHS = ['תשרי', 'חשון', 'כסלו', 'טבת', 'שבט', 'אדר', 'אדר א׳', 'אדר ב׳', 'ניסן', 'אייר', 'סיון', 'תמוז', 'מנחם אב', 'אלול'];
+
+function thMonthIndex(name, hy) {
+  var names = hebMonthNames(hy);
+  if (hebIsLeap(hy)) { if (name === 'אדר') name = 'אדר ב׳'; }
+  else if (name === 'אדר א׳' || name === 'אדר ב׳') name = 'אדר';
+  return names.indexOf(name);
 }
 
-function thHebBirth(p) {
+// רשומה ישנה — יום לידה לועזי ו«אחרי השקיעה» — מומרת לתאריך העברי שלה.
+function thFromGreg(p) {
   var m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(p.d || '');
   if (!m) return null;
   var d = new Date(+m[1], +m[2] - 1, +m[3], 12);
   if (p.night) d.setDate(d.getDate() + 1);
   var h = hebDate(d);
-  return h.ok ? { y: h.year, mi: h.monthIndex, day: h.day, leap: hebIsLeap(h.year) } : null;
+  return h.ok ? { n: p.n || '', hy: h.year, hm: h.monthName, hd: h.day } : null;
 }
 
-// החודש של יום ההולדת בשנה נתונה — אדר בשנה רגילה הוא אדר ב׳ בשנה מעוברת, ואדר א׳ וב׳ — אדר בשנה רגילה.
-function thMonthIn(b, hy) {
-  var leapNow = hebIsLeap(hy), mi = b.mi;
-  if (b.leap && !leapNow) return mi >= 6 ? mi - 1 : mi;
-  if (!b.leap && leapNow) return mi >= 5 ? mi + 1 : mi;
-  return mi;
+function thPeople() {
+  var v = sPickRawAny(KEY_TH_PEOPLE);
+  if (!Array.isArray(v)) return [];
+  return v.map(function (p) { return p && p.hy ? p : (p && p.d ? thFromGreg(p) : null); })
+    .filter(function (p) { return p && p.hy && p.hm && p.hd; });
 }
 
-function thChapterOf(p, today) {
-  var b = thHebBirth(p), t = hebDate(today || new Date());
-  if (!b || !t.ok) return null;
-  var years = t.year - b.y;
-  var bd = hebToGreg(t.year, thMonthIn(b, t.year), b.day);
-  var now = new Date(today || new Date()); now.setHours(12, 0, 0, 0);
-  if (bd && now < bd) years--;
+// השקיעה בירושלים (NOAA, מקורב לדקות) — היום העברי מתחלף בה.
+function thSunset(d) {
+  var lat = 31.78 * Math.PI / 180, lon = 35.22;
+  var start = Date.UTC(d.getFullYear(), 0, 0), doy = Math.floor((Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()) - start) / 864e5);
+  var g = 2 * Math.PI / 365 * (doy - 1 + 0.5);
+  var eq = 229.18 * (0.000075 + 0.001868 * Math.cos(g) - 0.032077 * Math.sin(g) - 0.014615 * Math.cos(2 * g) - 0.040849 * Math.sin(2 * g));
+  var dec = 0.006918 - 0.399912 * Math.cos(g) + 0.070257 * Math.sin(g) - 0.006758 * Math.cos(2 * g) + 0.000907 * Math.sin(2 * g) - 0.002697 * Math.cos(3 * g) + 0.00148 * Math.sin(3 * g);
+  var ha = Math.acos(Math.cos(90.833 * Math.PI / 180) / (Math.cos(lat) * Math.cos(dec)) - Math.tan(lat) * Math.tan(dec)) * 180 / Math.PI;
+  var utcMin = 720 - 4 * (lon - ha) - eq;
+  return new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()) + utcMin * 6e4);
+}
+
+// היום העברי עכשיו — אחרי השקיעה כבר היום הבא.
+function thHebNow(now) {
+  now = now || new Date();
+  var d = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 12);
+  if (now >= thSunset(now)) d.setDate(d.getDate() + 1);
+  return d;
+}
+
+function thChapterOf(p, now) {
+  var day = thHebNow(now), t = hebDate(day);
+  if (!t.ok) return null;
+  var years = t.year - p.hy, mi = thMonthIndex(p.hm, t.year);
+  var bd = mi >= 0 ? hebToGreg(t.year, mi, p.hd) : null;
+  if (bd && day < bd) years--;
   var ch = years + 1;
   return ch >= 1 && ch <= 150 ? ch : null;
 }
@@ -149,20 +181,29 @@ function thPeopleMount(b, now) {
   now.appendChild(pages);
 }
 
-// הגדרת האנשים — גיליון: שורה לכל אדם עם ידית גרירה, ושורה להוספה בתחתית.
+// הגדרת האנשים — גיליון: שורה לכל אדם עם ידית גרירה — שם, ותאריך לידה עברי בשלוש בחירות; שורה להוספה בתחתית.
+function thOpts(vals, labs, cur) {
+  return vals.map(function (v, i) { return '<option value="' + esc(v) + '"' + (String(v) === String(cur) ? ' selected' : '') + '>' + esc(labs[i]) + '</option>'; }).join('');
+}
+
 function thRowHTML(p, i) {
+  var days = [], years = [], thisY = hebDate(new Date()).year || 5787;
+  for (var d = 1; d <= 30; d++) days.push(d);
+  for (var y = thisY; y >= 5640; y--) years.push(y);
   return '<div class="thp-row" data-i="' + i + '"><span class="thp-grip" aria-hidden="true">⋮⋮</span>' +
     '<input class="thp-n" data-f="n" value="' + esc(p.n || '') + '" placeholder="' + esc(MSG_TH_PEOPLE_NAME) + '">' +
-    '<input class="thp-d" data-f="d" type="date" value="' + esc(p.d || '') + '" aria-label="' + esc(MSG_TH_PEOPLE_DATE) + '">' +
-    '<label class="thp-night"><input type="checkbox" data-f="night"' + (p.night ? ' checked' : '') + '>' + esc(MSG_TH_PEOPLE_NIGHT) + '</label>' +
+    '<div class="thp-d" role="group" aria-label="' + esc(MSG_TH_PEOPLE_DATE) + '">' +
+    '<select data-f="hd">' + '<option value="">' + esc(MSG_TH_DAY) + '</option>' + thOpts(days, days.map(function (x) { return hebGematria(x); }), p.hd) + '</select>' +
+    '<select data-f="hm">' + '<option value="">' + esc(MSG_TH_MONTH) + '</option>' + thOpts(TH_MONTHS, TH_MONTHS, p.hm) + '</select>' +
+    '<select data-f="hy">' + '<option value="">' + esc(MSG_TH_YEAR) + '</option>' + thOpts(years, years.map(hebYearLabelFull), p.hy) + '</select></div>' +
     '<button class="x-btn" data-act="th-people-del" data-id="' + i + '" aria-label="' + esc(MSG_TH_PEOPLE_DEL) + '">✕</button></div>';
 }
 
 function thPeopleOpen() {
   var ps = thPeople();
-  if (!ps.length) ps = [{ n: '', d: '', night: false }];
-  openModal(MSG_TH_PEOPLE_TITLE, '<div class="thp-list" id="thp-list">' + ps.map(thRowHTML).join('') + '</div>' +
-    '<button class="btn ghost" data-act="th-people-add">' + esc(MSG_TH_PEOPLE_ADD) + '</button>',
+  if (!ps.length) ps = [{ n: '', hy: '', hm: '', hd: '' }];
+  openModal(MSG_TH_PEOPLE_TITLE, '<div class="thp-wrap"><div class="thp-list" id="thp-list">' + ps.map(thRowHTML).join('') + '</div>' +
+    '<button class="btn ghost" data-act="th-people-add">' + esc(MSG_TH_PEOPLE_ADD) + '</button></div>',
     '<button class="btn" data-act="th-people-save">' + esc(MSG_TH_PEOPLE_SAVE) + '</button>');
   thDragWire();
 }
@@ -170,8 +211,9 @@ function thPeopleOpen() {
 function thPeopleRead() {
   var out = [];
   document.querySelectorAll('#thp-list .thp-row').forEach(function (r) {
-    var p = { n: r.querySelector('[data-f=n]').value.trim(), d: r.querySelector('[data-f=d]').value, night: r.querySelector('[data-f=night]').checked };
-    if (p.d) out.push(p);
+    var f = function (k) { return r.querySelector('[data-f=' + k + ']').value; };
+    var p = { n: f('n').trim(), hy: +f('hy') || 0, hm: f('hm'), hd: +f('hd') || 0 };
+    if (p.hy && p.hm && p.hd) out.push(p);
   });
   return out;
 }
@@ -179,7 +221,8 @@ function thPeopleRead() {
 function thPeopleAdd() {
   var l = sQ('#thp-list');
   if (!l) return;
-  l.insertAdjacentHTML('beforeend', thRowHTML({ n: '', d: '', night: false }, l.children.length));
+  l.insertAdjacentHTML('beforeend', thRowHTML({ n: '', hy: '', hm: '', hd: '' }, l.children.length));
+  l.lastElementChild.scrollIntoView({ block: 'nearest' });
   thDragWire();
 }
 

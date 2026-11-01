@@ -1,9 +1,10 @@
 // app/screens/hayom.js — היום יום: הרשומה של היום שנבחר, באידיש ואחריה בעברית
 import { esc } from '../../core/ui.js';
 import { MSG_HAYOM_YOM, MSG_NEXT_DAY, MSG_PREV_DAY } from '../constants.js';
+import { hayomAdarTwin } from '../calendar.js';
 import { el, hayomCur, hyHeSheets, hyLabel, hyStep, hyYiSheet, readBarHTML, sQ } from '../domain.js';
 
-// היום נבחר ביד, כמו כל שיעור — האפליקציה אינה קוראת את הלוח.
+// היום — מהלוח בכניסה, פעם ביום (calendar.js), או בבורר.
 function hayomScreenHTML() {
   var c = hayomCur();
   return readBarHTML('hayom', MSG_HAYOM_YOM, esc(hyLabel(c))) +
@@ -18,6 +19,15 @@ function hayomMount() {
   var i = +now.dataset.id, pages = el('div', 'pages');
   pages.appendChild(hyYiSheet(i));
   hyHeSheets(i).forEach(function (f) { pages.appendChild(f); });
+  // שנה רגילה — יום באדר א׳ ואחריו אותו יום באדר ב׳.
+  var j = hayomAdarTwin(i);
+  if (j !== null) {
+    var hd = el('div', 'sect');
+    hd.appendChild(el('h3', null, hyLabel(j)));
+    pages.appendChild(hd);
+    pages.appendChild(hyYiSheet(j));
+    hyHeSheets(j).forEach(function (f) { pages.appendChild(f); });
+  }
   now.appendChild(pages);
 }
 

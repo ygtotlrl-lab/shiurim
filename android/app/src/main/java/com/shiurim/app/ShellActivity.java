@@ -1,6 +1,8 @@
 package com.shiurim.app;
 
 import android.app.Activity;
+import android.app.NotificationManager;
+import android.provider.Settings;
 import android.content.ActivityNotFoundException;
 import android.content.Intent;
 import android.net.Uri;
@@ -106,6 +108,8 @@ public abstract class ShellActivity extends Activity {
             if (scheme == null) return false;
             if (scheme.equals("http") || scheme.equals("https")) return false;
             if (scheme.equals("intent")) return launchApp(uri);
+            // «השתקה בזמן לימוד» — הדף מדליק ומכבה; ההשתקה חלה רק כשהאפליקציה בחזית.
+            if (scheme.equals("app-dnd")) { dndSet("on".equals(uri.getSchemeSpecificPart())); return true; }
             // «יציאה» סוגרת את האפליקציה רק מדף של האפליקציה עצמה — דף שנפרץ אינו סוגר אותה.
             if (scheme.equals("app-exit")) {
                 String cur = webView != null ? webView.getUrl() : null;
@@ -142,7 +146,7 @@ public abstract class ShellActivity extends Activity {
             return true;
         }
 
-        private final String[] LAUNCH = { "com.mogy.dafyomi" };
+        private final String[] LAUNCH = { "com.mogy.dafyomi", "app.mafteiach.app" };
 
         @Override
         public void onPageStarted(WebView wv, String url, android.graphics.Bitmap favicon) {
@@ -171,6 +175,56 @@ public abstract class ShellActivity extends Activity {
 
     // רץ רק בהפעלה קרה בלי רשת ובלי מטמון ה-SW — אחרי טעינה ראשונה ה-SW עונה אופליין.
     // מוגש כ-text/html דרך loadDataWithBaseURL ולא כמחרוזת רגילה — גוף בלי סוג תוכן אינו הודעה למשתמש.
+    // השתקת התראות בזמן לימוד — «נא לא להפריע» בעדיפות בלבד, כל עוד האפליקציה בחזית; ביציאה חוזר המצב שהיה.
+    // ההרשאה ניתנת פעם אחת בהגדרות הטלפון, והבחירה נשמרת במכשיר.
+    private int dndPrev = -1;
+
+    private boolean dndWanted() { return getSharedPreferences("shell", MODE_PRIVATE).getBoolean("dnd", false); }
+
+    private NotificationManager dndNm() {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) return null;
+        NotificationManager nm = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+        return nm != null && nm.isNotificationPolicyAccessGranted() ? nm : null;
+    }
+
+    private void dndSet(boolean on) {
+        getSharedPreferences("shell", MODE_PRIVATE).edit().putBoolean("dnd", on).apply();
+        if (!on) { dndRestore(); return; }
+        if (dndNm() != null) { dndApply(); return; }
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) return;
+        try {
+            startActivity(new Intent(Settings.ACTION_NOTIFICATION_POLICY_ACCESS_SETTINGS));
+        } catch (ActivityNotFoundException e) {
+            Toast.makeText(this, "לא נמצאה הגדרת «נא לא להפריע» בטלפון", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    private void dndApply() {
+        NotificationManager nm = dndNm();
+        if (nm == null || !dndWanted()) return;
+        if (dndPrev == -1) dndPrev = nm.getCurrentInterruptionFilter();
+        nm.setInterruptionFilter(NotificationManager.INTERRUPTION_FILTER_PRIORITY);
+    }
+
+    private void dndRestore() {
+        NotificationManager nm = dndNm();
+        if (nm == null || dndPrev == -1) return;
+        nm.setInterruptionFilter(dndPrev);
+        dndPrev = -1;
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        dndApply();
+    }
+
+    @Override
+    protected void onPause() {
+        dndRestore();
+        super.onPause();
+    }
+
     protected void showOfflinePage() {
         if (loadedOnce) return;
         String html =

@@ -1,18 +1,18 @@
 // app/main.js — העלייה, מפת הפעולות והניווט
 import { appConfigure, getDeviceId, netTimeout } from '../core/util.js';
 import { eraKeys, pendAlertDismiss, pendCount, sbWatch } from '../core/sync.js';
-import { lsOpen } from '../core/storage.js';
+import { lsGet, lsOpen, lsSet } from '../core/storage.js';
 import { MIRROR, mirrorKey, mirrorTables } from '../core/mirror.js';
 import { logAwait } from '../core/backup.js';
 import { bootRun } from '../core/boot-run.js';
 import { actWire, closeAsk, closeModal, esc, shellBare, swApply, swHideUpdate, uiNoDialog } from '../core/ui.js';
-import { KEY_CHUMASH, KEY_SHNAYIM, KEY_TANYA_DAY, KEY_HAYOM, KEY_RAMBAM, KEY_TANYA, KV_TABLE, MSG_NAV_BACK, MSG_NAV_EXIT, MSG_NAV_HOME, MSG_VIL_CLOSE, MSG_VIL_OPEN, PUSH_TABLES, SUPABASE_ANON_KEY,
+import { KEY_CHUMASH, KEY_SHNAYIM, KEY_TANYA_DAY, KEY_HAYOM, KEY_RAMBAM, KEY_TANYA, KV_TABLE, MSG_NAV_BACK, PARSHIOT, MSG_NAV_EXIT, MSG_NAV_HOME, MSG_VIL_CLOSE, MSG_VIL_OPEN, PUSH_TABLES, SUPABASE_ANON_KEY,
          SUPABASE_URL, TABLES } from './constants.js';
-import { KEY_TH_PEOPLE } from './bookdata.js';
+import { BOOKS, KEY_TH_PEOPLE } from './bookdata.js';
 import { S, shell, view } from './state.js';
-import { sPickRawAny, PICKERS, chumashCur, shnayimCur, hayomCur, lessonPickOpen, pickerFilter, pickerOpen, pinchEnd, pinchMove, pinchReset, pinchStart, rambamCur, sPendKey, sPendKeyOf, sPickSet, sQ, sStripRows, sSyncNow, sSyncPull,
+import { sPickRawAny, PICKERS, chumashCur, shnayimCur, hayomCur, lessonPickOpen, pickerFilter, pickerOpen, pinchEnd, pinchMove, pinchReset, pinchStart, rambamCur, stripEnd, sPendKey, sPendKeyOf, sPickSet, sQ, sStripRows, sSyncNow, sSyncPull,
          sTableMeta, tanyaCur, tyCur, tyShowSet } from './domain.js';
-import { booksPick, homeScreenHTML } from './screens/home.js';
+import { DND_KEY, booksPick, dndToggle, homeScreenHTML } from './screens/home.js';
 import { rambamMorehFill, rambamMount, rambamScreenHTML, rambamVilnaFill } from './screens/rambam.js';
 import { chumashMount, chumashScreenHTML } from './screens/chumash.js';
 import { tanyayMount, tanyayScreenHTML } from './screens/tanyay.js';
@@ -20,6 +20,7 @@ import { minhagFill, shnayimMount, shnayimScreenHTML, specialFill, specialPick }
 import { hayomMount, hayomScreenHTML } from './screens/hayom.js';
 import { tanyaMount, tanyaScreenHTML } from './screens/tanya.js';
 import { icon } from './icons.js';
+import { todayChumash, todayDow, todayHayom, todayKria, todayRambam, todayShnayim, todayTanyaDay, todayTanyaWeek, todayTehillimDay, weekParasha } from './calendar.js';
 import { bookCur, bookMount, bookOf, bookPickers, bookScreenHTML, thPeopleAdd, thPeopleDel, thPeopleOpen, thPeopleSave } from './books.js';
 
 Object.assign(PICKERS, bookPickers());
@@ -57,7 +58,7 @@ var LS_CFG = {
   // מפתח שאינו במרשם נמחק בעלייה.
   keys: function () {
     return [LS_CFG.logKey, LS_CFG.dismissKey, DEV_CFG.key, PEND_CFG.key,
-            BK_CFG.flagKey, BK_CFG.logQueueKey]
+            BK_CFG.flagKey, BK_CFG.logQueueKey, AUTO_KEY, DND_KEY]
       .concat(eraKeys(), mirrorTables().map(mirrorKey));
   }
 };
@@ -149,6 +150,7 @@ function sRender() {
     else if (view.screen === 'shnayim') { root.innerHTML = shnayimScreenHTML(); shnayimMount(); }
     else if (view.screen === 'tanyay') { root.innerHTML = tanyayScreenHTML(); tanyayMount(); }
     else { root.innerHTML = rambamScreenHTML(); rambamMount(); }
+    stripEnd();
     view.shown = {};
     view.shown[view.screen] = cur;
   }
@@ -185,7 +187,46 @@ function navTop() {
   window.scrollTo({ top: 0 });
 }
 
+// ── השיעור של היום ──
+// בכניסה לשיעור, פעם ביום לכל לימוד, הבחירה עוברת לשיעור של היום לפי הלוח; בחירה ביד נשארת עד מחר.
+var AUTO_KEY = 's_auto_day';
+function bkIndexByGroup(k, name) {
+  var b = BOOKS[k], i = 0, g, n;
+  if (!b) return null;
+  for (g = 0; g < b.groups.length; g++) {
+    n = b.groups[g][0].replace(/^פרשת /, '');
+    if (n === name) return i;
+    i += b.groups[g][1].length;
+  }
+  return null;
+}
+var AUTO = {
+  rambam: function () { return [KEY_RAMBAM, todayRambam()]; },
+  tanya: function () { return [KEY_TANYA, todayTanyaWeek()]; },
+  tanyay: function () { return [KEY_TANYA_DAY, todayTanyaDay()]; },
+  hayom: function () { return [KEY_HAYOM, todayHayom()]; },
+  chumash: function () { return [KEY_CHUMASH, todayChumash()]; },
+  shnayim: function () { return [KEY_SHNAYIM, todayShnayim()]; },
+  'bk-thd': function () { return ['bk_thd', todayTehillimDay()]; },
+  'bk-thw': function () { return ['bk_thw', todayDow()]; },
+  'bk-sidk': function () { return ['bk_sidk', todayKria()]; },
+  'bk-chassidus': function () { var i = bkIndexByGroup('chassidus', PARSHIOT[weekParasha()[0]]); return i === null ? null : ['bk_chassidus', i]; }
+};
+function autoPick(screen) {
+  var f = AUTO[screen];
+  if (!f) return;
+  var d = new Date(), today = d.getFullYear() + '-' + (d.getMonth() + 1) + '-' + d.getDate(), seen = {};
+  try { seen = JSON.parse(lsGet(AUTO_KEY, '{}')) || {}; } catch (e) { seen = {}; }
+  if (seen[screen] === today) return;
+  var kv = f();
+  if (!kv) return;
+  sPickSet(kv[0], kv[1]);
+  seen[screen] = today;
+  lsSet(AUTO_KEY, JSON.stringify(seen));
+}
+
 function go(screen) {
+  autoPick(screen);
   view.screen = screen;
   sRender();
   navPush();
@@ -294,6 +335,13 @@ document.addEventListener('input', function (e) {
 });
 
 window.addEventListener('scroll', calmOnScroll, { passive: true });
+
+// השתקת התראות — הקישור עצמו עובר למעטפת (app-dnd:), וכאן מתעדכן רק המתג שעל המסך.
+document.addEventListener('click', function (e) {
+  if (!e.target.closest || !e.target.closest('.shelf-dnd')) return;
+  dndToggle();
+  setTimeout(function () { view.shown = {}; sRender(); }, 0);
+});
 
 // touchmove אינו פסיבי — הצביטה עוצרת את הגלילה של הדפדפן בזמן שהיא מותחת את הדף.
 document.addEventListener('touchstart', pinchStart, { passive: true });

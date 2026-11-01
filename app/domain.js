@@ -148,7 +148,7 @@ function tanyaCur() { return sPick(KEY_TANYA, PARSHIOT.length); }
 // ── תניא יומי ──
 // הבחירה — מספר אחד: היום בשנה רגילה (0…), או 1000 ומעלה — בשנה מעוברת. המחזור מתחיל בי״ט כסלו,
 // והחלוקה — לפי השנה שבה התחיל: שנה מעוברת אם בה אדר שני.
-// בלי בחירה — א׳ תשרי בשנה רגילה; האפליקציה אינה בוחרת לבד לפי הלוח.
+// בלי בחירה — א׳ תשרי בשנה רגילה; השיעור של היום נבחר בכניסה, מהלוח (calendar.js).
 function tyCur() {
   var v = sPickRaw(KEY_TANYA_DAY);
   if (v === null) return 0;
@@ -546,37 +546,38 @@ var pz = null;
 function pzDist(t) { return Math.hypot(t[0].clientX - t[1].clientX, t[0].clientY - t[1].clientY); }
 function pinchStart(e) {
   if (e.touches.length !== 2) return;
-  var box = e.target.closest && e.target.closest('.read .pages');
+  var box = e.target.closest && e.target.closest('.read .pages .pg');
   if (!box) return;
-  var r = box.getBoundingClientRect(), t = e.touches;
-  var cx = (t[0].clientX + t[1].clientX) / 2, cy = (t[0].clientY + t[1].clientY) / 2;
-  pz = { box: box, d0: pzDist(t), z0: +box.dataset.z || 1, s: 1, cx: cx - r.left, ox: cx - r.left + box.scrollLeft, oy: cy - r.top };
-  box.style.transformOrigin = pz.ox + 'px ' + pz.oy + 'px';
+  var leaf = box.querySelector('.leaf'), r = box.getBoundingClientRect(), t = e.touches;
+  var cx = (t[0].clientX + t[1].clientX) / 2 - r.left, cy = (t[0].clientY + t[1].clientY) / 2 - r.top;
+  pz = { box: box, leaf: leaf, d0: pzDist(t), z0: +box.dataset.z || 1, s: 1, cx: cx, cy: cy, ox: cx + box.scrollLeft, oy: cy + box.scrollTop };
+  if (leaf) leaf.style.transformOrigin = 'center center';
 }
 function pinchMove(e) {
   if (!pz || e.touches.length !== 2) return;
   e.preventDefault();
   var z = Math.min(PZ_MAX, Math.max(1, pz.z0 * pzDist(e.touches) / pz.d0));
   pz.s = z / pz.z0;
-  pz.box.style.transform = 'scale(' + pz.s + ')';
+  if (pz.leaf) pz.leaf.style.transform = 'scale(' + pz.s + ')';
 }
 function pinchEnd() {
   if (!pz) return;
   var p = pz, box = p.box, z = p.z0 * p.s;
   pz = null;
-  box.style.transform = '';
+  if (p.leaf) p.leaf.style.transform = '';
   if (Math.abs(p.s - 1) < 0.02) return;
   if (z < 1.05) z = 1;
   box.dataset.z = String(z);
   box.style.setProperty('--z', String(z));
   box.classList.toggle('zoomed', z > 1);
+  // נקודת המוקד נשארת מתחת לאצבעות.
   box.scrollLeft = p.ox * p.s - p.cx;
-  window.scrollBy(0, p.oy * (p.s - 1));
+  box.scrollTop = p.oy * p.s - p.cy;
 }
 
-// הקשה על דף מוגדל מחזירה את כל העמודים לגודלם — ההגדלה נשארת עד צביטה חזרה או עד הקשה.
+// הקשה על עמוד מוגדל מחזירה את כל העמודים לגודלם — ההגדלה נשארת עד צביטה חזרה או עד הקשה.
 function pinchReset() {
-  var zs = document.querySelectorAll('.read .pages.zoomed');
+  var zs = document.querySelectorAll('.read .pages .pg.zoomed');
   zs.forEach(function (box) {
     box.classList.remove('zoomed');
     box.style.removeProperty('--z');
@@ -585,8 +586,18 @@ function pinchReset() {
   return zs.length > 0;
 }
 
+// הרצועה — כפתורי הסוף (והכפתור שבתוך השיעור, כמו מהדורת וילנא) עוברים לעמוד אחרון ברצף העמודים.
+function stripEnd() {
+  var now = sQ('#now-body'), pages = now && now.querySelector(':scope > .pages'), end = sQ('.read-end');
+  if (!pages || pages.querySelector('.pg-end')) return;
+  var last = el('div', 'pg-end');
+  now.querySelectorAll(':scope > .nextrow').forEach(function (r) { last.appendChild(r); });
+  if (end) last.appendChild(end);
+  pages.appendChild(last);
+}
+
 function tanyaChapter(c) { return TANYA_CHAPTERS[c]; }
 
-export { scanSheet, sPickRawAny, fixSections, PICKERS, topSecHTML, haftaraOf, haftaraSheets, shnayimCur, shnayimSheets, chLabel, chSheets, chumashCur, el, fileUrl, hayomCur, hyHeSheets, hyLabel, hyStep, hyYiSheet, lessonAppHref, lessonOpen, lessonPickOpen, localPut, pickerFilter, pinchEnd, pinchMove, pinchReset, pinchStart, pickerOpen, pushSoon, rambamCur, rambamInto, rambamLabel, readBarHTML,
+export { stripEnd, scanSheet, sPickRawAny, fixSections, PICKERS, topSecHTML, haftaraOf, haftaraSheets, shnayimCur, shnayimSheets, chLabel, chSheets, chumashCur, el, fileUrl, hayomCur, hyHeSheets, hyLabel, hyStep, hyYiSheet, lessonAppHref, lessonOpen, lessonPickOpen, localPut, pickerFilter, pinchEnd, pinchMove, pinchReset, pinchStart, pickerOpen, pushSoon, rambamCur, rambamInto, rambamLabel, readBarHTML,
          sLive, sPendKey, sPendKeyOf, sPick, sPickSet, sQ, sStripRows, sSyncNow, sSyncPull,
          scanInto, sTableMeta, tanyaChapName, tanyaChapter, tanyaCur, tanyaLabel, tanyaSheet, tyCur, tyDay, tyLabel, tyShowSet, tyStep };

@@ -2,19 +2,21 @@
 import { esc, openModal } from '../../core/ui.js';
 import { HAFTAROT, MSG_HAFTARA, MSG_MINHAG_TITLE, MSG_NEXT_PARASHA, MSG_NO_HAFTARA, MSG_PREV_PARASHA, MSG_SHNAYIM,
          MSG_SPECIAL_TITLE, PARSHIOT } from '../constants.js';
+import { partnerOf } from '../calendar.js';
 import { el, haftaraOf, haftaraSheets, readBarHTML, scanInto, shnayimCur, shnayimSheets, sQ, topSecHTML } from '../domain.js';
 
 // בראש השיעור — מנהגי חב״ד בהפטרות וההפטרה המיוחדת, נפתחים מתחתית הבורר ונסגרים ב-✕.
+// פרשיות מחוברות בשבוע הזה — שתיהן ברצף, וההפטרות אחריהן; «הבאה» — שאחרי השנייה.
 function shnayimScreenHTML() {
-  var c = shnayimCur();
-  return readBarHTML('shnayim', MSG_SHNAYIM, '<span class="ps">' + esc(PARSHIOT[c]) + '</span>') +
+  var c = shnayimCur(), b = partnerOf(c), last = b === null ? c : b;
+  return readBarHTML('shnayim', MSG_SHNAYIM, '<span class="ps">' + esc(PARSHIOT[c] + (b === null ? '' : '–' + PARSHIOT[b])) + '</span>') +
     topSecHTML('minhag', MSG_MINHAG_TITLE) + topSecHTML('special', MSG_SPECIAL_TITLE) +
     '<div class="lesson read" id="now-body" data-id="' + c + '" data-act="read-toggle"></div>' +
     '<div class="read-end">' +
     (c > 0 ? '<button class="btn ghost" data-act="shnayim-next" data-id="' + (c - 1) + '">' +
       esc('› ' + MSG_PREV_PARASHA + PARSHIOT[c - 1]) + '</button>' : '') +
-    (c + 1 < PARSHIOT.length ? '<button class="btn" data-act="shnayim-next" data-id="' + (c + 1) + '">' +
-      esc(MSG_NEXT_PARASHA + PARSHIOT[c + 1] + ' ‹') + '</button>' : '') +
+    (last + 1 < PARSHIOT.length ? '<button class="btn" data-act="shnayim-next" data-id="' + (last + 1) + '">' +
+      esc(MSG_NEXT_PARASHA + PARSHIOT[last + 1] + ' ‹') + '</button>' : '') +
     '</div>';
 }
 
@@ -27,10 +29,16 @@ function sectEl(title, note) {
 
 // הפרשה, ואחריה ההפטרה.
 function shnayimFill(box) {
-  var c = +box.dataset.id, pages = el('div', 'pages'), h = haftaraOf(c);
-  shnayimSheets(c).forEach(function (f) { pages.appendChild(f); });
-  pages.appendChild(sectEl(MSG_HAFTARA + PARSHIOT[c], h ? '' : MSG_NO_HAFTARA));
-  haftaraSheets(h).forEach(function (f) { pages.appendChild(f); });
+  var c = +box.dataset.id, b = partnerOf(c), ps = b === null ? [c] : [c, b], pages = el('div', 'pages');
+  ps.forEach(function (p, k) {
+    if (k) pages.appendChild(sectEl(PARSHIOT[p], ''));
+    shnayimSheets(p).forEach(function (f) { pages.appendChild(f); });
+  });
+  ps.forEach(function (p) {
+    var h = haftaraOf(p);
+    pages.appendChild(sectEl(MSG_HAFTARA + PARSHIOT[p], h ? '' : MSG_NO_HAFTARA));
+    haftaraSheets(h).forEach(function (f) { pages.appendChild(f); });
+  });
   box.appendChild(pages);
 }
 

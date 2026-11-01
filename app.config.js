@@ -23,13 +23,15 @@ self.APP = Object.freeze({
     // צבע כפתור הניסיון החוזר בדף האופליין של המעטפת
     accent: '#1e3a6e',
     // לעולם אינו יורד — בלי קידום המכשיר המותקן אינו מקבל את ה-APK החדש.
-    versionCode: 8,
+    versionCode: 9,
     versionName: '1.0',
     launcherBg: { kind: 'gradient', angle: 270, start: '#F6EFE1', end: '#E6D8BC' },
     // אפליקציות אחרות שקישור intent: רשאי לפתוח — שם ⟵ חבילה; ריק — המעטפת אינה פותחת אף אחת
-    launch: { shas: 'com.mogy.dafyomi' },
+    launch: { shas: 'com.mogy.dafyomi', mafteach: 'app.mafteiach.app' },
     // כפתור «יציאה» שהמעטפת קולטת וסוגרת בו את האפליקציה
     exit: true,
+    // «השתקה בזמן לימוד» — «נא לא להפריע» כשהאפליקציה בחזית, במתג שבמסך הראשי
+    dnd: true,
     // FileProvider ו-androidx — רק באפליקציה שמייצאת קובץ
     share: false
   },

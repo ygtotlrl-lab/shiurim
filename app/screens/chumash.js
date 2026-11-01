@@ -1,12 +1,17 @@
 // app/screens/chumash.js — חומש עם תורה תמימה: עלייה אחת, נבחרת ביד
 import { esc } from '../../core/ui.js';
-import { CH, MSG_CHUMASH, MSG_NEXT_ALIYAH, MSG_PREV_ALIYAH } from '../constants.js';
+import { ALIYOT, CH, MSG_CHUMASH, MSG_NEXT_ALIYAH, MSG_PREV_ALIYAH, PARSHIOT } from '../constants.js';
+import { partnerOf } from '../calendar.js';
 import { chLabel, chSheets, chumashCur, el, readBarHTML, sQ } from '../domain.js';
+
+// פרשיות מחוברות בשבוע הזה — עליית היום של השנייה ממשיכה מיד אחרי זו של הראשונה.
+function chPartner(c) { return partnerOf(Math.floor(c / 7)); }
 
 // אחרי השביעי של וזאת הברכה חוזרים לראשון של בראשית.
 function chumashScreenHTML() {
-  var c = chumashCur(), n = CH.length;
-  return readBarHTML('chumash', MSG_CHUMASH, esc(chLabel(c))) +
+  var c = chumashCur(), n = CH.length, b = chPartner(c);
+  var lab = b === null ? chLabel(c) : PARSHIOT[Math.floor(c / 7)] + '–' + PARSHIOT[b] + ' · ' + ALIYOT[c % 7];
+  return readBarHTML('chumash', MSG_CHUMASH, esc(lab)) +
     '<div class="lesson read" id="now-body" data-id="' + c + '" data-act="read-toggle"></div>' +
     '<div class="read-end"><button class="btn ghost" data-act="chumash-next" data-id="' + ((c + n - 1) % n) + '">' + esc(MSG_PREV_ALIYAH) + '</button>' +
     '<button class="btn" data-act="chumash-next" data-id="' + ((c + 1) % n) + '">' + esc(MSG_NEXT_ALIYAH) + '</button></div>';
@@ -16,7 +21,14 @@ function chumashMount() {
   var now = sQ('#now-body');
   if (!now) return;
   var pages = el('div', 'pages');
-  chSheets(+now.dataset.id).forEach(function (f) { pages.appendChild(f); });
+  var c = +now.dataset.id, b = chPartner(c);
+  chSheets(c).forEach(function (f) { pages.appendChild(f); });
+  if (b !== null) {
+    var hd = el('div', 'sect');
+    hd.appendChild(el('h3', null, PARSHIOT[b] + ' · ' + ALIYOT[c % 7]));
+    pages.appendChild(hd);
+    chSheets(b * 7 + c % 7).forEach(function (f) { pages.appendChild(f); });
+  }
   now.appendChild(pages);
 }
 
