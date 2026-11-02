@@ -8,6 +8,7 @@ import { BOOKS, BOOK_SCAN, MSG_TH_PEOPLE_TITLE, MSG_TH_PEOPLE_ADD, MSG_TH_PEOPLE
 import { SCAN } from './constants.js';
 import { tehillimAddThirty } from './calendar.js';
 import { el, readBarHTML, sPick, sPickRawAny, sPickSet, sQ, scanSheet } from './domain.js';
+import { icon } from './icons.js';
 
 // ── מרשם ──
 function bookOf(screen) { var k = String(screen || '').replace(/^bk-/, ''); return BOOKS[k] || null; }
@@ -197,7 +198,7 @@ function thRowHTML(p, i) {
     '<select data-f="hd">' + '<option value="">' + esc(MSG_TH_DAY) + '</option>' + thOpts(days, days.map(function (x) { return hebGematria(x); }), p.hd) + '</select>' +
     '<select data-f="hm">' + '<option value="">' + esc(MSG_TH_MONTH) + '</option>' + thOpts(TH_MONTHS, TH_MONTHS, p.hm) + '</select>' +
     '<select data-f="hy">' + '<option value="">' + esc(MSG_TH_YEAR) + '</option>' + thOpts(years, years.map(hebYearLabelFull), p.hy) + '</select></div>' +
-    '<button class="x-btn" data-act="th-people-del" data-id="' + i + '" aria-label="' + esc(MSG_TH_PEOPLE_DEL) + '">✕</button></div>';
+    '<button class="x-btn" data-act="th-people-del" data-id="' + i + '" aria-label="' + esc(MSG_TH_PEOPLE_DEL) + '">' + icon('close') + '</button></div>';
 }
 
 function thPeopleOpen() {
