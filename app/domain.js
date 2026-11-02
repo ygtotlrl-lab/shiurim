@@ -357,52 +357,22 @@ function scanFail() {
 }
 
 // עמוד סרוק — נטען רק כשהוא מתקרב למסך, ועליו רצועות ההלבנה של מה שאינו שייך לשיעור.
-// עמוד שראשו או סופו מולבן לכל רוחבו — נחתך לחלק הגלוי, ושוליים קטנים סביבו (CROP_PAD): בלי החיתוך עמוד שהשיעור
-// מתחיל בתחתיתו נראה ריק במסך, והשורה הגלויה זעירה בתחתיתו. [ראש, תחתית] באחוזים מגובה העמוד; בלי חיתוך — [0, 100].
-var CROP_PAD = 1.5, CROP_MIN = 3;
-function scanCrop(whites, shade) {
-  var t = 0, b = 100, full = (whites || []).filter(function (r) { return r.length === 2 || (r.length === 4 && r[2] <= 0.5 && r[3] >= 99.5); });
-  if (shade || !whites || !whites.length) return [0, 100];
-  full.slice().sort(function (x, y) { return x[0] - y[0]; }).forEach(function (r) { if (r[0] <= t + 1) t = Math.max(t, r[1]); });
-  full.slice().sort(function (x, y) { return y[1] - x[1]; }).forEach(function (r) { if (r[1] >= b - 1) b = Math.min(b, r[0]); });
-  // רצועות לפי טור (היום יום באידיש — הקווים בסריקה עקומים): כשהן מכסות יחד את כל הרוחב, החיתוך — בקצה הקרוב שבהן.
-  var cols = function (edge) {
-    var rs = (whites || []).filter(function (r) { return r.length === 4 && (edge ? r[0] <= 1 : r[1] >= 99); });
-    rs.sort(function (x, y) { return x[2] - y[2]; });
-    var x = 0;
-    rs.forEach(function (r) { if (r[2] <= x + 0.5) x = Math.max(x, r[2] + r[3]); });
-    if (x < 99.5) return null;
-    return edge ? Math.min.apply(null, rs.map(function (r) { return r[1]; })) : Math.max.apply(null, rs.map(function (r) { return r[0]; }));
-  };
-  var ct = cols(true), cb = cols(false);
-  if (ct !== null) t = Math.max(t, ct);
-  if (cb !== null) b = Math.min(b, cb);
-  t = t - CROP_PAD > CROP_MIN ? t - CROP_PAD : 0;
-  b = b + CROP_PAD < 100 - CROP_MIN ? b + CROP_PAD : 100;
-  return b - t > 5 ? [t, b] : [0, 100];
-}
-
 function scanSheet(path, ratio, whites, shade) {
-  var c = scanCrop(whites, shade), H = c[1] - c[0];
-  // y — אחוז מגובה העמוד המלא, במקום בתוך החלק החתוך
-  var Y = function (y) { return (y - c[0]) / H * 100; };
-  var sh = sheetEl(ratio * 100 / H);
+  var sh = sheetEl(ratio);
   var im = new Image();
   im.loading = 'lazy'; im.decoding = 'async'; im.alt = '';
   im.onerror = scanFail;
   im.src = fileUrl(path);
-  if (H < 100) { im.className = 'crop'; sh.fig.classList.add('cropped'); im.style.setProperty('--crop-top', (-c[0] / H * 100).toFixed(3) + '%'); }
   sh.sheet.appendChild(im);
-  if (ALT_RE.test(path)) { sh.fig.dataset.alt = '1'; altWatch(sh.fig); }
+  if (ALT_RE.test(path)) altWatch(sh.fig);
   (whites || []).forEach(function (r) {
-    if (H < 100) r = r.length === 3 ? [Y(r[0]), Y(r[1]), r[2] / H * 100] : [Y(r[0]), Y(r[1])].concat(r.slice(2));
     var w = el('div', shade ? 'wh shade' : 'wh');
     if (r.length === 3) {
       // רצועה משופעת — [ראש, תחתית] בקצה הימני, ו-r[2] — ההסטה בקצה השמאלי (עמוד שנסרק עקום).
-      var st = Math.min(r[0], r[0] + r[2]), sb = Math.max(r[1], r[1] + r[2]), sH = sb - st;
-      var q = function (y) { return ((y - st) / sH * 100).toFixed(3) + '%'; };
-      w.style.setProperty('--top', st + '%');
-      w.style.setProperty('--h', sH + '%');
+      var t = Math.min(r[0], r[0] + r[2]), b = Math.max(r[1], r[1] + r[2]), H = b - t;
+      var q = function (y) { return ((y - t) / H * 100).toFixed(3) + '%'; };
+      w.style.setProperty('--top', t + '%');
+      w.style.setProperty('--h', H + '%');
       w.style.setProperty('--clip', 'polygon(100% ' + q(r[0]) + ', 0 ' + q(r[0] + r[2]) + ', 0 ' + q(r[1] + r[2]) + ', 100% ' + q(r[1]) + ')');
       sh.sheet.appendChild(w);
       return;
@@ -460,7 +430,7 @@ function fixSections(pages, secs) {
   if (!empty.length) return;
   var end = sQ('.read-end');
   if (!end || !('IntersectionObserver' in window)) return;
-  // חצי עמוד לפחות — העמוד הסמוך ברצועה נוגע במסך בשבר פיקסל, ושיעור בעמוד אחד היה מקפיץ את הטוסט כבר בכניסה.
+  // חצי לפחות — העמוד הסמוך ברצועה נוגע במסך בשבר פיקסל, ושיעור בעמוד אחד היה מקפיץ את הטוסט כבר בכניסה.
   var io = new IntersectionObserver(function (es) {
     if (!es.some(function (e) { return e.isIntersecting && e.intersectionRatio >= 0.5; })) return;
     io.disconnect();
@@ -579,7 +549,7 @@ function pinchStart(e) {
   if (e.touches.length !== 2) return;
   var box = e.target.closest && e.target.closest('.read .pages .pg');
   if (!box) return;
-  var leaf = box.querySelector('.stk') || box.querySelector('.leaf'), r = box.getBoundingClientRect(), t = e.touches;
+  var leaf = box.querySelector('.leaf'), r = box.getBoundingClientRect(), t = e.touches;
   var cx = (t[0].clientX + t[1].clientX) / 2 - r.left, cy = (t[0].clientY + t[1].clientY) / 2 - r.top;
   pz = { box: box, leaf: leaf, d0: pzDist(t), z0: +box.dataset.z || 1, s: 1, cx: cx, cy: cy, ox: cx + box.scrollLeft, oy: cy + box.scrollTop };
   if (leaf) leaf.style.transformOrigin = 'center center';
@@ -617,37 +587,6 @@ function pinchReset() {
   return zs.length > 0;
 }
 
-// עמודים חתוכים (scanCrop) במסך אחד: עמוד שנשארה בו רצועה — שורת הפתיחה בתחתית העמוד, או סוף השיעור בראשו —
-// נערם עם העמוד הסמוך לו, כשגובהם יחד אינו עולה על STACK_MAX ברוחב העמוד; כך השיעור מתחיל בראש המסך ואין מסך כמעט ריק.
-// הגובה נגזר ב-CSS מ---sum (סכום הגבהים ביחס לרוחב), והעמודים יחד נכנסים במסך בכל מידה.
-var STACK_MAX = 1.5;
-function stackCrops(root) {
-  var pages = root && root.querySelector('.pages');
-  if (!pages) return;
-  var hOf = function (fig) {
-    var n = 0;
-    fig.querySelectorAll('.leaf').forEach(function (l) { n += 1 / (+l.style.getPropertyValue('--ratio') || 0.8); });
-    return n;
-  };
-  var figs = Array.prototype.filter.call(pages.children, function (c) { return c.matches('figure.pg'); });
-  for (var i = 0; i < figs.length - 1; i++) {
-    var a = figs[i], b = figs[i + 1];
-    if (a.nextElementSibling !== b) continue;
-    if (!a.matches('.cropped') && !b.matches('.cropped')) continue;
-    var sum = hOf(a) + hOf(b);
-    if (sum > STACK_MAX) continue;
-    var stk = a.querySelector(':scope > .stk');
-    if (!stk) { stk = el('div', 'stk'); while (a.firstChild) stk.appendChild(a.firstChild); a.appendChild(stk); }
-    b.querySelectorAll('.leaf').forEach(function (l) { stk.appendChild(l); });
-    a.classList.add('stack', 'cropped');
-    a.style.setProperty('--sum', sum.toFixed(4));
-    if (b.dataset.alt && !a.dataset.alt) { a.dataset.alt = '1'; altWatch(a); }
-    b.remove();
-    figs.splice(i + 1, 1);
-    i--;
-  }
-}
-
 // הרצועה — כפתורי הסוף (והכפתור שבתוך השיעור, כמו מהדורת וילנא) עוברים לעמוד אחרון ברצף העמודים.
 function stripEnd() {
   var now = sQ('#now-body'), pages = now && now.querySelector(':scope > .pages'), end = sQ('.read-end');
@@ -660,6 +599,6 @@ function stripEnd() {
 
 function tanyaChapter(c) { return TANYA_CHAPTERS[c]; }
 
-export { stackCrops, stripEnd, scanSheet, sPickRawAny, fixSections, PICKERS, topSecHTML, haftaraOf, haftaraSheets, shnayimCur, shnayimSheets, chLabel, chSheets, chumashCur, el, fileUrl, hayomCur, hyHeSheets, hyLabel, hyStep, hyYiSheet, lessonAppHref, lessonOpen, lessonPickOpen, localPut, pickerFilter, pinchEnd, pinchMove, pinchReset, pinchStart, pickerOpen, pushSoon, rambamCur, rambamInto, rambamLabel, readBarHTML,
+export { stripEnd, scanSheet, sPickRawAny, fixSections, PICKERS, topSecHTML, haftaraOf, haftaraSheets, shnayimCur, shnayimSheets, chLabel, chSheets, chumashCur, el, fileUrl, hayomCur, hyHeSheets, hyLabel, hyStep, hyYiSheet, lessonAppHref, lessonOpen, lessonPickOpen, localPut, pickerFilter, pinchEnd, pinchMove, pinchReset, pinchStart, pickerOpen, pushSoon, rambamCur, rambamInto, rambamLabel, readBarHTML,
          sLive, sPendKey, sPendKeyOf, sPick, sPickSet, sQ, sStripRows, sSyncNow, sSyncPull,
          scanInto, sTableMeta, tanyaChapName, tanyaChapter, tanyaCur, tanyaLabel, tanyaSheet, tyCur, tyDay, tyLabel, tyShowSet, tyStep };

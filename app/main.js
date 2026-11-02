@@ -10,7 +10,7 @@ import { KEY_CHUMASH, KEY_SHNAYIM, KEY_TANYA_DAY, KEY_HAYOM, KEY_RAMBAM, KEY_TAN
          SUPABASE_URL, TABLES } from './constants.js';
 import { BOOKS, KEY_TH_PEOPLE } from './bookdata.js';
 import { S, shell, view } from './state.js';
-import { stackCrops, sPickRawAny, PICKERS, chumashCur, shnayimCur, hayomCur, lessonPickOpen, pickerFilter, pickerOpen, pinchEnd, pinchMove, pinchReset, pinchStart, rambamCur, stripEnd, sPendKey, sPendKeyOf, sPickSet, sQ, sStripRows, sSyncNow, sSyncPull,
+import { sPickRawAny, PICKERS, chumashCur, shnayimCur, hayomCur, lessonPickOpen, pickerFilter, pickerOpen, pinchEnd, pinchMove, pinchReset, pinchStart, rambamCur, stripEnd, sPendKey, sPendKeyOf, sPickSet, sQ, sStripRows, sSyncNow, sSyncPull,
          sTableMeta, tanyaCur, tyCur, tyShowSet } from './domain.js';
 import { DND_KEY, booksPick, dndToggle, homeScreenHTML } from './screens/home.js';
 import { rambamMorehFill, rambamMount, rambamScreenHTML, rambamVilnaFill } from './screens/rambam.js';
@@ -150,7 +150,6 @@ function sRender() {
     else if (view.screen === 'shnayim') { root.innerHTML = shnayimScreenHTML(); shnayimMount(); }
     else if (view.screen === 'tanyay') { root.innerHTML = tanyayScreenHTML(); tanyayMount(); }
     else { root.innerHTML = rambamScreenHTML(); rambamMount(); }
-    stackCrops(root);
     stripEnd();
     view.shown = {};
     view.shown[view.screen] = cur;
