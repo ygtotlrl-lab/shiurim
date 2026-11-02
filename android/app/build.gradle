@@ -11,7 +11,7 @@ android {
         applicationId "com.shiurim.app"
         minSdk 21
         targetSdk 34
-        versionCode 9
+        versionCode 10
         versionName "1.0"
     }
 
@@ -25,4 +25,9 @@ android {
         sourceCompatibility JavaVersion.VERSION_17
         targetCompatibility JavaVersion.VERSION_17
     }
+}
+
+dependencies {
+    // מסך הפתיחה — אותו מסך בכל גרסאות האנדרואיד, והמעטפת מחזיקה אותו עד שהמסך הראשון צויר
+    implementation 'androidx.core:core-splashscreen:1.0.1'
 }
