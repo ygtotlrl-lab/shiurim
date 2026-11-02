@@ -93,7 +93,7 @@ var MSG_RAMBAM_OPENING = 'פתיחה';
 
 var MSG_MOREH_CLOSE = 'סגירה';
 
-var MSG_LOAD_FAIL = '❌ העמודים לא נטענו — נסו לרענן';
+var MSG_LOAD_FAIL = 'העמודים לא נטענו — נסו לרענן';
 
 var MSG_LUACH = 'לוח התיקון';
 
