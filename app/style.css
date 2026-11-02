@@ -201,14 +201,15 @@ body.reading #toasts{bottom:calc(var(--toast-bottom) + env(safe-area-inset-botto
 .read .pages::-webkit-scrollbar{display:none}
 .read .pages>*{flex:0 0 100%;width:100%;height:100%;margin:0;scroll-snap-align:start;scroll-snap-stop:always}
 .read .pages .pg{display:flex;align-items:center;justify-content:center;overflow:hidden}
+/* רוחב העמוד — העמודה (--col), לא רוחב המסך: בטלפון רחב מ-390 הגובה מ-100vw מתח את העלה מעבר לתמונה, וההלבנה (באחוזים מהעלה) זזה מטה — השורה הראשונה הוסתרה והאחרונה נחתכה. */
 .read .pages .leaf{box-shadow:none;border-radius:0;width:auto;max-width:100%;flex:none;
-  height:min(100%, calc(100vw / var(--ratio,0.8)));aspect-ratio:var(--ratio,0.8)}
+  height:min(100%, calc(min(100vw, var(--col)) / var(--ratio,0.8)));aspect-ratio:var(--ratio,0.8)}
 .read .pages .sect{flex-direction:column;align-items:center;justify-content:center;text-align:center;border:0;padding:var(--sp-6)}
 .read .pages .pg-end{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:var(--sp-5)}
 .read .pages .pg-end .read-end{padding:0 var(--sp-6)}
 /* הגדלה בשתי אצבעות — העמוד שתחת האצבעות גדל פי --z, ונגלל בתוך עצמו לכל הכיוונים. */
 .read .pages .pg.zoomed{display:block;overflow:auto;touch-action:pan-x pan-y}
-.read .pages .pg.zoomed .leaf{height:calc(min(var(--page-h), calc(100vw / var(--ratio,0.8))) * var(--z,1));max-width:none;margin:0 auto}
+.read .pages .pg.zoomed .leaf{height:calc(min(var(--page-h), calc(min(100vw, var(--col)) / var(--ratio,0.8))) * var(--z,1));max-width:none;margin:0 auto}
 .read-end{display:flex;flex-wrap:wrap;gap:var(--sp-4);justify-content:center;padding:var(--sp-7) var(--sp-6)}
 .moreh{padding:var(--sp-6) var(--sp-4);border-bottom:2px solid var(--gold-soft);scroll-margin-top:calc(var(--readbar-h) + 8px)}
 .moreh-hd{display:flex;align-items:center;gap:var(--sp-5);margin-bottom:var(--sp-3)}
