@@ -84,6 +84,8 @@ main{padding:0 var(--sp-6); padding-bottom:calc(var(--sp-6) + env(safe-area-inse
 .leaf{position:relative;background:var(--leaf);box-shadow:var(--leaf-shadow);border-radius:var(--r-1);
   overflow:hidden;width:100%;aspect-ratio:var(--ratio,0.8)}
 .leaf img,.leaf canvas{display:block;width:100%;height:auto}
+/* עמוד חתוך — התמונה המלאה, מוסטת למעלה; העלה (overflow:hidden) מציג רק את החלק הגלוי (scanCrop). */
+.leaf img.crop{position:absolute;top:var(--crop-top);left:0}
 /* רצועת הלבנה — מיקומה נגזר מנתוני הפרק ונכתב למשתנים. */
 .leaf .wh{position:absolute;top:var(--top);height:var(--h);left:var(--left,0);width:var(--w,100%);
   background:var(--leaf);box-shadow:0 0 0 1px var(--leaf);clip-path:var(--clip,none)}
@@ -201,6 +203,8 @@ body.reading #toasts{bottom:calc(var(--toast-bottom) + env(safe-area-inset-botto
 .read .pages::-webkit-scrollbar{display:none}
 .read .pages>*{flex:0 0 100%;width:100%;height:100%;margin:0;scroll-snap-align:start;scroll-snap-stop:always}
 .read .pages .pg{display:flex;align-items:center;justify-content:center;overflow:hidden}
+/* עמוד חתוך (scanCrop) — בראש המסך: השיעור מתחיל למעלה, וסופו ממשיך את העמוד הקודם. */
+.read .pages .pg.cropped{align-items:flex-start}
 .read .pages .leaf{box-shadow:none;border-radius:0;width:auto;max-width:100%;flex:none;
   height:min(100%, calc(100vw / var(--ratio,0.8)));aspect-ratio:var(--ratio,0.8)}
 .read .pages .sect{flex-direction:column;align-items:center;justify-content:center;text-align:center;border:0;padding:var(--sp-6)}
@@ -209,6 +213,10 @@ body.reading #toasts{bottom:calc(var(--toast-bottom) + env(safe-area-inset-botto
 /* הגדלה בשתי אצבעות — העמוד שתחת האצבעות גדל פי --z, ונגלל בתוך עצמו לכל הכיוונים. */
 .read .pages .pg.zoomed{display:block;overflow:auto;touch-action:pan-x pan-y}
 .read .pages .pg.zoomed .leaf{height:calc(min(var(--page-h), calc(100vw / var(--ratio,0.8))) * var(--z,1));max-width:none;margin:0 auto}
+/* עמודים נערמים (stackCrops) — זה מתחת לזה בראש המסך, וגובהם יחד נכנס במסך: --sum — סכום הגבהים ביחס לרוחב. */
+.read .pages .pg.stack .stk{display:flex;flex-direction:column;align-items:center;width:100%}
+.read .pages .pg.stack .leaf{height:calc(min(var(--page-h) / var(--sum,1), 100vw) / var(--ratio,0.8))}
+.read .pages .pg.stack.zoomed .leaf{height:calc(min(var(--page-h) / var(--sum,1), 100vw) / var(--ratio,0.8) * var(--z,1))}
 .read-end{display:flex;flex-wrap:wrap;gap:var(--sp-4);justify-content:center;padding:var(--sp-7) var(--sp-6)}
 .moreh{padding:var(--sp-6) var(--sp-4);border-bottom:2px solid var(--gold-soft);scroll-margin-top:calc(var(--readbar-h) + 8px)}
 .moreh-hd{display:flex;align-items:center;gap:var(--sp-5);margin-bottom:var(--sp-3)}

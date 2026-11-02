@@ -93,11 +93,12 @@ function bookFix(b, fix, pages) {
   });
   var end = sQ('.read-end');
   if (!empty.length || !end || !('IntersectionObserver' in window)) return;
+  // חצי לפחות — כמו ב-fixSections: העמוד הסמוך ברצועה נוגע במסך בשבר פיקסל.
   var io = new IntersectionObserver(function (es) {
-    if (!es.some(function (e) { return e.isIntersecting; })) return;
+    if (!es.some(function (e) { return e.isIntersecting && e.intersectionRatio >= 0.5; })) return;
     io.disconnect();
     empty.forEach(function (m, i) { setTimeout(function () { toast(m, 5000); }, i * 1200); });
-  });
+  }, { threshold: 0.5 });
   io.observe(end);
 }
 
