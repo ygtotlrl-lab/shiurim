@@ -9,8 +9,9 @@
 1. הריצו מול פרויקט ה-Supabase (`supabase.url` שבתצורה), דרך ה-SQL Editor,
    את `gius/migrations/000_schema.sql` ואז את `migrations/000_schema.sql` —
    הבעלים ראשון, והרצה חוזרת אינה משנה דבר.
-2. הסריקות במאגרי קבצים נפרדים, שמתפרסמים ב-GitHub Pages: `shiurim-mishneh-torah` — `laam/` רמב״ם לעם
-   ומורה השיעור, `vilna/` דפוס וילנא · `shiurim-files` — `p/` עמודי התניא · `shiurim-hayom-yom` · `shiurim-chumash`.
+2. הסריקות במאגרי קבצים נפרדים, שמתפרסמים ב-GitHub Pages: `shiurim-mishneh-torah` — `laam1/`–`laam14/` רמב״ם לעם
+   ו-`mrh/` מורה השיעור, `vil1/`–`vil12/` דפוס וילנא · `shiurim-tanya` — `tny/` עמודי התניא · `shiurim-hayom-yom` · `shiurim-chumash`;
+   שמות התיקיות — לפי הכלל שב-CLAUDE.md.
    הכתובות — `MT_URL`, `TANYA_URL`, `HY_URL` ו-`CH_URL`.
 
 ## מסכים

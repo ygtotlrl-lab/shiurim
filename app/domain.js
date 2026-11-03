@@ -8,8 +8,8 @@ import { esc, openModal, pullRender, toast, uiNoDialog } from '../core/ui.js';
 import { hebDayLabel, hebGematria } from '../core/hebrew.js';
 import { ALIYOT, CH, CH_URL, HAFTAROT, KEY_CHUMASH, KEY_SHNAYIM, MSG_PICK_ALIYAH_TITLE, HY, HY_MONTHS, HY_NAMES, HY_URL, KEY_HAYOM, KEY_RAMBAM, KEY_TANYA, MSG_PICK_DAY_TITLE, KV_TABLE, MSG_HAKDAMA, MSG_LOAD_FAIL,
          MSG_MINHAG_OPEN, MSG_MOREH_CLOSE, MSG_MOREH_OPEN, MSG_PEREK, MSG_SPECIAL_OPEN, MSG_PICK_CUR, MSG_PICK_NONE, MSG_PICK_PARASHA_TITLE, MSG_PICK_SEARCH,
-         MSG_PICK_TITLE, MSG_RAMBAM_OPENING, PARSHIOT, PUSH_TABLES, MT_URL, RAMBAM_LESSONS, RAMBAM_MAP, RAMBAM_VOLS, RAMBAM_X, SCAN, SCAN_SUB, SCAN_W, TABLES,
-         KEY_TANYA_DAY, MSG_YEAR_LEAP, MSG_YEAR_REG, TY, TY_MONTHS, LESSONS, MSG_ALT_PAGE, MSG_BOOKS_TITLE, MSG_SOON, TANYA_BOOKS, TANYA_CHAPTERS, TANYA_RATIO, TANYA_URL } from './constants.js';
+         MSG_PICK_TITLE, MSG_RAMBAM_OPENING, PARSHIOT, PUSH_TABLES, MT_URL, RAMBAM_LESSONS, RAMBAM_MAP, RAMBAM_VOLS, SCAN, SCAN_SUB, SCAN_W, TABLES,
+         KEY_TANYA_DAY, MSG_YEAR_LEAP, MSG_YEAR_REG, TY, TY_MONTHS, LESSONS, MSG_ALT_PAGE, MSG_BOOKS_TITLE, MSG_SOON, TANYA_BOOKS, TANYA_CHAPTERS, TANYA_RATIO, TANYA_URL, ttDir } from './constants.js';
 import { S, shell } from './state.js';
 import { BOOK_URL } from './bookdata.js';
 import { icon } from './icons.js';
@@ -307,20 +307,20 @@ function topSecHTML(id, title) {
 
 // ── הסריקות ──
 // כל הסריקות בתקן אחד — תמונה מוכנה לכל עמוד, ולא קובץ שהמכשיר מפענח.
-// p/ — מאגר התניא; yi/ he/ — היום יום; 1/–5/ ו-m/ — החומש וספר המנהגים; laam/ vilna/ — מאגר משנה תורה.
+// שם התיקייה — קוד הספר (ובספר רב־כרכים גם הכרך), והשלמה מדפוס אחר — הקוד ואות המקור (CLAUDE.md, «הסריקות»).
+// tny* — מאגר התניא; hyy hyh — היום יום; tt* mnh hft — החומש, ספר המנהגים והפטרות דיהרנפורט; השאר — מאגר משנה תורה.
 function fileUrl(path) {
   var d = path.split('/')[0];
   if (BOOK_URL[d]) return BOOK_URL[d] + path;
-  return (/^p\//.test(path) ? TANYA_URL : /^(yi|he)\//.test(path) ? HY_URL : /^([1-5]|m|h|g[1-5])\//.test(path) ? CH_URL : MT_URL) + path;
+  return (/^tny/.test(d) ? TANYA_URL : /^hy[yh]$/.test(d) ? HY_URL : /^(tt\d|mnh$|hft$)/.test(d) ? CH_URL : MT_URL) + path;
 }
 
 // שיעור רמב״ם — העמודים מהספרים השלמים של רמב״ם לעם, וההלבנה של השיעור הסמוך מעליהם (RAMBAM_MAP).
 function rambamInto(box, i) {
   (RAMBAM_MAP[i] || []).forEach(function (seg) {
-    var dir = 'laam/' + RAMBAM_VOLS[seg[0]];
-    if (Array.isArray(seg[2]) || typeof seg[1] === 'string') {
-      var key = RAMBAM_VOLS[seg[0]] + '/' + seg[1];
-      var h = RAMBAM_X[key] || (SCAN[dir] || [])[seg[1] - 1];
+    var dir = typeof seg[0] === 'string' ? seg[0] : RAMBAM_VOLS[seg[0]];
+    if (Array.isArray(seg[2])) {
+      var h = (SCAN[dir] || [])[seg[1] - 1];
       box.appendChild(scanSheet(dir + '/' + seg[1] + '.png', h ? SCAN_W / h : 0.64, seg[2]));
     } else scanInto(box, dir, seg[1], seg[2]);
   });
@@ -389,10 +389,11 @@ function scanSheet(path, ratio, whites, shade) {
 }
 
 // עמוד שמחוץ לסריקה המרכזית — הושלם מדפוס אחר: טוסט קצר כשהוא נכנס למסך, פעם אחת לכל הצגה.
-// רמב״ם 7/234a (וילנא) · תניא 60b ו-61a (תר״ס) · הפטרות מקראות גדולות (g2) · חורי במדבר, מקראות גדולות (g4) · הפטרות החגים, דיהרנפורט (h) · חורי הנ״ך (thx · thv · ysv · dhv).
+// תיקיית השלמה — קוד הספר, הכרך ואות המקור (g · v · x · l · t): laam7l · tnyt · tt2g · tt4g · yshv · thlv · thlx · dhyv; וגם hft — הפטרות החגים, דיהרנפורט.
+// הפיצול של סריקה כפולה (s, tt4s) — מאותה סריקה, ובלי טוסט.
 // טוסט באפליקציה — חמש שניות.
 var TOAST_MS = 5000;
-var ALT_RE = /(^laam\/7\/234a|^p\/(60b|61a)|^g\d\/|^h\/|^(thx|thv|ysv|dhv)\/)/;
+var ALT_RE = /^((laam|vil|hkd|mzv|mrh|tny|hyy|hyh|tt|mnh|sid|to|lt|sa|ey|z|m|n|nz|k|t|yhsh|shm|mlk|ysh|yrm|yhz|tra|thl|msl|dan|dhy|mgl)\d*[gvxlt]|hft)\//;
 var altIO = null, altAt = 0;
 function altWatch(fig) {
   if (!('IntersectionObserver' in window)) return;
@@ -439,7 +440,7 @@ function fixSections(pages, secs) {
   io.observe(end);
 }
 
-function tanyaSheet(item) { return scanSheet('p/' + item.p + '.png', 1 / (TANYA_RATIO[item.p] || 1.25), item.w); }
+function tanyaSheet(item) { return scanSheet((/\//.test(item.p) ? item.p : 'tny/' + item.p) + '.png', 1 / (TANYA_RATIO[item.p] || 1.25), item.w); }
 
 // ── היום יום ──
 // הבחירה — מקום היום בספר; הסדר מתשרי עד אלול, וכסלו אחד (א–יח מתש״ד, יט–כט מתש״ג).
@@ -476,8 +477,8 @@ function ttSheets(dir, p, ratio, shade) {
 
 // עמודי העלייה, שלמים.
 function chSheets(i) {
-  var r = CH[i], rs = scanRatios(String(r[0])), out = [];
-  for (var p = r[1]; p <= r[2]; p++) out.push.apply(out, ttSheets(String(r[0]), p, rs[p - 1]));
+  var r = CH[i], d = ttDir(r[0]), rs = scanRatios(d), out = [];
+  for (var p = r[1]; p <= r[2]; p++) out.push.apply(out, ttSheets(d, p, rs[p - 1]));
   return out;
 }
 
@@ -494,15 +495,15 @@ function shnayimGroups() {
 
 // הפרשה — מתחילת הראשון ועד סוף השביעי, עמודים שלמים.
 function shnayimSheets(c) {
-  var a = CH[c * 7], b = CH[c * 7 + 6], rs = scanRatios(String(a[0])), out = [];
-  for (var p = a[1]; p <= b[2]; p++) out.push.apply(out, ttSheets(String(a[0]), p, rs[p - 1]));
+  var a = CH[c * 7], b = CH[c * 7 + 6], d = ttDir(a[0]), rs = scanRatios(d), out = [];
+  for (var p = a[1]; p <= b[2]; p++) out.push.apply(out, ttSheets(d, p, rs[p - 1]));
   return out;
 }
 
 // הפטרה — קטעי עמודים, וההלבנה של מה שאינו במנהג.
 function haftaraSheets(segs) {
   return (segs || []).map(function (s) {
-    var rs = scanRatios(String(s[0]));
+    var rs = scanRatios(s[0]);
     return scanSheet(s[0] + '/' + s[1] + '.png', rs[s[1] - 1], s[2]);
   });
 }
@@ -532,7 +533,7 @@ function hyYiSheet(i) {
   var v = HY.yi[i], p = Math.floor(v / 10), slot = v % 10, seps = HY.seps[p] || [], w = [];
   if (slot > 0) seps[slot - 1].forEach(function (y, k) { w.push([0, y, k * HY_STRIP, HY_STRIP]); });
   if (slot < seps.length) seps[slot].forEach(function (y, k) { w.push([y, 100, k * HY_STRIP, HY_STRIP]); });
-  return scanSheet('yi/' + p + '.png', scanRatios('yi')[p - 1], w);
+  return scanSheet('hyy/' + p + '.png', scanRatios('hyy')[p - 1], w);
 }
 
 // עברית — מראש היום עד ראש הבא, גם על פני עמודים; שורת אוצר החכמה שבתחתית מולבנת.
@@ -542,7 +543,7 @@ function hyHeSheets(i) {
     var w = [];
     if (p === a[0]) w.push([0, a[1] - HY_GAP]);
     w.push(p === b[0] ? [b[1] - HY_GAP, 100] : [HY_FOOT, 100]);
-    out.push(scanSheet('he/' + p + '.png', scanRatios('he')[p - 1], w));
+    out.push(scanSheet('hyh/' + p + '.png', scanRatios('hyh')[p - 1], w));
   }
   return out;
 }

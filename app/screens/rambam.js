@@ -40,9 +40,9 @@ function rambamMount() {
 function rambamVilnaFill(vs, i) {
   var pages = el('div', 'pages');
   vs.appendChild(pages);
-  (VILNA[i] || []).forEach(function (seg) { scanInto(pages, 'vilna/' + seg[0], seg[1], seg[2]); });
+  (VILNA[i] || []).forEach(function (seg) { scanInto(pages, 'vil' + seg[0], seg[1], seg[2]); });
 }
 
-function rambamMorehFill(box) { scanInto(box, 'laam/moreh'); }
+function rambamMorehFill(box) { scanInto(box, 'mrh'); }
 
 export { rambamFill, rambamMorehFill, rambamMount, rambamScreenHTML, rambamVilnaFill };

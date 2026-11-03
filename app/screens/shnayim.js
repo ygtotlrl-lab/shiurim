@@ -48,7 +48,7 @@ function shnayimMount() {
 }
 
 // ספר המנהגים, «סדר ההפטרות שיש בהם חלוקי מנהגים» — שני עמודים שלמים.
-function minhagFill(box) { scanInto(box, 'm'); }
+function minhagFill(box) { scanInto(box, 'mnh'); }
 
 function specialPick() {
   openModal(MSG_SPECIAL_TITLE, '<div class="pk-list">' + HAFTAROT.S.map(function (s, i) {
