@@ -4,7 +4,6 @@ import { HEB_DOW, hebDate } from '../../core/hebrew.js';
 import { lsGet, lsSet } from '../../core/storage.js';
 import { LESSONS, LINKS, MSG_BOOKS_TITLE, MSG_DND, MSG_DND_OFF, MSG_DND_ON, MSG_HOME_TITLE, MSG_SOON } from '../constants.js';
 import { lessonAppHref, lessonOpen } from '../domain.js';
-import { icon } from '../icons.js';
 
 // ── המדף ──
 // שתי קומות: בעליונה השיעורים הראשונים של LESSONS, ובתחתונה השאר ואחריהם הקישורים — הסדר מימין לשמאל.
@@ -12,46 +11,40 @@ var TOP_N = 6;
 
 // שדרה לכל ספר: עור בצבעו והטבעת זהב כשהוא פתוח, ובד בהיר ו«בקרוב» כשאין לו תוכן.
 // שיעור עם מסך או עם חלקים יוצא מהמדף, ואפליקציה אחרת או אתר — קישור.
-function spineHTML(l, lean) {
+// cur — המסך הפתוח, כשהמדף בגיליון «החלפת ספר»: הספר שלו בטבעת זהב, והלחיצה עוברת ישר — בלי היציאה מהמדף.
+function spineHTML(l, lean, cur) {
   var st = ' style="--w:' + l.sp[0] + 'px;--h:' + l.sp[1] + '%"';
   var t = '<span class="sp-band"></span><span class="sp-t">' + esc(l.lab) + '</span>';
   var cls = 'spine' + (lean ? ' lean' : '');
   if (!lessonOpen(l) && !l.url) {
     return '<div class="' + cls + ' off" aria-disabled="true"' + st + '>' + t + '<span class="sp-m">' + esc(MSG_SOON) + '</span><span class="sp-band bot"></span></div>';
   }
-  cls += ' cv-' + l.cover;
+  cls += ' cv-' + l.cover + (cur && lessonHas(l, cur) ? ' cur' : '');
   var end = '<span class="sp-band bot"></span>';
   if (l.app || l.url) {
     return '<a class="' + cls + '" href="' + esc(l.app ? lessonAppHref(l) : l.url) + '"' + st + '>' + t + end + '</a>';
   }
-  return '<button class="' + cls + '" data-act="shelf-open" data-id="' + esc(l.k) + '"' + st + '>' + t + end + '</button>';
+  var act = !cur ? 'shelf-open' : l.subs ? 'lesson-pick' : 'tab-go', id = !cur || l.subs ? l.k : l.screen;
+  return '<button class="' + cls + '" data-act="' + act + '" data-id="' + esc(id) + '"' + st + '>' + t + end + '</button>';
 }
 
-function shelfHTML(list, lean) {
-  return '<div class="shelf-unit"><div class="cubby">' + list.map(function (l, i) { return spineHTML(l, lean && i === list.length - 1); }).join('') +
+function shelfHTML(list, lean, cur) {
+  return '<div class="shelf-unit"><div class="cubby">' + list.map(function (l, i) { return spineHTML(l, lean && i === list.length - 1, cur); }).join('') +
     '</div><div class="plank"></div></div>';
+}
+// שתי הקומות — בבית ובגיליון «החלפת ספר» אחת הן.
+function shelvesHTML(cur) {
+  var all = LESSONS.concat(LINKS);
+  return '<div class="shelves' + (cur ? ' in-sheet' : '') + '">' + shelfHTML(all.slice(0, TOP_N), true, cur) + shelfHTML(all.slice(TOP_N), false, cur) + '</div>';
 }
 
 // ── החלפת ספר מתוך שיעור ──
-// אותן כריכות בצבעיהן, בגיליון מלמטה, והספר הפתוח בטבעת זהב.
+// אותו מדף בשתי קומות, בגיליון מלמטה, והספר הפתוח בטבעת זהב.
 function lessonHas(l, screen) {
   return l.screen === screen || (l.subs || []).some(function (s) { return s.screen === screen; });
 }
-function coverHTML(l, cur) {
-  var cls = 'cover' + (l.wide ? ' wide' : '') + (cur && lessonHas(l, cur) ? ' cur' : '');
-  var t = '<span class="cv-t">' + esc(l.lab) + '</span>';
-  if (!lessonOpen(l)) {
-    return '<div class="' + cls + ' off" aria-disabled="true">' + t + '<span class="cv-m">' + esc(MSG_SOON) + '</span></div>';
-  }
-  cls += ' cv-' + l.cover;
-  if (l.app) {
-    return '<a class="' + cls + '" href="' + esc(lessonAppHref(l)) + '">' + t + '<span class="cv-m">' + icon('out') + '</span></a>';
-  }
-  var act = l.subs ? 'lesson-pick' : 'tab-go', id = l.subs ? l.k : l.screen;
-  return '<button class="' + cls + '" data-act="' + act + '" data-id="' + esc(id) + '">' + t + '</button>';
-}
 function booksPick(screen) {
-  openModal(MSG_BOOKS_TITLE, '<div class="covers mini">' + LESSONS.map(function (l) { return coverHTML(l, screen); }).join('') + '</div>', '');
+  openModal(MSG_BOOKS_TITLE, shelvesHTML(screen || 'home'), '');
 }
 
 // התאריך העברי של היום — מתחת לכותרת: היום בשבוע, התאריך והשנה.
@@ -74,10 +67,8 @@ function dndToggle() { lsSet(DND_KEY, lsGet(DND_KEY, '') === '1' ? '' : '1'); }
 
 // הלוגו הוא הנכס שהמחולל מייצר — ציור שני של המאסטר היה מקור אמת שני.
 function homeScreenHTML() {
-  var all = LESSONS.concat(LINKS);
   return '<section class="shelf-pg"><header class="shelf-hd"><div class="shelf-tl"><img src="icons/icon-192.3db7e6a8.png" alt="" width="36" height="36">' +
-    '<h1>' + esc(MSG_HOME_TITLE) + '</h1></div>' + todayHTML() + '</header><div class="shelves">' +
-    shelfHTML(all.slice(0, TOP_N), true) + shelfHTML(all.slice(TOP_N), false) + '</div>' + dndHTML() + '</section>';
+    '<h1>' + esc(MSG_HOME_TITLE) + '</h1></div>' + todayHTML() + '</header>' + shelvesHTML() + dndHTML() + '</section>';
 }
 
 // ── הספר יוצא מהמדף ──

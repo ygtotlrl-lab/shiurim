@@ -168,28 +168,15 @@ body.shelf{background:linear-gradient(180deg,var(--shelf),var(--shelf-2))}
 .bk3-in.cv-brown .bk3-front{background-color:var(--cv-brown)}
 .bk3-in.cv-green .bk3-front{background-color:var(--cv-green)}
 @media (prefers-reduced-motion:reduce){.spine,.bk3,.bk3-in,.bk3-pages,.bk3-cover{transition:none}}
-.cover{position:relative;height:94px;border:0;border-radius:var(--r-2) var(--r-4) var(--r-4) var(--r-2);
-  padding:var(--sp-5) var(--sp-6);display:flex;flex-direction:column;justify-content:space-between;align-items:flex-start;
-  text-align:start;text-decoration:none;cursor:pointer;color:var(--emboss);
-  box-shadow:inset 6px 0 0 rgba(0,0,0,.18),0 2px 4px rgba(40,25,10,.18)}
-.cover::after{content:"";position:absolute;inset:6px 8px 6px 12px;border:1px solid var(--emboss-line);border-radius:var(--r-1);pointer-events:none}
-.cover.wide{grid-column:1/-1;height:84px}
-.cv-t{position:relative;font-family:var(--f-display);font-weight:700;font-size:var(--fs-5)}
-.cv-m{position:relative;font-size:var(--fs-2);display:flex}
-.cv-m .ico{width:16px;height:16px}
 .cv-navy{background-color:var(--cv-navy)}
 .cv-bord{background-color:var(--cv-bord)}
 .cv-brown{background-color:var(--cv-brown)}
 .cv-green{background-color:var(--cv-green)}
-.cover:not(.off):active{filter:brightness(1.12)}
-.cover.off{cursor:default;background:var(--cloth);color:var(--cloth-ink);box-shadow:inset 6px 0 0 rgba(0,0,0,.05),0 1px 2px rgba(40,25,10,.08)}
-.cover.off::after{border-color:var(--cloth-line)}
-/* בגיליון החלפת הספר — אותן כריכות, נמוכות יותר, והספר הפתוח בטבעת זהב. */
-.covers.mini{overflow-y:auto;padding:var(--sp-4) var(--sp-6) var(--sp-6)}
-.covers.mini .cover{height:64px}
-.covers.mini .cover.wide{height:58px}
-.covers.mini .cv-t{font-size:var(--fs-4)}
-.cover.cur{box-shadow:inset 6px 0 0 rgba(0,0,0,.18),0 0 0 3px var(--gold)}
+/* בגיליון החלפת הספר — אותו מדף, בגובה שהגיליון נותן ובלי גלילה; הספר הפתוח בטבעת זהב. */
+.shelves.in-sheet{flex:none;height:min(calc(78dvh - 90px),600px);min-height:300px;gap:var(--sp-7);
+  padding:var(--sp-4) var(--sp-6) var(--sp-7);justify-content:stretch}
+.shelves.in-sheet .shelf-unit{max-height:none}
+.spine.cur{box-shadow:0 0 0 2px var(--cubby),0 0 0 5px var(--gold),0 6px 14px rgba(0,0,0,.35);z-index:1}
 
 /* בחירת חלק — גיליון מלמטה; חלק בלי תוכן — באפור ו«בקרוב». */
 .lp-soon{flex:none;font-size:var(--fs-2);color:var(--text-3);border:1px solid var(--border);border-radius:var(--r-7);
