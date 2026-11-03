@@ -549,10 +549,12 @@ function pinchStart(e) {
   if (e.touches.length !== 2) return;
   var box = e.target.closest && e.target.closest('.read .pages .pg');
   if (!box) return;
-  var leaf = box.querySelector('.leaf'), r = box.getBoundingClientRect(), t = e.touches;
-  var cx = (t[0].clientX + t[1].clientX) / 2 - r.left, cy = (t[0].clientY + t[1].clientY) / 2 - r.top;
-  pz = { box: box, leaf: leaf, d0: pzDist(t), z0: +box.dataset.z || 1, s: 1, cx: cx, cy: cy, ox: cx + box.scrollLeft, oy: cy + box.scrollTop };
-  if (leaf) leaf.style.transformOrigin = 'center center';
+  var leaf = box.querySelector('.leaf'), t = e.touches;
+  var mx = (t[0].clientX + t[1].clientX) / 2, my = (t[0].clientY + t[1].clientY) / 2;
+  var lr = (leaf || box).getBoundingClientRect();
+  // הנקודה שבין האצבעות, ביחס לעלה — הצביטה מגדילה סביבה, וגם הסוף מעמיד אותה באותו מקום על המסך
+  pz = { box: box, leaf: leaf, d0: pzDist(t), z0: +box.dataset.z || 1, s: 1, mx: mx, my: my, fx: mx - lr.left, fy: my - lr.top };
+  if (leaf) leaf.style.transformOrigin = pz.fx + 'px ' + pz.fy + 'px';
 }
 function pinchMove(e) {
   if (!pz || e.touches.length !== 2) return;
@@ -571,9 +573,11 @@ function pinchEnd() {
   box.dataset.z = String(z);
   box.style.setProperty('--z', String(z));
   box.classList.toggle('zoomed', z > 1);
-  // נקודת המוקד נשארת מתחת לאצבעות.
-  box.scrollLeft = p.ox * p.s - p.cx;
-  box.scrollTop = p.oy * p.s - p.cy;
+  if (z <= 1 || !p.leaf) return;
+  // נקודת המוקד נשארת מתחת לאצבעות: אחרי הפריסה החדשה — כמה היא זזה על המסך, ובאותו שיעור גוללים (בלי קפיצה לצד)
+  var nr = p.leaf.getBoundingClientRect();
+  box.scrollLeft += nr.left + p.fx * p.s - p.mx;
+  box.scrollTop += nr.top + p.fy * p.s - p.my;
 }
 
 // הקשה על עמוד מוגדל מחזירה את כל העמודים לגודלם — ההגדלה נשארת עד צביטה חזרה או עד הקשה.
