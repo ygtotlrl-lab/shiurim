@@ -8,7 +8,7 @@ import { esc, openModal, pullRender, toast, uiNoDialog } from '../core/ui.js';
 import { hebDayLabel, hebGematria } from '../core/hebrew.js';
 import { ALIYOT, CH, CH_URL, HAFTAROT, KEY_CHUMASH, KEY_SHNAYIM, MSG_PICK_ALIYAH_TITLE, HY, HY_MONTHS, HY_NAMES, HY_URL, KEY_HAYOM, KEY_RAMBAM, KEY_TANYA, MSG_PICK_DAY_TITLE, KV_TABLE, MSG_HAKDAMA, MSG_LOAD_FAIL,
          MSG_MINHAG_OPEN, MSG_MOREH_CLOSE, MSG_MOREH_OPEN, MSG_PEREK, MSG_SPECIAL_OPEN, MSG_PICK_CUR, MSG_PICK_NONE, MSG_PICK_PARASHA_TITLE, MSG_PICK_SEARCH,
-         MSG_PICK_TITLE, MSG_RAMBAM_OPENING, PARSHIOT, PUSH_TABLES, MT_URL, RAMBAM_LESSONS, RAMBAM_MAP, RAMBAM_VOLS, RAMBAM_X, SCAN, SCAN_W, TABLES,
+         MSG_PICK_TITLE, MSG_RAMBAM_OPENING, PARSHIOT, PUSH_TABLES, MT_URL, RAMBAM_LESSONS, RAMBAM_MAP, RAMBAM_VOLS, RAMBAM_X, SCAN, SCAN_SUB, SCAN_W, TABLES,
          KEY_TANYA_DAY, MSG_YEAR_LEAP, MSG_YEAR_REG, TY, TY_MONTHS, LESSONS, MSG_ALT_PAGE, MSG_BOOKS_TITLE, MSG_SOON, TANYA_BOOKS, TANYA_CHAPTERS, TANYA_RATIO, TANYA_URL } from './constants.js';
 import { S, shell } from './state.js';
 import { BOOK_URL } from './bookdata.js';
@@ -389,7 +389,7 @@ function scanSheet(path, ratio, whites, shade) {
 }
 
 // עמוד שמחוץ לסריקה המרכזית — הושלם מדפוס אחר: טוסט קצר כשהוא נכנס למסך, פעם אחת לכל הצגה.
-// רמב״ם 7/234a (וילנא) · תניא 60b ו-61a (תר״ס) · הפטרות מקראות גדולות (g2) · הפטרות החגים, דיהרנפורט (h) · חורי הנ״ך (thx · thv · ysv · dhv).
+// רמב״ם 7/234a (וילנא) · תניא 60b ו-61a (תר״ס) · הפטרות מקראות גדולות (g2) · חורי במדבר, מקראות גדולות (g4) · הפטרות החגים, דיהרנפורט (h) · חורי הנ״ך (thx · thv · ysv · dhv).
 // טוסט באפליקציה — חמש שניות.
 var TOAST_MS = 5000;
 var ALT_RE = /(^laam\/7\/234a|^p\/(60b|61a)|^g\d\/|^h\/|^(thx|thv|ysv|dhv)\/)/;
@@ -467,10 +467,17 @@ function chumashGroups() {
   });
 }
 
+// עמוד של תורה תמימה — או, כשחסר בסריקה ובמקומו כפיל, העמודים שמשלימים אותו מדפוס אחר (SCAN_SUB).
+function ttSheets(dir, p, ratio, shade) {
+  var sub = SCAN_SUB[dir + '/' + p];
+  if (!sub) return [scanSheet(dir + '/' + p + '.png', ratio, null, shade)];
+  return sub.map(function (s) { return scanSheet(s[0] + '/' + s[1] + '.png', SCAN_W / SCAN[s[0]][s[1] - 1], s[2], shade); });
+}
+
 // עמודי העלייה, שלמים.
 function chSheets(i) {
   var r = CH[i], rs = scanRatios(String(r[0])), out = [];
-  for (var p = r[1]; p <= r[2]; p++) out.push(scanSheet(r[0] + '/' + p + '.png', rs[p - 1]));
+  for (var p = r[1]; p <= r[2]; p++) out.push.apply(out, ttSheets(String(r[0]), p, rs[p - 1]));
   return out;
 }
 
@@ -488,7 +495,7 @@ function shnayimGroups() {
 // הפרשה — מתחילת הראשון ועד סוף השביעי, עמודים שלמים.
 function shnayimSheets(c) {
   var a = CH[c * 7], b = CH[c * 7 + 6], rs = scanRatios(String(a[0])), out = [];
-  for (var p = a[1]; p <= b[2]; p++) out.push(scanSheet(a[0] + '/' + p + '.png', rs[p - 1]));
+  for (var p = a[1]; p <= b[2]; p++) out.push.apply(out, ttSheets(String(a[0]), p, rs[p - 1]));
   return out;
 }
 
@@ -673,6 +680,6 @@ function stripEnd() {
 
 function tanyaChapter(c) { return TANYA_CHAPTERS[c]; }
 
-export { TOAST_MS, stripEnd, scanSheet, sPickRawAny, fixSections, PICKERS, topSecHTML, haftaraOf, haftaraSheets, shnayimCur, shnayimSheets, chLabel, chSheets, chumashCur, el, fileUrl, hayomCur, hyHeSheets, hyLabel, hyStep, hyYiSheet, lessonAppHref, lessonOpen, lessonPickOpen, localPut, pickerFilter, pinchEnd, pinchMove, pinchReset, pinchStart, pzSwipeMove, readTap, pzSwipeStart, pickerOpen, pushSoon, rambamCur, rambamInto, rambamLabel, readBarHTML,
+export { TOAST_MS, stripEnd, scanSheet, ttSheets, sPickRawAny, fixSections, PICKERS, topSecHTML, haftaraOf, haftaraSheets, shnayimCur, shnayimSheets, chLabel, chSheets, chumashCur, el, fileUrl, hayomCur, hyHeSheets, hyLabel, hyStep, hyYiSheet, lessonAppHref, lessonOpen, lessonPickOpen, localPut, pickerFilter, pinchEnd, pinchMove, pinchReset, pinchStart, pzSwipeMove, readTap, pzSwipeStart, pickerOpen, pushSoon, rambamCur, rambamInto, rambamLabel, readBarHTML,
          sLive, sPendKey, sPendKeyOf, sPick, sPickSet, sQ, sStripRows, sSyncNow, sSyncPull,
          scanInto, sTableMeta, tanyaChapName, tanyaChapter, tanyaCur, tanyaLabel, tanyaSheet, tyCur, tyDay, tyLabel, tyShowSet, tyStep };

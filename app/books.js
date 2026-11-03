@@ -7,7 +7,7 @@ import { BOOKS, BOOK_SCAN, MSG_TH_PEOPLE_TITLE, MSG_TH_PEOPLE_ADD, MSG_TH_PEOPLE
          MSG_TH_PEOPLE_NONE, MSG_TH_PEOPLE_DEL, MSG_TH_PEOPLE_SAVE, MSG_TH_PEOPLE_OPEN, MSG_PEREK, KEY_TH_PEOPLE, TH_CHAPTERS } from './bookdata.js';
 import { SCAN } from './constants.js';
 import { tehillimAddThirty } from './calendar.js';
-import { el, readBarHTML, sPick, sPickRawAny, sPickSet, sQ, scanSheet } from './domain.js';
+import { el, readBarHTML, sPick, sPickRawAny, sPickSet, sQ, scanSheet, ttSheets } from './domain.js';
 import { icon } from './icons.js';
 
 // ── מרשם ──
@@ -47,7 +47,7 @@ function segSheets(segs, shade) {
   var out = [];
   (segs || []).forEach(function (s) {
     if (typeof s[2] === 'number') {
-      for (var p = s[1]; p <= s[2]; p++) out.push(scanSheet(s[0] + '/' + p + '.png', bookRatio(s[0], p), null, shade));
+      for (var p = s[1]; p <= s[2]; p++) out.push.apply(out, ttSheets(s[0], p, bookRatio(s[0], p), shade));
     } else out.push(scanSheet(s[0] + '/' + s[1] + '.png', bookRatio(s[0], s[1]), s[2], shade));
   });
   return out;
