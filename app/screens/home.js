@@ -110,7 +110,7 @@ function ovMake(l) {
   ov.className = 'bk3';
   ov.setAttribute('aria-hidden', 'true');
   ov.innerHTML = '<div class="bk3-in cv-' + esc(l.cover) + '"><div class="bk3-pages"></div><div class="bk3-cover"><div class="bk3-front">' +
-    '<span class="bk3-frame"></span></div><div class="bk3-inner"></div></div></div>';
+    '<span class="bk3-frame"></span><h2>' + esc(l.lab) + '</h2></div><div class="bk3-inner"></div></div></div>';
   document.body.appendChild(ov);
   return ov;
 }
@@ -131,11 +131,12 @@ function shelfOpen(el, onOut) {
       el.classList.add('gone');
       ov.classList.add('dim');
       place(ov, midBox(), TF_MID);
-      later(T_FLY, function () { bk.held = true; onOut(l); });
+      later(T_FLY, function () { ov.classList.add('lbl'); bk.held = true; onOut(l); });
     });
   });
 }
 
+// שם הספר על הכריכה — רק כשהספר במרכז (lbl), ולא בדרך מהמדף ואליו.
 // הכריכה נפתחת והדף מתפרש — ובסופו המסך של השיעור נצבע מתחת, והספר נעלם.
 function shelfIn(go) {
   if (!bk) { go(); return; }
@@ -161,7 +162,7 @@ function shelfBack() {
   if (!b || b.going) return;
   bk = null;
   if (!b.ov) { b.sp.classList.remove('up', 'gone'); return; }
-  b.ov.classList.remove('dim');
+  b.ov.classList.remove('dim', 'lbl');
   place(b.ov, boxOf(b.sp.getBoundingClientRect()), TF_SPINE);
   later(T_FLY, function () {
     b.sp.classList.remove('gone', 'up');
@@ -189,7 +190,7 @@ function shelfReturn(from) {
   var sp = l && document.querySelector('.spine[data-id="' + l.k + '"]');
   if (!l || !sp) return;
   var ov = ovMake(l);
-  ov.classList.add('dim', 'open', 'full');
+  ov.classList.add('dim', 'open', 'full', 'lbl');
   place(ov, fullBox(), TF_FLAT);
   sp.classList.add('gone');
   next(function () {
@@ -198,7 +199,7 @@ function shelfReturn(from) {
     later(T_FULL, function () {
       ov.classList.remove('open');
       later(T_OPEN, function () {
-        ov.classList.remove('dim');
+        ov.classList.remove('dim', 'lbl');
         place(ov, boxOf(sp.getBoundingClientRect()), TF_SPINE);
         later(T_FLY, function () { sp.classList.remove('gone'); ov.remove(); });
       });

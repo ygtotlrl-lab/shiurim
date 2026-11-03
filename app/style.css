@@ -159,6 +159,8 @@ body.shelf{background:linear-gradient(180deg,var(--shelf),var(--shelf-2))}
 .bk3-front{background:inherit;background-image:linear-gradient(90deg,rgba(255,255,255,.05),transparent 40%,rgba(0,0,0,.15));box-shadow:inset 0 0 40px rgba(0,0,0,.45);color:var(--emboss);
   display:flex;align-items:center;justify-content:center;text-align:center}
 .bk3-frame{position:absolute;inset:14px 26px 14px 14px;border:2px solid var(--emboss-line);border-radius:2px}
+.bk3-front h2{position:relative;padding:0 28px 0 16px;font-family:var(--f-display);font-weight:900;font-size:clamp(26px,9vw,44px);line-height:1.1;text-shadow:0 2px 0 rgba(0,0,0,.45);opacity:0;transition:opacity .12s}
+.bk3.lbl .bk3-front h2{opacity:1}
 .bk3-inner{transform:rotateY(180deg);background:var(--gold-soft)}
 .bk3-in.cv-navy,.bk3-in.cv-bord,.bk3-in.cv-brown,.bk3-in.cv-green{background:none}
 .bk3-in.cv-navy .bk3-front{background-color:var(--cv-navy)}
