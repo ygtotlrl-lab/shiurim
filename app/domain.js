@@ -673,6 +673,6 @@ function stripEnd() {
 
 function tanyaChapter(c) { return TANYA_CHAPTERS[c]; }
 
-export { stripEnd, scanSheet, sPickRawAny, fixSections, PICKERS, topSecHTML, haftaraOf, haftaraSheets, shnayimCur, shnayimSheets, chLabel, chSheets, chumashCur, el, fileUrl, hayomCur, hyHeSheets, hyLabel, hyStep, hyYiSheet, lessonAppHref, lessonOpen, lessonPickOpen, localPut, pickerFilter, pinchEnd, pinchMove, pinchReset, pinchStart, pzSwipeMove, readTap, pzSwipeStart, pickerOpen, pushSoon, rambamCur, rambamInto, rambamLabel, readBarHTML,
+export { TOAST_MS, stripEnd, scanSheet, sPickRawAny, fixSections, PICKERS, topSecHTML, haftaraOf, haftaraSheets, shnayimCur, shnayimSheets, chLabel, chSheets, chumashCur, el, fileUrl, hayomCur, hyHeSheets, hyLabel, hyStep, hyYiSheet, lessonAppHref, lessonOpen, lessonPickOpen, localPut, pickerFilter, pinchEnd, pinchMove, pinchReset, pinchStart, pzSwipeMove, readTap, pzSwipeStart, pickerOpen, pushSoon, rambamCur, rambamInto, rambamLabel, readBarHTML,
          sLive, sPendKey, sPendKeyOf, sPick, sPickSet, sQ, sStripRows, sSyncNow, sSyncPull,
          scanInto, sTableMeta, tanyaChapName, tanyaChapter, tanyaCur, tanyaLabel, tanyaSheet, tyCur, tyDay, tyLabel, tyShowSet, tyStep };
