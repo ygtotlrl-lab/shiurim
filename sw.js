@@ -1,7 +1,7 @@
 // sw.js — service worker של האפליקציה
 importScripts('./app.config.js');
 // מכאן נגזרת גרסת האפליקציה שבבאנר.
-var CACHE_NAME = self.APP.id + '-v73';
+var CACHE_NAME = self.APP.id + '-v74';
 
 var CORE = [
   './',
@@ -38,8 +38,8 @@ var CORE = [
   './app/screens/tanyay.js',
   './app/main.js',
   './manifest.json',
-  './icons/icon-192.b6655e27.png',
-  './icons/icon-512.36eebf61.png',
+  './icons/icon-192.3db7e6a8.png',
+  './icons/icon-512.3bed82cd.png',
 ];
 
 // גרסאות נעוצות במדויק — major צף נשבר בשחרור של הספק בלי שינוי קוד.
