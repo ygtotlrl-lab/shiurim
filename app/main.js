@@ -12,7 +12,7 @@ import { BOOKS, KEY_TH_PEOPLE } from './bookdata.js';
 import { S, shell, view } from './state.js';
 import { sPickRawAny, PICKERS, chumashCur, shnayimCur, hayomCur, lessonPickOpen, pickerFilter, pickerOpen, pinchEnd, pinchMove, pinchReset, pinchStart, pzSwipeMove, pzSwipeStart, readTap, rambamCur, stripEnd, sPendKey, sPendKeyOf, sPickSet, sQ, sStripRows, sSyncNow, sSyncPull,
          sTableMeta, tanyaCur, tyCur, tyShowSet } from './domain.js';
-import { DND_KEY, booksPick, dndToggle, homeScreenHTML } from './screens/home.js';
+import { DND_KEY, booksPick, dndToggle, homeScreenHTML, shelfHeld, shelfIn, shelfOpen, shelfReturn, shelfWatch } from './screens/home.js';
 import { rambamMorehFill, rambamMount, rambamScreenHTML, rambamVilnaFill } from './screens/rambam.js';
 import { chumashMount, chumashScreenHTML } from './screens/chumash.js';
 import { tanyayMount, tanyayScreenHTML } from './screens/tanyay.js';
@@ -141,9 +141,10 @@ function sRender() {
   var cur = bk ? (bk.people ? JSON.stringify(sPickRawAny(KEY_TH_PEOPLE)) : bookCur(bk)) : home ? (rambamCur() + ':' + tanyaCur()) : view.screen === 'tanya' ? tanyaCur()
     : view.screen === 'hayom' ? hayomCur() : view.screen === 'chumash' ? chumashCur() : view.screen === 'shnayim' ? shnayimCur() : view.screen === 'tanyay' ? tyCur() : rambamCur();
   if (view.shown[view.screen] !== cur || !root.firstChild || root.dataset.screen !== view.screen) {
+    root.dataset.from = root.dataset.screen || '';
     root.dataset.screen = view.screen;
     if (bk) { root.innerHTML = bookScreenHTML(view.screen); bookMount(view.screen); }
-    else if (home) root.innerHTML = homeScreenHTML();
+    else if (home) { root.innerHTML = homeScreenHTML(); shelfReturn(root.dataset.from); }
     else if (view.screen === 'tanya') { root.innerHTML = tanyaScreenHTML(); tanyaMount(); }
     else if (view.screen === 'hayom') { root.innerHTML = hayomScreenHTML(); hayomMount(); }
     else if (view.screen === 'chumash') { root.innerHTML = chumashScreenHTML(); chumashMount(); }
@@ -276,7 +277,13 @@ var DOM_ACTIONS = {
   'go-home': function () { go('home'); },
   'nav-back': function () { navBack(); },
   'lesson-pick': function (el) { lessonPickOpen(el.dataset.id); },
-  'lesson-go': function (el) { closeModal(); go(el.dataset.id); },
+  // ספר במדף — יוצא מהמדף; לשיעור בעל חלקים נפתח הגיליון, ובחירת החלק ממשיכה את הפתיחה.
+  'shelf-open': function (el) {
+    shelfOpen(el, function (l) {
+      if (l.subs) { lessonPickOpen(l.k); shelfWatch(); } else shelfIn(function () { go(l.screen); });
+    });
+  },
+  'lesson-go': function (el) { var id = el.dataset.id, held = shelfHeld(); closeModal(); if (held) shelfIn(function () { go(id); }); else go(id); },
   'read-toggle': function () { readTap(function () { if (!pinchReset()) document.body.classList.toggle('calm'); }); },
   'pick-open': function (el) { var b = bookOf(el.dataset.k); if (b && b.people) { thPeopleOpen(); return; } tyShowSet(null); pickerOpen(el.dataset.k); },
   'pick-go': function (el) {

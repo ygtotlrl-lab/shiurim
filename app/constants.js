@@ -142,39 +142,39 @@ var MSG_SHNAYIM = 'שניים מקרא';
 var TANYA_BOOKS = [['בראשית', 0], ['שמות', 12], ['ויקרא', 23], ['במדבר', 33], ['דברים', 43]];
 
 // מרשם השיעורים, בסדר שבמסך הראשי — screen הוא המסך שהשיעור פותח, ובלעדיו השיעור «בקרוב».
-// cover — צבע הכריכה במסך הראשי, ו-wide — כריכה לרוחב המדף; שיעור עם subs פותח בחירה בין חלקיו, ושיעור עם app פותח אפליקציה אחרת — החבילה מהתצורה, `android.launch`.
+// cover — צבע הכריכה, sp — שדרת הספר במדף [רוחב בפיקסלים, גובה באחוזים מהקומה], ו-wide — כריכה לרוחב גיליון החלפת הספר; שיעור עם subs פותח בחירה בין חלקיו, ושיעור עם app פותח אפליקציה אחרת — החבילה מהתצורה, `android.launch`.
 var LESSONS = [
-  { k: 'siddur', lab: 'סידור', cover: 'green', subs: [
+  { k: 'siddur', lab: 'סידור', cover: 'green', sp: [52, 84], subs: [
     { k: 'siddur-tefilot', lab: 'תפילות', screen: 'bk-sid' },
     { k: 'siddur-kria', lab: 'קריאת התורה', screen: 'bk-sidk' }
   ] },
-  { k: 'chumash', lab: 'חומש', cover: 'brown', subs: [
+  { k: 'chumash', lab: 'חומש', cover: 'brown', sp: [56, 92], subs: [
     { k: 'chumash-yomi', lab: MSG_CHUMASH, screen: 'chumash' },
     { k: 'shnayim-mikra', lab: MSG_SHNAYIM, screen: 'shnayim' },
     { k: 'tanach', lab: 'תנ״ך', screen: 'bk-tanach' }
   ] },
-  { k: 'tehillim', lab: 'תהלים', cover: 'green', subs: [
+  { k: 'tehillim', lab: 'תהלים', cover: 'green', sp: [48, 78], subs: [
     { k: 'tehillim-yomi', lab: 'תהלים יומי', screen: 'bk-thd' },
     { k: 'tehillim-people', lab: 'פרקים אישיים', screen: 'bk-thp' },
     { k: 'tehillim-week', lab: 'תהלים ימי השבוע', screen: 'bk-thw' }
   ] },
-  { k: 'tanya', lab: 'תניא', cover: 'bord', subs: [
+  { k: 'tanya', lab: 'תניא', cover: 'bord', sp: [50, 82], subs: [
     { k: 'tanya-yomi', lab: MSG_TANYA_DAY, screen: 'tanyay' },
     { k: 'tanya-week', lab: MSG_TANYA_WEEK, screen: 'tanya' }
   ] },
-  { k: 'rambam', lab: MSG_RAMBAM, cover: 'navy', wide: true, screen: 'rambam' },
-  { k: 'chassidishe-parsha', lab: 'החסידישע פרשה', cover: 'bord', screen: 'bk-chassidus' },
-  { k: 'hayom-yom', lab: MSG_HAYOM_YOM, cover: 'navy', screen: 'hayom' },
-  { k: 'shulchan-aruch', lab: 'שולחן ערוך הרב', cover: 'brown', screen: 'bk-sa' },
-  { k: 'ein-yaakov', lab: 'עין יעקב', cover: 'green', screen: 'bk-ey' },
-  { k: 'mishnayot', lab: 'משניות', cover: 'brown', screen: 'bk-mishnayot' },
-  { k: 'shas', lab: 'ש״ס', cover: 'bord', app: self.APP.android.launch.shas }
+  { k: 'rambam', lab: MSG_RAMBAM, cover: 'navy', wide: true, sp: [54, 89], screen: 'rambam' },
+  { k: 'chassidishe-parsha', lab: 'החסידישע פרשה', cover: 'bord', sp: [48, 85], screen: 'bk-chassidus' },
+  { k: 'hayom-yom', lab: MSG_HAYOM_YOM, cover: 'navy', sp: [44, 81], screen: 'hayom' },
+  { k: 'shulchan-aruch', lab: 'שולחן ערוך הרב', cover: 'brown', sp: [50, 92], screen: 'bk-sa' },
+  { k: 'ein-yaakov', lab: 'עין יעקב', cover: 'green', sp: [46, 87], screen: 'bk-ey' },
+  { k: 'mishnayot', lab: 'משניות', cover: 'brown', sp: [44, 83], screen: 'bk-mishnayot' },
+  { k: 'shas', lab: 'ש״ס', cover: 'bord', sp: [46, 90], app: self.APP.android.launch.shas }
 ];
 
-// הקישורים שבתחתית המדף — app: אפליקציה אחרת מהתצורה, url: אתר.
+// הספרים שבסוף המדף שהם קישורים — app: אפליקציה אחרת מהתצורה, url: אתר.
 var LINKS = [
-  { k: 'mafteach', lab: 'מפתח', app: self.APP.android.launch.mafteach },
-  { k: 'igrot', lab: 'אגרות קודש', url: 'https://www.igrot.com/ikf.php' }
+  { k: 'mafteach', lab: 'מפתח', cover: 'brown', sp: [38, 76], app: self.APP.android.launch.mafteach },
+  { k: 'igrot', lab: 'אגרות קודש', cover: 'navy', sp: [48, 86], url: 'https://www.igrot.com/ikf.php' }
 ];
 var MSG_DND = 'השתקת התראות בזמן לימוד';
 var MSG_DND_ON = 'פעיל';

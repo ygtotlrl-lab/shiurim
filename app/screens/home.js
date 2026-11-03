@@ -1,4 +1,4 @@
-// app/screens/home.js — מדף הכריכות שממנו נכנסים לכל שיעור
+// app/screens/home.js — מדף הספרים שממנו נכנסים לכל שיעור
 import { esc, openModal } from '../../core/ui.js';
 import { HEB_DOW, hebDate } from '../../core/hebrew.js';
 import { lsGet, lsSet } from '../../core/storage.js';
@@ -6,8 +6,37 @@ import { LESSONS, LINKS, MSG_BOOKS_TITLE, MSG_DND, MSG_DND_OFF, MSG_DND_ON, MSG_
 import { lessonAppHref, lessonOpen } from '../domain.js';
 import { icon } from '../icons.js';
 
-// כריכה לכל שיעור: עור בצבעו כשהוא פתוח, ובד בהיר ו«בקרוב» כשאין לו תוכן.
-// שיעור בעל חלקים פותח בחירה, שיעור עם מסך נפתח, ואפליקציה אחרת — קישור.
+// ── המדף ──
+// שתי קומות: בעליונה השיעורים הראשונים של LESSONS, ובתחתונה השאר ואחריהם הקישורים — הסדר מימין לשמאל.
+var TOP_N = 6;
+
+// שדרה לכל ספר: עור בצבעו והטבעת זהב כשהוא פתוח, ובד בהיר ו«בקרוב» כשאין לו תוכן.
+// שיעור עם מסך או עם חלקים יוצא מהמדף, ואפליקציה אחרת או אתר — קישור.
+function spineHTML(l, lean) {
+  var st = ' style="--w:' + l.sp[0] + 'px;--h:' + l.sp[1] + '%"';
+  var t = '<span class="sp-band"></span><span class="sp-t">' + esc(l.lab) + '</span>';
+  var cls = 'spine' + (lean ? ' lean' : '');
+  if (!lessonOpen(l) && !l.url) {
+    return '<div class="' + cls + ' off" aria-disabled="true"' + st + '>' + t + '<span class="sp-m">' + esc(MSG_SOON) + '</span><span class="sp-band bot"></span></div>';
+  }
+  cls += ' cv-' + l.cover;
+  var end = '<span class="sp-band bot"></span>';
+  if (l.app || l.url) {
+    return '<a class="' + cls + '" href="' + esc(l.app ? lessonAppHref(l) : l.url) + '"' + st + '>' + t + end + '</a>';
+  }
+  return '<button class="' + cls + '" data-act="shelf-open" data-id="' + esc(l.k) + '"' + st + '>' + t + end + '</button>';
+}
+
+function shelfHTML(list, lean) {
+  return '<div class="shelf-unit"><div class="cubby">' + list.map(function (l, i) { return spineHTML(l, lean && i === list.length - 1); }).join('') +
+    '</div><div class="plank"></div></div>';
+}
+
+// ── החלפת ספר מתוך שיעור ──
+// אותן כריכות בצבעיהן, בגיליון מלמטה, והספר הפתוח בטבעת זהב.
+function lessonHas(l, screen) {
+  return l.screen === screen || (l.subs || []).some(function (s) { return s.screen === screen; });
+}
 function coverHTML(l, cur) {
   var cls = 'cover' + (l.wide ? ' wide' : '') + (cur && lessonHas(l, cur) ? ' cur' : '');
   var t = '<span class="cv-t">' + esc(l.lab) + '</span>';
@@ -21,31 +50,16 @@ function coverHTML(l, cur) {
   var act = l.subs ? 'lesson-pick' : 'tab-go', id = l.subs ? l.k : l.screen;
   return '<button class="' + cls + '" data-act="' + act + '" data-id="' + esc(id) + '">' + t + '</button>';
 }
-
-function lessonHas(l, screen) {
-  return l.screen === screen || (l.subs || []).some(function (s) { return s.screen === screen; });
-}
-
-// החלפת ספר מתוך שיעור — אותן כריכות בצבעיהן, בגיליון מלמטה, והספר הפתוח מסומן בזהב.
 function booksPick(screen) {
   openModal(MSG_BOOKS_TITLE, '<div class="covers mini">' + LESSONS.map(function (l) { return coverHTML(l, screen); }).join('') + '</div>', '');
 }
 
-// התאריך העברי של היום — בקצה השמאלי של הכותרת: היום בשבוע והתאריך, ומתחתיהם השנה.
+// התאריך העברי של היום — מתחת לכותרת: היום בשבוע, התאריך והשנה.
 // התאריך הוא של היום האזרחי — אינו מתחלף בשקיעה.
 function todayHTML() {
   var d = new Date(), h = hebDate(d);
   if (!h.ok) return '';
-  return '<div class="shelf-date"><b>' + esc('יום ' + HEB_DOW[d.getDay()] + ' · ' + h.dayLabel + ' ' + h.monthName) + '</b>' +
-    '<span>' + esc(h.yearLabelFull) + '</span></div>';
-}
-
-// קישורים בתחתית המדף — אפליקציה אחרת (מהתצורה, `android.launch`) או אתר.
-function linksHTML() {
-  return '<nav class="shelf-links">' + LINKS.map(function (k) {
-    var href = k.app ? lessonAppHref(k) : k.url;
-    return '<a class="shelf-link" href="' + esc(href) + '">' + esc(k.lab) + icon('out') + '</a>';
-  }).join('') + '</nav>';
+  return '<div class="shelf-date">' + esc('יום ' + HEB_DOW[d.getDay()] + ' · ' + h.dayLabel + ' ' + h.monthName + ' · ') + '<b>' + esc(h.yearLabelFull) + '</b></div>';
 }
 
 // השתקת התראות בזמן לימוד — רק באפליקציה המותקנת: המעטפת קולטת את הקישור ומדליקה «נא לא להפריע» כשהיא בחזית.
@@ -60,9 +74,136 @@ function dndToggle() { lsSet(DND_KEY, lsGet(DND_KEY, '') === '1' ? '' : '1'); }
 
 // הלוגו הוא הנכס שהמחולל מייצר — ציור שני של המאסטר היה מקור אמת שני.
 function homeScreenHTML() {
-  return '<section class="shelf-pg"><header class="shelf-hd"><img src="icons/icon-192.3db7e6a8.png" alt="" width="42" height="42">' +
-    '<h1>' + esc(MSG_HOME_TITLE) + '</h1>' + todayHTML() + '</header><div class="covers">' + LESSONS.map(function (l) { return coverHTML(l); }).join('') + '</div>' +
-    linksHTML() + dndHTML() + '</section>';
+  var all = LESSONS.concat(LINKS);
+  return '<section class="shelf-pg"><header class="shelf-hd"><div class="shelf-tl"><img src="icons/icon-192.3db7e6a8.png" alt="" width="36" height="36">' +
+    '<h1>' + esc(MSG_HOME_TITLE) + '</h1></div>' + todayHTML() + '</header><div class="shelves">' +
+    shelfHTML(all.slice(0, TOP_N), true) + shelfHTML(all.slice(TOP_N), false) + '</div>' + dndHTML() + '</section>';
 }
 
-export { DND_KEY, booksPick, dndToggle, homeScreenHTML };
+// ── הספר יוצא מהמדף ──
+// השדרה מתרוממת, הספר יוצא למרכז המסך, הכריכה נפתחת והדף מתפרש על כל המסך — פחות משנייה בסך הכל;
+// וכשמבקשים להפחית תנועה — בלי תנועה כלל. שיעור בעל חלקים עוצר במרכז, ובחירת החלק בגיליון ממשיכה את הפתיחה.
+var T_LIFT = 110, T_FLY = 280, T_OPEN = 280, T_FULL = 220, T_FADE = 160;
+var bk = null; // הספר שבדרך: { l, sp, ov, held, going }
+
+function still() {
+  try { return matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) { return false; }
+}
+function later(ms, f) { setTimeout(f, ms); }
+function lessonByK(k) { return LESSONS.filter(function (l) { return l.k === k; })[0] || null; }
+
+function boxOf(r) { return { l: r.left, t: r.top, w: r.width, h: r.height }; }
+function midBox() {
+  var vw = innerWidth, vh = innerHeight, w = Math.min(262, Math.round(vw * 0.67)), h = Math.round(w * 1.49);
+  return { l: (vw - w) / 2, t: (vh - h) / 2, w: w, h: h };
+}
+function fullBox() { return { l: 0, t: 0, w: innerWidth, h: innerHeight }; }
+function place(ov, b, tf) {
+  var s = ov.firstChild.style;
+  s.left = b.l + 'px'; s.top = b.t + 'px'; s.width = b.w + 'px'; s.height = b.h + 'px';
+  s.transform = tf;
+}
+var TF_SPINE = 'rotateY(-78deg)', TF_MID = 'rotateY(-12deg) rotateX(3deg)', TF_FLAT = 'none';
+
+function ovMake(l) {
+  var ov = document.createElement('div');
+  ov.className = 'bk3';
+  ov.setAttribute('aria-hidden', 'true');
+  ov.innerHTML = '<div class="bk3-in cv-' + esc(l.cover) + '"><div class="bk3-pages"></div><div class="bk3-cover"><div class="bk3-front">' +
+    '<span class="bk3-frame"></span><h2>' + esc(l.lab) + '</h2></div><div class="bk3-inner"></div></div></div>';
+  document.body.appendChild(ov);
+  return ov;
+}
+// מעבר בין שני מצבים מתחיל רק אחרי שהדפדפן צייר את הראשון.
+function next(f) { requestAnimationFrame(function () { requestAnimationFrame(f); }); }
+
+function shelfOpen(el, onOut) {
+  var l = lessonByK(el.dataset.id);
+  if (!l || bk) return;
+  bk = { l: l, sp: el, ov: null, held: false, going: false };
+  if (still()) { bk.held = true; onOut(l); return; }
+  el.classList.add('up');
+  later(T_LIFT, function () {
+    var ov = ovMake(l);
+    bk.ov = ov;
+    place(ov, boxOf(el.getBoundingClientRect()), TF_SPINE);
+    next(function () {
+      el.classList.add('gone');
+      ov.classList.add('dim');
+      place(ov, midBox(), TF_MID);
+      later(T_FLY, function () { bk.held = true; onOut(l); });
+    });
+  });
+}
+
+// הכריכה נפתחת והדף מתפרש — ובסופו המסך של השיעור נצבע מתחת, והספר נעלם.
+function shelfIn(go) {
+  if (!bk) { go(); return; }
+  var b = bk;
+  b.going = true;
+  if (still() || !b.ov) { bk = null; go(); return; }
+  b.ov.classList.add('open');
+  later(T_OPEN, function () {
+    b.ov.classList.add('full');
+    place(b.ov, fullBox(), TF_FLAT);
+    later(T_FULL, function () {
+      go();
+      b.ov.classList.add('out');
+      later(T_FADE, function () { b.ov.remove(); });
+      bk = null;
+    });
+  });
+}
+
+// הגיליון נסגר בלי בחירה — הספר חוזר למקומו במדף.
+function shelfBack() {
+  var b = bk;
+  if (!b || b.going) return;
+  bk = null;
+  if (!b.ov) { b.sp.classList.remove('up', 'gone'); return; }
+  b.ov.classList.remove('dim');
+  place(b.ov, boxOf(b.sp.getBoundingClientRect()), TF_SPINE);
+  later(T_FLY, function () {
+    b.sp.classList.remove('gone', 'up');
+    b.ov.remove();
+  });
+}
+function shelfHeld() { return !!(bk && bk.held && !bk.going); }
+
+// הגיליון נסגר — בבחירה (הפתיחה כבר ממשיכה) או בלעדיה.
+function shelfWatch() {
+  var m = document.getElementById('modal');
+  if (!m || !window.MutationObserver) return;
+  var mo = new MutationObserver(function () {
+    if (m.classList.contains('open')) return;
+    mo.disconnect();
+    if (shelfHeld()) shelfBack();
+  });
+  mo.observe(m, { attributes: true, attributeFilter: ['class'] });
+}
+
+// חזרה לבית משיעור (from — המסך שעזבו): הדף מתקפל לספר, הכריכה נסגרת והספר חוזר למקומו במדף.
+function shelfReturn(from) {
+  if (!from || still()) return;
+  var l = LESSONS.filter(function (x) { return lessonHas(x, from); })[0];
+  var sp = l && document.querySelector('.spine[data-id="' + l.k + '"]');
+  if (!l || !sp) return;
+  var ov = ovMake(l);
+  ov.classList.add('dim', 'open', 'full');
+  place(ov, fullBox(), TF_FLAT);
+  sp.classList.add('gone');
+  next(function () {
+    ov.classList.remove('full');
+    place(ov, midBox(), TF_MID);
+    later(T_FULL, function () {
+      ov.classList.remove('open');
+      later(T_OPEN, function () {
+        ov.classList.remove('dim');
+        place(ov, boxOf(sp.getBoundingClientRect()), TF_SPINE);
+        later(T_FLY, function () { sp.classList.remove('gone'); ov.remove(); });
+      });
+    });
+  });
+}
+
+export { DND_KEY, booksPick, dndToggle, homeScreenHTML, shelfBack, shelfHeld, shelfIn, shelfOpen, shelfReturn, shelfWatch };
