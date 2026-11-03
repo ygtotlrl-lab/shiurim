@@ -589,7 +589,7 @@ function pinchReset() {
 
 // עמוד מוגדל שנגלל עד קצהו — גרירה שנמשכת מעבר לקצה עוברת לעמוד הסמוך, כמו ההחלקה בעמוד בגודלו:
 // בקצה השמאלי, גרירה ימינה — לעמוד הבא (הספר מימין לשמאל); בקצה הימני, גרירה שמאלה — לקודם.
-// הגלילה של העמוד אינה עוברת לרצועה (overscroll-behavior), והמעבר כאן בלבד — פעם אחת בכל גרירה; העמוד שנעזב נשאר מוגדל.
+// הגלילה של העמוד אינה עוברת לרצועה (overscroll-behavior), והמעבר כאן בלבד — פעם אחת בכל גרירה; העמוד שנעזב חוזר לגודלו.
 var PZ_FLIP = 48;
 var pzs = null;
 function pzSwipeStart(e) {
@@ -615,7 +615,10 @@ function pzSwipeMove(e) {
   if (gx < PZ_FLIP || gx < gy * 1.5) return;
   pzs = null;
   var to = dir > 0 ? p.box.nextElementSibling : p.box.previousElementSibling;
-  if (to) to.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'start' });
+  if (!to) return;
+  // העמוד שנעזב חוזר לגודלו
+  pinchReset();
+  to.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'start' });
 }
 
 // הרצועה — כפתורי הסוף (והכפתור שבתוך השיעור, כמו מהדורת וילנא) עוברים לעמוד אחרון ברצף העמודים.
