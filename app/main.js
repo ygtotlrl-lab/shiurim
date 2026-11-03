@@ -10,7 +10,7 @@ import { KEY_CHUMASH, KEY_SHNAYIM, KEY_TANYA_DAY, KEY_HAYOM, KEY_RAMBAM, KEY_TAN
          SUPABASE_URL, TABLES } from './constants.js';
 import { BOOKS, KEY_TH_PEOPLE } from './bookdata.js';
 import { S, shell, view } from './state.js';
-import { sPickRawAny, PICKERS, chumashCur, shnayimCur, hayomCur, lessonPickOpen, pickerFilter, pickerOpen, pinchEnd, pinchMove, pinchReset, pinchStart, pzSwipeMove, pzSwipeStart, rambamCur, stripEnd, sPendKey, sPendKeyOf, sPickSet, sQ, sStripRows, sSyncNow, sSyncPull,
+import { sPickRawAny, PICKERS, chumashCur, shnayimCur, hayomCur, lessonPickOpen, pickerFilter, pickerOpen, pinchEnd, pinchMove, pinchReset, pinchStart, pzSwipeMove, pzSwipeStart, readTap, rambamCur, stripEnd, sPendKey, sPendKeyOf, sPickSet, sQ, sStripRows, sSyncNow, sSyncPull,
          sTableMeta, tanyaCur, tyCur, tyShowSet } from './domain.js';
 import { DND_KEY, booksPick, dndToggle, homeScreenHTML } from './screens/home.js';
 import { rambamMorehFill, rambamMount, rambamScreenHTML, rambamVilnaFill } from './screens/rambam.js';
@@ -277,7 +277,7 @@ var DOM_ACTIONS = {
   'nav-back': function () { navBack(); },
   'lesson-pick': function (el) { lessonPickOpen(el.dataset.id); },
   'lesson-go': function (el) { closeModal(); go(el.dataset.id); },
-  'read-toggle': function () { if (!pinchReset()) document.body.classList.toggle('calm'); },
+  'read-toggle': function () { readTap(function () { if (!pinchReset()) document.body.classList.toggle('calm'); }); },
   'pick-open': function (el) { var b = bookOf(el.dataset.k); if (b && b.people) { thPeopleOpen(); return; } tyShowSet(null); pickerOpen(el.dataset.k); },
   'pick-go': function (el) {
     closeModal();

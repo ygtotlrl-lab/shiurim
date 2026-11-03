@@ -591,6 +591,42 @@ function pinchReset() {
   return zs.length > 0;
 }
 
+// הקשה כפולה על עמוד — הגדלה סביב נקודת ההקשה בשלוש פעימות (1 ⟵ 2 ⟵ 3 ⟵ 4), ובמקסימום — הקטנה באותן פעימות עד הגודל הטבעי.
+// הקשה בודדת ממתינה רגע (PZ_TAP_MS) כדי שלא תבלבל הקשה כפולה: רק בלי הקשה שנייה — האסיפה של השורות או איפוס ההגדלה.
+var PZ_TAP_MS = 280, PZ_TAP_PX = 40;
+var pzTap = { x: 0, y: 0, t: 0, timer: null, lx: 0, ly: 0 };
+document.addEventListener('pointerdown', function (e) { pzTap.lx = e.clientX; pzTap.ly = e.clientY; }, true);
+function pzZoomTo(box, z, mx, my) {
+  var leaf = box.querySelector('.leaf');
+  if (!leaf) return;
+  var lr = leaf.getBoundingClientRect(), z0 = +box.dataset.z || 1, s = z / z0;
+  var fx = mx - lr.left, fy = my - lr.top;
+  if (z <= 1) { box.classList.remove('zoomed'); box.style.removeProperty('--z'); delete box.dataset.z; return; }
+  box.dataset.z = String(z);
+  box.style.setProperty('--z', String(z));
+  box.classList.add('zoomed');
+  var nr = leaf.getBoundingClientRect();
+  box.scrollLeft += nr.left + fx * s - mx;
+  box.scrollTop += nr.top + fy * s - my;
+}
+function readTap(single) {
+  var now = Date.now(), x = pzTap.lx, y = pzTap.ly;
+  if (pzTap.timer && now - pzTap.t < PZ_TAP_MS + 120 && Math.hypot(x - pzTap.x, y - pzTap.y) < PZ_TAP_PX) {
+    clearTimeout(pzTap.timer); pzTap.timer = null;
+    var el = document.elementFromPoint(x, y), box = el && el.closest && el.closest('.read .pages .pg');
+    if (!box) return;
+    var z = +box.dataset.z || 1, dir = +box.dataset.zd || 1;
+    if (z >= PZ_MAX) dir = -1; else if (z <= 1) dir = 1;
+    var next = dir > 0 ? Math.min(PZ_MAX, Math.floor(z + 1e-6) + 1) : Math.max(1, Math.ceil(z - 1e-6) - 1);
+    box.dataset.zd = String(next >= PZ_MAX ? -1 : next <= 1 ? 1 : dir);
+    pzZoomTo(box, next, x, y);
+    return;
+  }
+  pzTap.x = x; pzTap.y = y; pzTap.t = now;
+  clearTimeout(pzTap.timer);
+  pzTap.timer = setTimeout(function () { pzTap.timer = null; single(); }, PZ_TAP_MS);
+}
+
 // עמוד מוגדל שנגלל עד קצהו — גרירה שנמשכת מעבר לקצה עוברת לעמוד הסמוך, כמו ההחלקה בעמוד בגודלו:
 // בקצה השמאלי, גרירה ימינה — לעמוד הבא (הספר מימין לשמאל); בקצה הימני, גרירה שמאלה — לקודם.
 // הגלילה של העמוד אינה עוברת לרצועה (overscroll-behavior), והמעבר כאן בלבד — פעם אחת בכל גרירה; העמוד שנעזב חוזר לגודלו.
@@ -637,6 +673,6 @@ function stripEnd() {
 
 function tanyaChapter(c) { return TANYA_CHAPTERS[c]; }
 
-export { stripEnd, scanSheet, sPickRawAny, fixSections, PICKERS, topSecHTML, haftaraOf, haftaraSheets, shnayimCur, shnayimSheets, chLabel, chSheets, chumashCur, el, fileUrl, hayomCur, hyHeSheets, hyLabel, hyStep, hyYiSheet, lessonAppHref, lessonOpen, lessonPickOpen, localPut, pickerFilter, pinchEnd, pinchMove, pinchReset, pinchStart, pzSwipeMove, pzSwipeStart, pickerOpen, pushSoon, rambamCur, rambamInto, rambamLabel, readBarHTML,
+export { stripEnd, scanSheet, sPickRawAny, fixSections, PICKERS, topSecHTML, haftaraOf, haftaraSheets, shnayimCur, shnayimSheets, chLabel, chSheets, chumashCur, el, fileUrl, hayomCur, hyHeSheets, hyLabel, hyStep, hyYiSheet, lessonAppHref, lessonOpen, lessonPickOpen, localPut, pickerFilter, pinchEnd, pinchMove, pinchReset, pinchStart, pzSwipeMove, readTap, pzSwipeStart, pickerOpen, pushSoon, rambamCur, rambamInto, rambamLabel, readBarHTML,
          sLive, sPendKey, sPendKeyOf, sPick, sPickSet, sQ, sStripRows, sSyncNow, sSyncPull,
          scanInto, sTableMeta, tanyaChapName, tanyaChapter, tanyaCur, tanyaLabel, tanyaSheet, tyCur, tyDay, tyLabel, tyShowSet, tyStep };
