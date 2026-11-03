@@ -587,6 +587,37 @@ function pinchReset() {
   return zs.length > 0;
 }
 
+// עמוד מוגדל שנגלל עד קצהו — גרירה שנמשכת מעבר לקצה עוברת לעמוד הסמוך, כמו ההחלקה בעמוד בגודלו:
+// בקצה השמאלי, גרירה ימינה — לעמוד הבא (הספר מימין לשמאל); בקצה הימני, גרירה שמאלה — לקודם.
+// הגלילה של העמוד אינה עוברת לרצועה (overscroll-behavior), והמעבר כאן בלבד — פעם אחת בכל גרירה; העמוד שנעזב נשאר מוגדל.
+var PZ_FLIP = 48;
+var pzs = null;
+function pzSwipeStart(e) {
+  pzs = null;
+  if (e.touches.length !== 1) return;
+  var box = e.target.closest && e.target.closest('.read .pages .pg.zoomed');
+  if (box) pzs = { box: box, lx: e.touches[0].clientX, dir: 0, ex: null, ey: 0 };
+}
+function pzSwipeMove(e) {
+  if (!pzs) return;
+  if (e.touches.length !== 1 || !pzs.box.classList.contains('zoomed')) { pzs = null; return; }
+  var p = pzs, t = e.touches[0], x = t.clientX, dx = x - p.lx;
+  p.lx = x;
+  var dir = dx > 0 ? 1 : dx < 0 ? -1 : p.dir;
+  if (dir !== p.dir) { p.dir = dir; p.ex = null; }
+  if (!dir) return;
+  // האצבע ימינה מגלה את הצד השמאלי של העמוד — הקצה הוא הקצה שאליו נגללים.
+  var leaf = p.box.querySelector('.leaf'), b = p.box.getBoundingClientRect(), l = leaf ? leaf.getBoundingClientRect() : b;
+  var edge = dir > 0 ? l.left >= b.left - 1 : l.right <= b.right + 1;
+  if (!edge) { p.ex = null; return; }
+  if (p.ex === null) { p.ex = x; p.ey = t.clientY; return; }
+  var gx = (x - p.ex) * dir, gy = Math.abs(t.clientY - p.ey);
+  if (gx < PZ_FLIP || gx < gy * 1.5) return;
+  pzs = null;
+  var to = dir > 0 ? p.box.nextElementSibling : p.box.previousElementSibling;
+  if (to) to.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'start' });
+}
+
 // הרצועה — כפתורי הסוף (והכפתור שבתוך השיעור, כמו מהדורת וילנא) עוברים לעמוד אחרון ברצף העמודים.
 function stripEnd() {
   var now = sQ('#now-body'), pages = now && now.querySelector(':scope > .pages'), end = sQ('.read-end');
@@ -599,6 +630,6 @@ function stripEnd() {
 
 function tanyaChapter(c) { return TANYA_CHAPTERS[c]; }
 
-export { stripEnd, scanSheet, sPickRawAny, fixSections, PICKERS, topSecHTML, haftaraOf, haftaraSheets, shnayimCur, shnayimSheets, chLabel, chSheets, chumashCur, el, fileUrl, hayomCur, hyHeSheets, hyLabel, hyStep, hyYiSheet, lessonAppHref, lessonOpen, lessonPickOpen, localPut, pickerFilter, pinchEnd, pinchMove, pinchReset, pinchStart, pickerOpen, pushSoon, rambamCur, rambamInto, rambamLabel, readBarHTML,
+export { stripEnd, scanSheet, sPickRawAny, fixSections, PICKERS, topSecHTML, haftaraOf, haftaraSheets, shnayimCur, shnayimSheets, chLabel, chSheets, chumashCur, el, fileUrl, hayomCur, hyHeSheets, hyLabel, hyStep, hyYiSheet, lessonAppHref, lessonOpen, lessonPickOpen, localPut, pickerFilter, pinchEnd, pinchMove, pinchReset, pinchStart, pzSwipeMove, pzSwipeStart, pickerOpen, pushSoon, rambamCur, rambamInto, rambamLabel, readBarHTML,
          sLive, sPendKey, sPendKeyOf, sPick, sPickSet, sQ, sStripRows, sSyncNow, sSyncPull,
          scanInto, sTableMeta, tanyaChapName, tanyaChapter, tanyaCur, tanyaLabel, tanyaSheet, tyCur, tyDay, tyLabel, tyShowSet, tyStep };

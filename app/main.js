@@ -10,7 +10,7 @@ import { KEY_CHUMASH, KEY_SHNAYIM, KEY_TANYA_DAY, KEY_HAYOM, KEY_RAMBAM, KEY_TAN
          SUPABASE_URL, TABLES } from './constants.js';
 import { BOOKS, KEY_TH_PEOPLE } from './bookdata.js';
 import { S, shell, view } from './state.js';
-import { sPickRawAny, PICKERS, chumashCur, shnayimCur, hayomCur, lessonPickOpen, pickerFilter, pickerOpen, pinchEnd, pinchMove, pinchReset, pinchStart, rambamCur, stripEnd, sPendKey, sPendKeyOf, sPickSet, sQ, sStripRows, sSyncNow, sSyncPull,
+import { sPickRawAny, PICKERS, chumashCur, shnayimCur, hayomCur, lessonPickOpen, pickerFilter, pickerOpen, pinchEnd, pinchMove, pinchReset, pinchStart, pzSwipeMove, pzSwipeStart, rambamCur, stripEnd, sPendKey, sPendKeyOf, sPickSet, sQ, sStripRows, sSyncNow, sSyncPull,
          sTableMeta, tanyaCur, tyCur, tyShowSet } from './domain.js';
 import { DND_KEY, booksPick, dndToggle, homeScreenHTML } from './screens/home.js';
 import { rambamMorehFill, rambamMount, rambamScreenHTML, rambamVilnaFill } from './screens/rambam.js';
@@ -348,6 +348,9 @@ document.addEventListener('touchstart', pinchStart, { passive: true });
 document.addEventListener('touchmove', pinchMove, { passive: false });
 document.addEventListener('touchend', pinchEnd);
 document.addEventListener('touchcancel', pinchEnd);
+// גרירה באצבע אחת בעמוד מוגדל — המעבר לעמוד הסמוך מקצה העמוד.
+document.addEventListener('touchstart', pzSwipeStart, { passive: true });
+document.addEventListener('touchmove', pzSwipeMove, { passive: true });
 
 // ── העלייה ──
 function sBoot() {

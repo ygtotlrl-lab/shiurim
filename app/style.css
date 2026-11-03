@@ -207,8 +207,15 @@ body.reading #toasts{bottom:calc(var(--toast-bottom) + env(safe-area-inset-botto
 .read .pages .sect{flex-direction:column;align-items:center;justify-content:center;text-align:center;border:0;padding:var(--sp-6)}
 .read .pages .pg-end{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:var(--sp-5)}
 .read .pages .pg-end .read-end{padding:0 var(--sp-6)}
-/* הגדלה בשתי אצבעות — העמוד שתחת האצבעות גדל פי --z, ונגלל בתוך עצמו לכל הכיוונים. */
-.read .pages .pg.zoomed{display:block;overflow:auto;touch-action:pan-x pan-y}
+/* הרצועה ברוחב המסך כולו, גם כשהעמודה צרה ממנו — העלה בגודלו נשאר ברוחב העמודה ובמרכז, והעמוד המוגדל מתפשט עד קצות המסך, בלי שוליים שמסתירים אותו.
+   overflow-x על body עובר לחלון — במחשב, שבו 100vw כולל את פס הגלילה, הדף אינו נגלל לצד. */
+body.reading{overflow-x:clip}
+body.reading .read .pages{width:100vw;margin-inline:calc(50% - 50vw)}
+/* הגדלה בשתי אצבעות — העמוד שתחת האצבעות גדל פי --z, ונגלל בתוך עצמו לכל הכיוונים.
+   ltr — הגלילה נמדדת משמאל, כמו חשבון נקודת המוקד ב-pinchEnd (ב-rtl הערך החיובי נחתך לאפס, והעמוד קפץ לקצה הימני);
+   overscroll-behavior — הגלילה אינה עוברת לרצועה, והמעבר לעמוד הסמוך מקצה העמוד — ב-pzSwipeMove. */
+.read .pages .pg.zoomed{display:block;overflow:auto;touch-action:pan-x pan-y;direction:ltr;overscroll-behavior:contain}
+.read .pages .pg.zoomed>*{direction:rtl}
 .read .pages .pg.zoomed .leaf{height:calc(min(var(--page-h), calc(min(100vw, var(--col)) / var(--ratio,0.8))) * var(--z,1));max-width:none;margin:0 auto}
 .read-end{display:flex;flex-wrap:wrap;gap:var(--sp-4);justify-content:center;padding:var(--sp-7) var(--sp-6)}
 .moreh{padding:var(--sp-6) var(--sp-4);border-bottom:2px solid var(--gold-soft);scroll-margin-top:calc(var(--readbar-h) + 8px)}
