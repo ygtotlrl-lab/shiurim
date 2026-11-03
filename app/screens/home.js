@@ -110,7 +110,7 @@ function ovMake(l) {
   ov.className = 'bk3';
   ov.setAttribute('aria-hidden', 'true');
   ov.innerHTML = '<div class="bk3-in cv-' + esc(l.cover) + '"><div class="bk3-pages"></div><div class="bk3-cover"><div class="bk3-front">' +
-    '<span class="bk3-frame"></span><h2>' + esc(l.lab) + '</h2></div><div class="bk3-inner"></div></div></div>';
+    '<span class="bk3-frame"></span></div><div class="bk3-inner"></div></div></div>';
   document.body.appendChild(ov);
   return ov;
 }

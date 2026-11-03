@@ -164,8 +164,8 @@ var LESSONS = [
     { k: 'tanya-week', lab: MSG_TANYA_WEEK, screen: 'tanya' }
   ] },
   { k: 'rambam', lab: MSG_RAMBAM, cover: 'navy', wide: true, sp: [54, 89], screen: 'rambam' },
-  { k: 'chassidishe-parsha', lab: 'החסידישע פרשה', cover: 'bord', sp: [48, 85], screen: 'bk-chassidus' },
   { k: 'hayom-yom', lab: MSG_HAYOM_YOM, cover: 'navy', sp: [44, 81], screen: 'hayom' },
+  { k: 'chassidishe-parsha', lab: 'החסידישע פרשה', cover: 'bord', sp: [48, 85], screen: 'bk-chassidus' },
   { k: 'shulchan-aruch', lab: 'שולחן ערוך הרב', cover: 'brown', sp: [50, 92], screen: 'bk-sa' },
   { k: 'ein-yaakov', lab: 'עין יעקב', cover: 'green', sp: [46, 87], screen: 'bk-ey' },
   { k: 'mishnayot', lab: 'משניות', cover: 'brown', sp: [44, 83], screen: 'bk-mishnayot' },
