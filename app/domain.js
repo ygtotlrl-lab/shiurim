@@ -573,19 +573,39 @@ function pinchMove(e) {
 }
 function pinchEnd() {
   if (!pz) return;
-  var p = pz, box = p.box, z = p.z0 * p.s;
+  var p = pz, box = p.box, z = p.z0 * p.s, leaf = p.leaf;
   pz = null;
-  if (p.leaf) p.leaf.style.transform = '';
+  // המקום שהעלה תפס על המסך ברגע הסיום — ממנו הוא מחליק למקומו בפריסה החדשה, בלי קפיצה
+  var was = leaf && leaf.getBoundingClientRect();
+  if (leaf) leaf.style.transform = '';
   if (Math.abs(p.s - 1) < 0.02) return;
   if (z < 1.05) z = 1;
   box.dataset.z = String(z);
   box.style.setProperty('--z', String(z));
   box.classList.toggle('zoomed', z > 1);
-  if (z <= 1 || !p.leaf) return;
-  // נקודת המוקד נשארת מתחת לאצבעות: אחרי הפריסה החדשה — כמה היא זזה על המסך, ובאותו שיעור גוללים (בלי קפיצה לצד)
-  var nr = p.leaf.getBoundingClientRect();
-  box.scrollLeft += nr.left + p.fx * p.s - p.mx;
-  box.scrollTop += nr.top + p.fy * p.s - p.my;
+  if (!leaf) return;
+  if (z > 1) {
+    // נקודת המוקד נשארת מתחת לאצבעות: אחרי הפריסה החדשה — כמה היא זזה על המסך, ובאותו שיעור גוללים (בלי קפיצה לצד)
+    var nr = leaf.getBoundingClientRect();
+    box.scrollLeft += nr.left + p.fx * p.s - p.mx;
+    box.scrollTop += nr.top + p.fy * p.s - p.my;
+  }
+  pzSettle(leaf, was);
+}
+
+// ההחלקה מהמקום שבסוף הצביטה אל הפריסה החדשה — הגלילה נחתכת בקצוות והגודל מתעגל, וההבדל נבלע בתנועה קצרה
+function pzSettle(leaf, was) {
+  var now = leaf.getBoundingClientRect();
+  if (!now.width || matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  var k = was.width / now.width, dx = was.left - now.left, dy = was.top - now.top;
+  if (Math.abs(k - 1) < 0.005 && Math.abs(dx) < 1 && Math.abs(dy) < 1) return;
+  leaf.style.transition = 'none';
+  leaf.style.transformOrigin = '0 0';
+  leaf.style.transform = 'translate(' + dx + 'px,' + dy + 'px) scale(' + k + ')';
+  leaf.getBoundingClientRect();
+  leaf.style.transition = 'transform .18s ease-out';
+  leaf.style.transform = '';
+  setTimeout(function () { leaf.style.transition = ''; }, 200);
 }
 
 // הקשה על עמוד מוגדל מחזירה את כל העמודים לגודלם — ההגדלה נשארת עד צביטה חזרה או עד הקשה.
