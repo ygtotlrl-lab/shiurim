@@ -549,63 +549,63 @@ function hyHeSheets(i) {
 }
 
 // ── הגדלה בשתי אצבעות ──
-// בזמן הצביטה — transform בלבד, חלק; בסופה הרוחב נקבע, והגלילה מיושרת לנקודת המגע.
-var PZ_MAX = 4;
+// בזמן הצביטה — transform בלבד, חלק; והעמוד מוצג כבר במקום ובגודל שבו יישאר: הגודל — מהצביטה,
+// המיקום — נקודת המוקד מתחת לאצבעות, בגבולות הגלילה של הפריסה החדשה. בסוף נקבעים הרוחב והגלילה לאותו מקום בדיוק, בלי קפיצה ובלי החלקה.
+var PZ_MAX = 4, PZ_SNAP = 1.05;
 var pz = null;
 function pzDist(t) { return Math.hypot(t[0].clientX - t[1].clientX, t[0].clientY - t[1].clientY); }
+function pzMid(t) { return [(t[0].clientX + t[1].clientX) / 2, (t[0].clientY + t[1].clientY) / 2]; }
+// המקום של העלה בהגדלה z: גודל העלה בגודל הטבעי (wn · hn), והנקודה (fx · fy ביחס לעלה, בהגדלה z0) שצריכה לעמוד ב-(mx · my).
+// מוגדל — הגלילה נחתכת בקצוות, ועלה קטן מהמסגרת עומד באמצעה; בגודל הטבעי — במרכז, כמו בפריסה.
+function pzPlace(box, wn, hn, z0, z, fx, fy, mx, my) {
+  var B = box.getBoundingClientRect(), bw = box.clientWidth, bh = box.clientHeight, w = wn * z, h = hn * z, k = z / z0;
+  if (z <= 1) return { z: 1, left: B.left + (bw - w) / 2, top: B.top + (bh - h) / 2, w: w, h: h };
+  var cw = Math.max(w, bw), lx = (cw - w) / 2, ty = Math.max(0, (bh - h) / 2);
+  var sl = Math.min(Math.max(0, B.left + lx - (mx - fx * k)), cw - bw);
+  var st = Math.min(Math.max(0, B.top + ty - (my - fy * k)), Math.max(0, h - bh));
+  return { z: z, left: B.left + lx - sl, top: B.top + ty - st, w: w, h: h, sl: sl, st: st, ty: ty };
+}
+function pzApply(box, leaf, g) {
+  if (g.z <= 1) {
+    box.classList.remove('zoomed'); box.style.removeProperty('--z'); delete box.dataset.z;
+    leaf.style.marginTop = '';
+    return;
+  }
+  box.dataset.z = String(g.z);
+  box.style.setProperty('--z', String(g.z));
+  box.classList.add('zoomed');
+  leaf.style.marginTop = g.ty ? g.ty + 'px' : '';
+  box.scrollLeft = g.sl;
+  box.scrollTop = g.st;
+}
 function pinchStart(e) {
   if (e.touches.length !== 2) return;
   var box = e.target.closest && e.target.closest('.read .pages .pg');
   if (!box) return;
-  var leaf = box.querySelector('.leaf'), t = e.touches;
-  var mx = (t[0].clientX + t[1].clientX) / 2, my = (t[0].clientY + t[1].clientY) / 2;
-  var lr = (leaf || box).getBoundingClientRect();
-  // הנקודה שבין האצבעות, ביחס לעלה — הצביטה מגדילה סביבה, וגם הסוף מעמיד אותה באותו מקום על המסך
-  pz = { box: box, leaf: leaf, d0: pzDist(t), z0: +box.dataset.z || 1, s: 1, mx: mx, my: my, fx: mx - lr.left, fy: my - lr.top };
-  if (leaf) leaf.style.transformOrigin = pz.fx + 'px ' + pz.fy + 'px';
+  var leaf = box.querySelector('.leaf'), t = e.touches, m = pzMid(t);
+  if (!leaf) return;
+  leaf.style.transform = '';
+  var lr = leaf.getBoundingClientRect(), z0 = +box.dataset.z || 1;
+  // הנקודה שבין האצבעות, ביחס לעלה — הצביטה מגדילה סביבה
+  pz = { box: box, leaf: leaf, d0: pzDist(t), z0: z0, z: z0, r0: lr, wn: lr.width / z0, hn: lr.height / z0, fx: m[0] - lr.left, fy: m[1] - lr.top, g: null };
+  leaf.style.transformOrigin = '0 0';
 }
 function pinchMove(e) {
   if (!pz || e.touches.length !== 2) return;
   e.preventDefault();
   var z = Math.min(PZ_MAX, Math.max(1, pz.z0 * pzDist(e.touches) / pz.d0));
-  pz.s = z / pz.z0;
-  if (pz.leaf) pz.leaf.style.transform = 'scale(' + pz.s + ')';
+  if (z < PZ_SNAP) z = 1;
+  var m = pzMid(e.touches), g = pzPlace(pz.box, pz.wn, pz.hn, pz.z0, z, pz.fx, pz.fy, m[0], m[1]);
+  pz.z = z; pz.g = g;
+  pz.leaf.style.transform = 'translate(' + (g.left - pz.r0.left) + 'px,' + (g.top - pz.r0.top) + 'px) scale(' + (z / pz.z0) + ')';
 }
 function pinchEnd() {
   if (!pz) return;
-  var p = pz, box = p.box, z = p.z0 * p.s, leaf = p.leaf;
+  var p = pz;
   pz = null;
-  // המקום שהעלה תפס על המסך ברגע הסיום — ממנו הוא מחליק למקומו בפריסה החדשה, בלי קפיצה
-  var was = leaf && leaf.getBoundingClientRect();
-  if (leaf) leaf.style.transform = '';
-  if (Math.abs(p.s - 1) < 0.02) return;
-  if (z < 1.05) z = 1;
-  box.dataset.z = String(z);
-  box.style.setProperty('--z', String(z));
-  box.classList.toggle('zoomed', z > 1);
-  if (!leaf) return;
-  if (z > 1) {
-    // נקודת המוקד נשארת מתחת לאצבעות: אחרי הפריסה החדשה — כמה היא זזה על המסך, ובאותו שיעור גוללים (בלי קפיצה לצד)
-    var nr = leaf.getBoundingClientRect();
-    box.scrollLeft += nr.left + p.fx * p.s - p.mx;
-    box.scrollTop += nr.top + p.fy * p.s - p.my;
-  }
-  pzSettle(leaf, was);
-}
-
-// ההחלקה מהמקום שבסוף הצביטה אל הפריסה החדשה — הגלילה נחתכת בקצוות והגודל מתעגל, וההבדל נבלע בתנועה קצרה
-function pzSettle(leaf, was) {
-  var now = leaf.getBoundingClientRect();
-  if (!now.width || matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-  var k = was.width / now.width, dx = was.left - now.left, dy = was.top - now.top;
-  if (Math.abs(k - 1) < 0.005 && Math.abs(dx) < 1 && Math.abs(dy) < 1) return;
-  leaf.style.transition = 'none';
-  leaf.style.transformOrigin = '0 0';
-  leaf.style.transform = 'translate(' + dx + 'px,' + dy + 'px) scale(' + k + ')';
-  leaf.getBoundingClientRect();
-  leaf.style.transition = 'transform .18s ease-out';
-  leaf.style.transform = '';
-  setTimeout(function () { leaf.style.transition = ''; }, 200);
+  p.leaf.style.transform = '';
+  if (!p.g || Math.abs(p.z / p.z0 - 1) < 0.02) return;
+  pzApply(p.box, p.leaf, p.g);
 }
 
 // הקשה על עמוד מוגדל מחזירה את כל העמודים לגודלם — ההגדלה נשארת עד צביטה חזרה או עד הקשה.
@@ -615,6 +615,8 @@ function pinchReset() {
     box.classList.remove('zoomed');
     box.style.removeProperty('--z');
     delete box.dataset.z;
+    var leaf = box.querySelector('.leaf');
+    if (leaf) leaf.style.marginTop = '';
   });
   return zs.length > 0;
 }
@@ -627,15 +629,8 @@ document.addEventListener('pointerdown', function (e) { pzTap.lx = e.clientX; pz
 function pzZoomTo(box, z, mx, my) {
   var leaf = box.querySelector('.leaf');
   if (!leaf) return;
-  var lr = leaf.getBoundingClientRect(), z0 = +box.dataset.z || 1, s = z / z0;
-  var fx = mx - lr.left, fy = my - lr.top;
-  if (z <= 1) { box.classList.remove('zoomed'); box.style.removeProperty('--z'); delete box.dataset.z; return; }
-  box.dataset.z = String(z);
-  box.style.setProperty('--z', String(z));
-  box.classList.add('zoomed');
-  var nr = leaf.getBoundingClientRect();
-  box.scrollLeft += nr.left + fx * s - mx;
-  box.scrollTop += nr.top + fy * s - my;
+  var lr = leaf.getBoundingClientRect(), z0 = +box.dataset.z || 1;
+  pzApply(box, leaf, pzPlace(box, lr.width / z0, lr.height / z0, z0, z, mx - lr.left, my - lr.top, mx, my));
 }
 function readTap(single) {
   var now = Date.now(), x = pzTap.lx, y = pzTap.ly;
