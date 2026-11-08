@@ -180,7 +180,7 @@ public abstract class ShellActivity extends Activity {
             return true;
         }
 
-        private final String[] LAUNCH = { "com.mogy.dafyomi", "app.mafteiach.app" };
+        private final String[] LAUNCH = { "app.mafteiach.app" };
 
         @Override
         public void onPageStarted(WebView wv, String url, android.graphics.Bitmap favicon) {
