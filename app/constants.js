@@ -169,7 +169,10 @@ var LESSONS = [
   { k: 'shulchan-aruch', lab: 'שולחן ערוך הרב', cover: 'brown', sp: [50, 92], screen: 'bk-sa' },
   { k: 'ein-yaakov', lab: 'עין יעקב', cover: 'green', sp: [46, 87], screen: 'bk-ey' },
   { k: 'mishnayot', lab: 'משניות', cover: 'brown', sp: [44, 83], screen: 'bk-mishnayot' },
-  { k: 'shas', lab: 'ש״ס', cover: 'bord', sp: [46, 90], app: self.APP.android.launch.shas }
+  { k: 'shas', lab: 'ש״ס', cover: 'bord', sp: [46, 90], subs: [
+    { k: 'shas-bavli', lab: 'תלמוד בבלי' },
+    { k: 'shas-yerushalmi', lab: 'תלמוד ירושלמי', screen: 'bk-yer' }
+  ] }
 ];
 
 // הספרים שבסוף המדף שהם קישורים — app: אפליקציה אחרת מהתצורה, url: אתר.
