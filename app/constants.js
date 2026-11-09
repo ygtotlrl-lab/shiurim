@@ -170,7 +170,7 @@ var LESSONS = [
   { k: 'ein-yaakov', lab: 'עין יעקב', cover: 'green', sp: [46, 87], screen: 'bk-ey' },
   { k: 'mishnayot', lab: 'משניות', cover: 'brown', sp: [44, 83], screen: 'bk-mishnayot' },
   { k: 'shas', lab: 'ש״ס', cover: 'bord', sp: [46, 90], subs: [
-    { k: 'shas-bavli', lab: 'תלמוד בבלי' },
+    { k: 'shas-bavli', lab: 'תלמוד בבלי', screen: 'bk-bavli' },
     { k: 'shas-yerushalmi', lab: 'תלמוד ירושלמי', screen: 'bk-yer' }
   ] }
 ];
