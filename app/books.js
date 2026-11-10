@@ -28,7 +28,11 @@ function bookCur(b) { return sPick(bookKey(b), bookItems(b).length); }
 function bookGroups(b) {
   var i = 0;
   return b.groups.map(function (g) {
-    return { title: g[0], items: g[1].map(function (it, j) { return { i: i++, num: b.num === 'none' ? '' : hebGematria(j + 1, ''), name: b.split ? it[0].split(' · ')[1] : it[0] }; }) };
+    // 'daf' — הש״ס: הדף במקום המספר («ב»), והעמוד בשם («ע״א»), כמו מספר השיעור ושמו ברמב״ם.
+    return { title: g[0], items: g[1].map(function (it, j) {
+      if (b.num === 'daf') { var d = it[0].split(' '); return { i: i++, num: d[0], name: d.slice(1).join(' ') }; }
+      return { i: i++, num: b.num === 'none' ? '' : hebGematria(j + 1, ''), name: b.split ? it[0].split(' · ')[1] : it[0] };
+    }) };
   });
 }
 
