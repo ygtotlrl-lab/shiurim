@@ -11,7 +11,7 @@ import { KEY_CHUMASH, KEY_SHNAYIM, KEY_TANYA_DAY, KEY_HAYOM, KEY_RAMBAM, KEY_TAN
 import { BOOKS, KEY_TH_PEOPLE } from './bookdata.js';
 import { S, shell, view } from './state.js';
 import { sPickRawAny, PICKERS, chumashCur, shnayimCur, hayomCur, lessonPickOpen, pickerFilter, pickerOpen, pinchEnd, pinchMove, pinchReset, pinchStart, pzSwipeMove, pzSwipeStart, readTap, rambamCur, stripEnd, sPendKey, sPendKeyOf, sPickSet, sQ, sStripRows, sSyncNow, sSyncPull,
-         sTableMeta, tanyaCur, tyCur, tyShowSet } from './domain.js';
+         sTableMeta, tanyaCur, tyCur, tyShowSet , lessonShare } from './domain.js';
 import { DND_KEY, booksPick, dndToggle, homeScreenHTML, shelfHeld, shelfIn, shelfOpen, shelfReturn, shelfWatch } from './screens/home.js';
 import { rambamMorehFill, rambamMount, rambamScreenHTML, rambamVilnaFill } from './screens/rambam.js';
 import { chumashMount, chumashScreenHTML } from './screens/chumash.js';
@@ -274,6 +274,7 @@ function secOpen(id, fill) {
 var DOM_ACTIONS = {
   'tab-go': function (el) { closeModal(); go(el.dataset.id); },
   'books-open': function () { booksPick(view.screen); },
+  'lesson-share': function () { lessonShare(); },
   'go-home': function () { go('home'); },
   'nav-back': function () { navBack(); },
   'lesson-pick': function (el) { lessonPickOpen(el.dataset.id); },

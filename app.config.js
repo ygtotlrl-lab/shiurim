@@ -23,7 +23,7 @@ self.APP = Object.freeze({
     // צבע כפתור הניסיון החוזר בדף האופליין של המעטפת
     accent: '#1e3a6e',
     // לעולם אינו יורד — בלי קידום המכשיר המותקן אינו מקבל את ה-APK החדש.
-    versionCode: 13,
+    versionCode: 14,
     versionName: '1.0',
     launcherBg: { kind: 'gradient', angle: 270, start: '#F6EFE1', end: '#E6D8BC' },
     // אפליקציות אחרות שקישור intent: רשאי לפתוח — שם ⟵ חבילה; ריק — המעטפת אינה פותחת אף אחת
@@ -32,8 +32,8 @@ self.APP = Object.freeze({
     exit: true,
     // «השתקה בזמן לימוד» — «נא לא להפריע» כשהאפליקציה בחזית, במתג שבמסך הראשי
     dnd: true,
-    // FileProvider ו-androidx — רק באפליקציה שמייצאת קובץ
-    share: false
+    // גשר השיתוף (FileProvider ו-androidx) וגשר ההדפסה — בכל האפליקציות, אחידים
+    share: { chooser: 'שיתוף השיעור', print: true }
   },
   // sign-apk.sh מסרב לחתום בכל מפתח אחר
   signSha256: 'A5:47:D5:54:74:6E:90:6D:AB:19:41:22:18:DE:65:0B:F0:59:AE:06:45:B5:AD:2C:BD:1F:F2:5A:AF:C4:37:44',

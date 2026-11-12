@@ -9,10 +9,11 @@ import { hebDayLabel, hebGematria } from '../core/hebrew.js';
 import { ALIYOT, CH, CH_URL, HAFTAROT, KEY_CHUMASH, KEY_SHNAYIM, MSG_PICK_ALIYAH_TITLE, HY, HY_MONTHS, HY_NAMES, HY_URL, KEY_HAYOM, KEY_RAMBAM, KEY_TANYA, MSG_PICK_DAY_TITLE, KV_TABLE, MSG_HAKDAMA, MSG_LOAD_FAIL,
          MSG_MINHAG_OPEN, MSG_MOREH_CLOSE, MSG_MOREH_OPEN, MSG_PEREK, MSG_SPECIAL_OPEN, MSG_PICK_CUR, MSG_PICK_NONE, MSG_PICK_PARASHA_TITLE, MSG_PICK_SEARCH,
          MSG_PICK_TITLE, MSG_RAMBAM_OPENING, PARSHIOT, PUSH_TABLES, MT_URL, RAMBAM_LESSONS, RAMBAM_MAP, RAMBAM_VOLS, SCAN, SCAN_SUB, SCAN_W, TABLES,
-         KEY_TANYA_DAY, MSG_YEAR_LEAP, MSG_YEAR_REG, TY, TY_MONTHS, LESSONS, MSG_ALT_PAGE, MSG_BOOKS_TITLE, MSG_SOON, TANYA_BOOKS, TANYA_CHAPTERS, TANYA_RATIO, TANYA_URL, ttDir } from './constants.js';
+         KEY_TANYA_DAY, MSG_YEAR_LEAP, MSG_YEAR_REG, TY, TY_MONTHS, LESSONS, MSG_ALT_PAGE, MSG_BOOKS_TITLE, MSG_SHARE_FAIL, MSG_SHARE_NONE, MSG_SHARE_PREP, MSG_SHARE_TITLE, MSG_SOON, TANYA_BOOKS, TANYA_CHAPTERS, TANYA_RATIO, TANYA_URL, ttDir } from './constants.js';
 import { S, shell } from './state.js';
 import { BOOK_URL } from './bookdata.js';
 import { icon } from './icons.js';
+import { shareFiles } from '../core/share.js';
 
 // ── מטא ──
 function sTableMeta(t) {
@@ -189,13 +190,79 @@ function tanyaChapName(c) { return c === 0 ? MSG_HAKDAMA : MSG_PEREK + hebGematr
 
 function tanyaLabel(c) { return PARSHIOT[c] + ' — ' + tanyaChapName(c); }
 
-// סרגל הקריאה — שם השיעור, באמצע, ופותח את הבחירה; הניווט — בשורה התחתונה.
+// סרגל הקריאה — שם השיעור, באמצע, ופותח את הבחירה; בקצה השמאלי — «החלפת ספר», ולידו «שיתוף השיעור»; הניווט — בשורה התחתונה.
 function readBarHTML(kind, kicker, title) {
   return '<div class="readbar" id="readbar"><div class="in">' +
     '<button class="rb-pick" data-act="pick-open" data-k="' + kind + '"><span class="rb-k">' + esc(kicker) + '</span>' +
     '<b>' + title + '</b>' + icon('down') + '</button>' +
+    '<button class="rb-books rb-share" data-act="lesson-share" aria-label="' + esc(MSG_SHARE_TITLE) + '" title="' + esc(MSG_SHARE_TITLE) + '">' +
+    icon('share') + '</button>' +
     '<button class="rb-books" data-act="books-open" aria-label="' + esc(MSG_BOOKS_TITLE) + '" title="' + esc(MSG_BOOKS_TITLE) + '">' +
     icon('books') + '</button></div></div>';
+}
+
+// ── שיתוף השיעור ──
+// עמודי השיעור שבמסך, כמו שהם מוצגים — הסריקה ועליה רצועות ההלבנה וההאפרה — כתמונה לכל עמוד, וכולן בשיתוף אחד (shareFiles).
+// עמוד שעוד לא נטען (טעינה עצלה) — נטען כאן; עמוד שלא הגיע — מדלגים עליו.
+var SHARE_W = 1200;
+function _pct(v, d) { var n = parseFloat(v); return isFinite(n) ? n / 100 : d; }
+function _leafJpeg(leaf) {
+  var img = leaf.querySelector('img');
+  if (!img || !img.src) return Promise.resolve(null);
+  return new Promise(function (res, rej) {
+    var im = new Image();
+    im.onload = function () {
+      try { res(_leafDraw(leaf, im)); } catch (e) { rej(e); }
+    };
+    im.onerror = function () { res(null); };
+    // אותו מקור (GitHub Pages) — ובלעדיו הקנבס «מזוהם» ואינו נשמר
+    im.crossOrigin = 'anonymous';
+    im.src = img.src;
+  });
+}
+function _leafDraw(leaf, im) {
+  {
+    {
+      var W = Math.min(SHARE_W, im.naturalWidth), H = Math.round(im.naturalHeight * W / im.naturalWidth);
+      var c = document.createElement('canvas'); c.width = W; c.height = H;
+      var g = c.getContext('2d'), bg = getComputedStyle(leaf).backgroundColor || '#fff';
+      g.fillStyle = bg; g.fillRect(0, 0, W, H);
+      g.drawImage(im, 0, 0, W, H);
+      leaf.querySelectorAll('.wh').forEach(function (w) {
+        var st = w.style, t = _pct(st.getPropertyValue('--top'), 0) * H, h = _pct(st.getPropertyValue('--h'), 0) * H;
+        var l = _pct(st.getPropertyValue('--left'), 0) * W, ww = _pct(st.getPropertyValue('--w'), 1) * W;
+        g.fillStyle = w.classList.contains('shade') ? 'rgba(120,120,120,.38)' : bg;
+        var clip = st.getPropertyValue('--clip');
+        var pts = /polygon\(([^)]*)\)/.exec(clip || '');
+        if (pts) {
+          // רצועה משופעת — המצולע יחסי לרצועה עצמה
+          g.beginPath();
+          pts[1].split(',').forEach(function (p, i) {
+            var xy = p.trim().split(/\s+/), x = l + _pct(xy[0], 0) * ww, y = t + _pct(xy[1], 0) * h;
+            if (i) g.lineTo(x, y); else g.moveTo(x, y);
+          });
+          g.closePath(); g.fill();
+        } else {
+          g.fillRect(l - 1, t - 1, ww + 2, h + 2);
+        }
+      });
+      return c.toDataURL('image/jpeg', 0.85).split(',')[1];
+    }
+  }
+}
+function lessonShare() {
+  var leaves = Array.prototype.slice.call(document.querySelectorAll('#view .leaf'));
+  if (!leaves.length) { toast(MSG_SHARE_NONE); return; }
+  var bar = document.querySelector('#readbar .rb-pick');
+  var title = bar ? bar.textContent.replace(/\s+/g, ' ').trim() : MSG_SHARE_TITLE;
+  toast(MSG_SHARE_PREP);
+  Promise.all(leaves.map(_leafJpeg)).then(function (out) {
+    var pages = out.filter(Boolean), n = pages.length;
+    if (!n) { toast(MSG_SHARE_NONE); return; }
+    shareFiles(pages.map(function (b64, i) {
+      return { b64: b64, mime: 'image/jpeg', name: title + (n > 1 ? ' - עמוד ' + (i + 1) + ' מתוך ' + n : '') + '.jpg' };
+    }));
+  }).catch(function (e) { toast(MSG_SHARE_FAIL + ((e && e.message) || e), TOAST_MS, 'bad'); });
 }
 
 // ── בחירת שיעור — גיליון מלמטה ──
@@ -696,6 +763,6 @@ function stripEnd() {
 
 function tanyaChapter(c) { return TANYA_CHAPTERS[c]; }
 
-export { TOAST_MS, stripEnd, scanSheet, ttSheets, sPickRawAny, fixSections, PICKERS, topSecHTML, haftaraOf, haftaraSheets, shnayimCur, shnayimSheets, chLabel, chSheets, chumashCur, el, fileUrl, hayomCur, hyHeSheets, hyLabel, hyStep, hyYiSheet, lessonAppHref, lessonOpen, lessonPickOpen, localPut, pickerFilter, pinchEnd, pinchMove, pinchReset, pinchStart, pzSwipeMove, readTap, pzSwipeStart, pickerOpen, pushSoon, rambamCur, rambamInto, rambamLabel, readBarHTML,
+export { lessonShare, TOAST_MS, stripEnd, scanSheet, ttSheets, sPickRawAny, fixSections, PICKERS, topSecHTML, haftaraOf, haftaraSheets, shnayimCur, shnayimSheets, chLabel, chSheets, chumashCur, el, fileUrl, hayomCur, hyHeSheets, hyLabel, hyStep, hyYiSheet, lessonAppHref, lessonOpen, lessonPickOpen, localPut, pickerFilter, pinchEnd, pinchMove, pinchReset, pinchStart, pzSwipeMove, readTap, pzSwipeStart, pickerOpen, pushSoon, rambamCur, rambamInto, rambamLabel, readBarHTML,
          sLive, sPendKey, sPendKeyOf, sPick, sPickSet, sQ, sStripRows, sSyncNow, sSyncPull,
          scanInto, sTableMeta, tanyaChapName, tanyaChapter, tanyaCur, tanyaLabel, tanyaSheet, tyCur, tyDay, tyLabel, tyShowSet, tyStep };
