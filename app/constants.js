@@ -17,7 +17,7 @@ var MT_URL = 'https://ygtotlrl-lab.github.io/shiurim-mishneh-torah/';
 
 var TANYA_URL = 'https://ygtotlrl-lab.github.io/shiurim-tanya/';
 // שיעורים בספר התניא (וינברג, יידיש) — מאגר משלו: sbt1 לקוטי אמרים · sbt3 שער היחוד והאמונה ואגרת התשובה · sbt4 אגרת הקודש וקונטרס אחרון
-var SBT_URL = 'https://ygtotlrl-lab.github.io/shiurim-besefer-hatanya/';
+var SBT_URL = 'https://ygtotlrl-lab.github.io/shiurim-shiurim-besefer-hatanya/';
 
 var HY_URL = 'https://ygtotlrl-lab.github.io/shiurim-hayom-yom/';
 
