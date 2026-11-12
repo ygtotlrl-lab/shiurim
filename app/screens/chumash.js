@@ -1,8 +1,9 @@
 // app/screens/chumash.js — חומש עם תורה תמימה: עלייה אחת, נבחרת ביד
 import { esc, toast } from '../../core/ui.js';
-import { ALIYOT, CH, CH_CHABAD, MSG_CH_CHABAD, MSG_CHUMASH, MSG_NEXT_ALIYAH, MSG_PREV_ALIYAH, PARSHIOT } from '../constants.js';
+import { ALIYOT, MSG_CH_CHABAD, MSG_CHUMASH, MSG_NEXT_ALIYAH, MSG_PREV_ALIYAH, PARSHIOT } from '../constants.js';
 import { partnerOf } from '../calendar.js';
 import { TOAST_MS, chLabel, chSheets, chumashCur, el, readBarHTML, sQ } from '../domain.js';
+import { CH, CH_CHABAD } from '../data.js';
 
 // פרשיות מחוברות בשבוע הזה — עליית היום של השנייה ממשיכה מיד אחרי זו של הראשונה.
 function chPartner(c) { return partnerOf(Math.floor(c / 7)); }

@@ -6,9 +6,8 @@ import { MIRROR, mirrorKey, mirrorTables } from '../core/mirror.js';
 import { logAwait } from '../core/backup.js';
 import { bootRun } from '../core/boot-run.js';
 import { actWire, closeAsk, closeModal, esc, shellBare, swApply, swHideUpdate, uiNoDialog } from '../core/ui.js';
-import { KEY_CHUMASH, KEY_SHNAYIM, KEY_TANYA_DAY, KEY_HAYOM, KEY_RAMBAM, KEY_TANYA, KV_TABLE, MSG_NAV_BACK, PARSHIOT, MSG_NAV_EXIT, MSG_NAV_HOME, MSG_VIL_CLOSE, MSG_VIL_OPEN, MSG_SBT_CLOSE, MSG_SBT_OPEN, PUSH_TABLES, SUPABASE_ANON_KEY,
+import { KEY_CHUMASH, KEY_TH_PEOPLE, KEY_SHNAYIM, KEY_TANYA_DAY, KEY_HAYOM, KEY_RAMBAM, KEY_TANYA, KV_TABLE, MSG_NAV_BACK, PARSHIOT, MSG_NAV_EXIT, MSG_NAV_HOME, MSG_VIL_CLOSE, MSG_VIL_OPEN, MSG_SBT_CLOSE, MSG_SBT_OPEN, PUSH_TABLES, SUPABASE_ANON_KEY,
          SUPABASE_URL, TABLES } from './constants.js';
-import { BOOKS, KEY_TH_PEOPLE } from './bookdata.js';
 import { S, shell, view } from './state.js';
 import { sPickRawAny, PICKERS, chumashCur, shnayimCur, hayomCur, lessonPickOpen, pickerFilter, pickerOpen, pinchEnd, pinchMove, pinchReset, pinchStart, pzSwipeMove, pzSwipeStart, readTap, rambamCur, stripEnd, sPendKey, sPendKeyOf, sPickSet, sQ, sStripRows, sSyncNow, sSyncPull,
          sTableMeta, tanyaCur, tyCur, tyShowSet , lessonShare , sbtFill } from './domain.js';
@@ -22,6 +21,7 @@ import { tanyaMount, tanyaScreenHTML } from './screens/tanya.js';
 import { icon } from './icons.js';
 import { todayChumash, todayDow, todayHayom, todayKria, todayRambam, todayShnayim, todayTanyaDay, todayTanyaWeek, todayTehillimDay, weekParasha } from './calendar.js';
 import { bookCur, bookMount, bookOf, bookPickers, bookScreenHTML, thPeopleAdd, thPeopleDel, thPeopleOpen, thPeopleSave } from './books.js';
+import { BOOKS } from './data.js';
 
 Object.assign(PICKERS, bookPickers());
 

@@ -1,9 +1,9 @@
 // app/screens/shnayim.js — שניים מקרא: הפרשה מראשון עד שביעי, ובסופה ההפטרה לפי מנהג חב״ד
 import { esc, openModal } from '../../core/ui.js';
-import { HAFTAROT, MSG_HAFTARA, MSG_MINHAG_TITLE, MSG_NEXT_PARASHA, MSG_NO_HAFTARA, MSG_PREV_PARASHA, MSG_SHNAYIM,
-         MSG_SPECIAL_TITLE, PARSHIOT } from '../constants.js';
+import { MSG_HAFTARA, MSG_MINHAG_TITLE, MSG_NEXT_PARASHA, MSG_NO_HAFTARA, MSG_PREV_PARASHA, MSG_SHNAYIM, MSG_SPECIAL_TITLE, PARSHIOT } from '../constants.js';
 import { partnerOf } from '../calendar.js';
 import { el, haftaraOf, haftaraSheets, readBarHTML, scanInto, shnayimCur, shnayimSheets, sQ, topSecHTML } from '../domain.js';
+import { HAFTAROT } from '../data.js';
 
 // בראש השיעור — מנהגי חב״ד בהפטרות וההפטרה המיוחדת, נפתחים מתחתית הבורר ונסגרים ב-✕.
 // פרשיות מחוברות בשבוע הזה — שתיהן ברצף, וההפטרות אחריהן; «הבאה» — שאחרי השנייה.

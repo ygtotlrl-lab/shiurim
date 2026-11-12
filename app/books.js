@@ -1,14 +1,14 @@
 // app/books.js — מנוע הספרים: תנ״ך, החסידישע פרשה, משניות, שולחן ערוך הרב, עין יעקב, סידור ותהלים
-// כל ספר — רשומה ב-BOOKS (bookdata.js): קבוצות, ובכל קבוצה פריטים, ולכל פריט קטעי עמודים.
+// כל ספר — רשומה ב-BOOKS (app/data.js): קבוצות, ובכל קבוצה פריטים, ולכל פריט קטעי עמודים.
 // קטע — [תיקייה, עמוד, הלבנות] לעמוד אחד, או [תיקייה, מעמוד, עד עמוד] לטווח שלם בלי הלבנה.
 import { esc, openModal, toast } from '../core/ui.js';
 import { hebDate, hebGematria, hebIsLeap, hebMonthNames, hebToGreg, hebYearLabelFull } from '../core/hebrew.js';
-import { BOOKS, BOOK_SCAN, MSG_TH_PEOPLE_TITLE, MSG_TH_PEOPLE_ADD, MSG_TH_PEOPLE_NAME, MSG_TH_PEOPLE_DATE, MSG_TH_DAY, MSG_TH_MONTH, MSG_TH_YEAR,
-         MSG_TH_PEOPLE_NONE, MSG_TH_PEOPLE_DEL, MSG_TH_PEOPLE_SAVE, MSG_TH_PEOPLE_OPEN, MSG_PEREK, KEY_TH_PEOPLE, TH_CHAPTERS } from './bookdata.js';
-import { SCAN } from './constants.js';
+import { MSG_TH_PEOPLE_TITLE, MSG_TH_PEOPLE_ADD, MSG_TH_PEOPLE_NAME, MSG_TH_PEOPLE_DATE, MSG_TH_DAY, MSG_TH_MONTH, MSG_TH_YEAR, MSG_TH_PEOPLE_NONE, MSG_TH_PEOPLE_DEL, MSG_TH_PEOPLE_SAVE, MSG_TH_PEOPLE_OPEN, MSG_PEREK, KEY_TH_PEOPLE } from './constants.js';
+
 import { tehillimAddThirty } from './calendar.js';
 import { el, readBarHTML, sPick, sPickRawAny, sPickSet, sQ, scanSheet, ttSheets } from './domain.js';
 import { icon } from './icons.js';
+import { BOOKS, BOOK_SCAN, SCAN, TH_CHAPTERS } from './data.js';
 
 // ── מרשם ──
 function bookOf(screen) { var k = String(screen || '').replace(/^bk-/, ''); return BOOKS[k] || null; }

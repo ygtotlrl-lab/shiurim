@@ -1,8 +1,8 @@
 // app/screens/rambam.js — רמב״ם: שלושה פרקים ליום, לפי מורה השיעור
 import { esc } from '../../core/ui.js';
-import { MSG_MOREH, MSG_NEXT_LESSON, MSG_PREV_LESSON, MSG_RAMBAM, MSG_VIL_OPEN,
-         RAMBAM_LESSONS, VILNA } from '../constants.js';
+import { MSG_MOREH, MSG_NEXT_LESSON, MSG_PREV_LESSON, MSG_RAMBAM, MSG_VIL_OPEN } from '../constants.js';
 import { el, rambamCur, rambamInto, rambamLabel, readBarHTML, scanInto, sQ, topSecHTML } from '../domain.js';
+import { RAMBAM_LESSONS, VILNA } from '../data.js';
 
 function rambamScreenHTML() {
   var c = rambamCur();

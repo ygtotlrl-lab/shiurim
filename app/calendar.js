@@ -3,7 +3,8 @@
 // צו (במעוברת: מצורע) בשבת שלפני פסח · ואתחנן בשבת שאחרי תשעה באב · האזינו לפני הסוכות —
 // ובכל קטע מחוברות הפרשיות שבסדר המחוברות, עד שמספרן כמספר השבתות.
 import { hebDate, hebIsLeap, hebToGreg } from '../core/hebrew.js';
-import { HY_MONTHS, TY, TY_MONTHS } from './constants.js';
+import { HY_MONTHS, TY_MONTHS } from './constants.js';
+import { TY } from './data.js';
 
 var DAY = 864e5;
 function noon(d) { return new Date(d.getFullYear(), d.getMonth(), d.getDate(), 12); }
