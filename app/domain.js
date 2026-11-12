@@ -11,7 +11,7 @@ import { S, shell } from './state.js';
 
 import { icon } from './icons.js';
 import { shareFiles } from '../core/share.js';
-import { BOOK_URL, CH, HAFTAROT, HY, RAMBAM_LESSONS, RAMBAM_MAP, SBT_CH, SBT_DAY, SCAN, SCAN_SUB, TANYA_CHAPTERS, TANYA_RATIO, TY } from './data.js';
+import { BOOK_URL, CH, HAFTAROT, HY, RAMBAM_LESSONS, RAMBAM_MAP, SBT_CH, SBT_DAY, SCAN, SCAN_SUB, TANYA_CHAPTERS, TANYA_FRAME, TANYA_RATIO, TY } from './data.js';
 
 // ── מטא ──
 function sTableMeta(t) {
@@ -526,7 +526,15 @@ function fixSections(pages, secs) {
   io.observe(end);
 }
 
-function tanyaSheet(item) { return scanSheet((/\//.test(item.p) ? item.p : 'tny/' + item.p) + '.png', 1 / (TANYA_RATIO[item.p] || 1.25), item.w); }
+// עמוד תניא — הכותרת שבראשו ושורת הסימן שבתחתיתו גלויות תמיד: ההלבנה נחתכת אל המסגרת (TANYA_FRAME), בפרק ובתניא היומי כאחד.
+function tanyaFramed(p, w) {
+  var f = TANYA_FRAME[p];
+  if (!f || !w) return w;
+  var top = f[0], bot = f[1] || 100;
+  return w.map(function (r) { return [Math.max(r[0], top), Math.min(r[1], bot)].concat(r.slice(2)); })
+          .filter(function (r) { return r[1] > r[0]; });
+}
+function tanyaSheet(item) { return scanSheet((/\//.test(item.p) ? item.p : 'tny/' + item.p) + '.png', 1 / (TANYA_RATIO[item.p] || 1.25), tanyaFramed(item.p, item.w)); }
 
 // ── היום יום ──
 // הבחירה — מקום היום בספר; הסדר מתשרי עד אלול, וכסלו אחד (א–יח מתש״ד, יט–כט מתש״ג).
