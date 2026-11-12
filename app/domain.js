@@ -9,7 +9,7 @@ import { hebDayLabel, hebGematria } from '../core/hebrew.js';
 import { ALIYOT, CH, CH_URL, HAFTAROT, KEY_CHUMASH, KEY_SHNAYIM, MSG_PICK_ALIYAH_TITLE, HY, HY_MONTHS, HY_NAMES, HY_URL, KEY_HAYOM, KEY_RAMBAM, KEY_TANYA, MSG_PICK_DAY_TITLE, KV_TABLE, MSG_HAKDAMA, MSG_LOAD_FAIL,
          MSG_MINHAG_OPEN, MSG_MOREH_CLOSE, MSG_MOREH_OPEN, MSG_PEREK, MSG_SPECIAL_OPEN, MSG_PICK_CUR, MSG_PICK_NONE, MSG_PICK_PARASHA_TITLE, MSG_PICK_SEARCH,
          MSG_PICK_TITLE, MSG_RAMBAM_OPENING, PARSHIOT, PUSH_TABLES, MT_URL, RAMBAM_LESSONS, RAMBAM_MAP, RAMBAM_VOLS, SCAN, SCAN_SUB, SCAN_W, TABLES,
-         KEY_TANYA_DAY, MSG_YEAR_LEAP, MSG_YEAR_REG, TY, TY_MONTHS, LESSONS, MSG_ALT_PAGE, MSG_BOOKS_TITLE, MSG_SHARE_FAIL, MSG_SHARE_NONE, MSG_SHARE_PREP, MSG_SHARE_TITLE, MSG_SOON, TANYA_BOOKS, TANYA_CHAPTERS, TANYA_RATIO, TANYA_URL, ttDir } from './constants.js';
+         KEY_TANYA_DAY, MSG_YEAR_LEAP, MSG_YEAR_REG, TY, TY_MONTHS, LESSONS, MSG_ALT_PAGE, MSG_BOOKS_TITLE, MSG_SHARE_FAIL, MSG_SHARE_NONE, MSG_SHARE_PREP, MSG_SHARE_TITLE, MSG_SOON, TANYA_BOOKS, TANYA_CHAPTERS, TANYA_RATIO, TANYA_URL, ttDir, SBT_URL, SBT_CH, SBT_DAY, MSG_SBT_OPEN } from './constants.js';
 import { S, shell } from './state.js';
 import { BOOK_URL } from './bookdata.js';
 import { icon } from './icons.js';
@@ -379,6 +379,7 @@ function topSecHTML(id, title) {
 function fileUrl(path) {
   var d = path.split('/')[0];
   if (BOOK_URL[d]) return BOOK_URL[d] + path;
+  if (/^sbt/.test(d)) return SBT_URL + path;
   return (/^tny/.test(d) ? TANYA_URL : /^hy[yh]$/.test(d) ? HY_URL : /^(tt\d|mnh$|hft$)/.test(d) ? CH_URL : MT_URL) + path;
 }
 
@@ -481,6 +482,26 @@ function altWatch(fig) {
 function scanInto(box, dir, from, to) {
   var rs = scanRatios(dir), a = from || 1, b = Math.min(to || rs.length, rs.length);
   for (var k = a; k <= b; k++) box.appendChild(scanSheet(dir + '/' + k + '.png', rs[k - 1]));
+}
+
+// שיעורים בספר התניא — בסוף הפרק השבועי ובסוף השיעור היומי: כפתור, ומתחתיו עמודי הביאור של אותו קטע, נפתחים בתוך השיעור.
+function sbtRow(box, kind, id) {
+  var row = el('div', 'nextrow');
+  var b = el('button', 'btn ghost', MSG_SBT_OPEN);
+  b.setAttribute('data-act', 'sbt-toggle');
+  b.setAttribute('data-k', kind);
+  b.setAttribute('data-id', String(id));
+  row.appendChild(b);
+  box.appendChild(row);
+  var vs = el('section', 'vil hidden');
+  vs.setAttribute('data-sbt', '');
+  box.appendChild(vs);
+}
+function sbtFill(vs, kind, id) {
+  var segs = kind === 'ch' ? [['sbt1'].concat(SBT_CH[id] || [])] : ((id >= 1000 ? SBT_DAY.L[id - 1000] : SBT_DAY.R[id]) || []);
+  var pages = el('div', 'pages');
+  vs.appendChild(pages);
+  segs.forEach(function (g) { if (g.length === 3) scanInto(pages, g[0], g[1], g[2]); });
 }
 
 // לוח התיקון והערות ותיקונים אחרי השיעור — לכל אחד: כותרת ועמודיו, רק כשיש בו שורות לשיעור;
@@ -763,6 +784,6 @@ function stripEnd() {
 
 function tanyaChapter(c) { return TANYA_CHAPTERS[c]; }
 
-export { lessonShare, TOAST_MS, stripEnd, scanSheet, ttSheets, sPickRawAny, fixSections, PICKERS, topSecHTML, haftaraOf, haftaraSheets, shnayimCur, shnayimSheets, chLabel, chSheets, chumashCur, el, fileUrl, hayomCur, hyHeSheets, hyLabel, hyStep, hyYiSheet, lessonAppHref, lessonOpen, lessonPickOpen, localPut, pickerFilter, pinchEnd, pinchMove, pinchReset, pinchStart, pzSwipeMove, readTap, pzSwipeStart, pickerOpen, pushSoon, rambamCur, rambamInto, rambamLabel, readBarHTML,
+export { sbtFill, sbtRow, lessonShare, TOAST_MS, stripEnd, scanSheet, ttSheets, sPickRawAny, fixSections, PICKERS, topSecHTML, haftaraOf, haftaraSheets, shnayimCur, shnayimSheets, chLabel, chSheets, chumashCur, el, fileUrl, hayomCur, hyHeSheets, hyLabel, hyStep, hyYiSheet, lessonAppHref, lessonOpen, lessonPickOpen, localPut, pickerFilter, pinchEnd, pinchMove, pinchReset, pinchStart, pzSwipeMove, readTap, pzSwipeStart, pickerOpen, pushSoon, rambamCur, rambamInto, rambamLabel, readBarHTML,
          sLive, sPendKey, sPendKeyOf, sPick, sPickSet, sQ, sStripRows, sSyncNow, sSyncPull,
          scanInto, sTableMeta, tanyaChapName, tanyaChapter, tanyaCur, tanyaLabel, tanyaSheet, tyCur, tyDay, tyLabel, tyShowSet, tyStep };

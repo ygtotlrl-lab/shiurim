@@ -6,12 +6,12 @@ import { MIRROR, mirrorKey, mirrorTables } from '../core/mirror.js';
 import { logAwait } from '../core/backup.js';
 import { bootRun } from '../core/boot-run.js';
 import { actWire, closeAsk, closeModal, esc, shellBare, swApply, swHideUpdate, uiNoDialog } from '../core/ui.js';
-import { KEY_CHUMASH, KEY_SHNAYIM, KEY_TANYA_DAY, KEY_HAYOM, KEY_RAMBAM, KEY_TANYA, KV_TABLE, MSG_NAV_BACK, PARSHIOT, MSG_NAV_EXIT, MSG_NAV_HOME, MSG_VIL_CLOSE, MSG_VIL_OPEN, PUSH_TABLES, SUPABASE_ANON_KEY,
+import { KEY_CHUMASH, KEY_SHNAYIM, KEY_TANYA_DAY, KEY_HAYOM, KEY_RAMBAM, KEY_TANYA, KV_TABLE, MSG_NAV_BACK, PARSHIOT, MSG_NAV_EXIT, MSG_NAV_HOME, MSG_VIL_CLOSE, MSG_VIL_OPEN, MSG_SBT_CLOSE, MSG_SBT_OPEN, PUSH_TABLES, SUPABASE_ANON_KEY,
          SUPABASE_URL, TABLES } from './constants.js';
 import { BOOKS, KEY_TH_PEOPLE } from './bookdata.js';
 import { S, shell, view } from './state.js';
 import { sPickRawAny, PICKERS, chumashCur, shnayimCur, hayomCur, lessonPickOpen, pickerFilter, pickerOpen, pinchEnd, pinchMove, pinchReset, pinchStart, pzSwipeMove, pzSwipeStart, readTap, rambamCur, stripEnd, sPendKey, sPendKeyOf, sPickSet, sQ, sStripRows, sSyncNow, sSyncPull,
-         sTableMeta, tanyaCur, tyCur, tyShowSet , lessonShare } from './domain.js';
+         sTableMeta, tanyaCur, tyCur, tyShowSet , lessonShare , sbtFill } from './domain.js';
 import { DND_KEY, booksPick, dndToggle, homeScreenHTML, shelfHeld, shelfIn, shelfOpen, shelfReturn, shelfWatch } from './screens/home.js';
 import { rambamMorehFill, rambamMount, rambamScreenHTML, rambamVilnaFill } from './screens/rambam.js';
 import { chumashMount, chumashScreenHTML } from './screens/chumash.js';
@@ -322,6 +322,14 @@ var DOM_ACTIONS = {
     var open = vs.classList.toggle('hidden') === false;
     el.textContent = open ? MSG_VIL_CLOSE : MSG_VIL_OPEN;
     if (open && !vs.firstChild) rambamVilnaFill(vs, +el.dataset.id);
+    if (open) vs.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  },
+  'sbt-toggle': function (el) {
+    var lesson = el.closest('.lesson'), vs = lesson && lesson.querySelector('[data-sbt]');
+    if (!vs) { uiNoDialog('sbt-toggle', el.dataset.id); return; }
+    var open = vs.classList.toggle('hidden') === false;
+    el.textContent = open ? MSG_SBT_CLOSE : MSG_SBT_OPEN;
+    if (open && !vs.firstChild) sbtFill(vs, el.dataset.k, +el.dataset.id);
     if (open) vs.scrollIntoView({ behavior: 'smooth', block: 'start' });
   },
   'ask-yes': function () { closeAsk(true); },

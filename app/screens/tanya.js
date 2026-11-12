@@ -1,7 +1,7 @@
 // app/screens/tanya.js — פרק תניא לפני התפילה, לפי פרשת השבוע
 import { esc } from '../../core/ui.js';
 import { MSG_LUACH, MSG_NEXT_PARASHA, MSG_NOTES, MSG_PREV_PARASHA, MSG_NO_LUACH_CH, MSG_NO_NOTES_CH, MSG_TANYA_WEEK, PARSHIOT } from '../constants.js';
-import { el, fixSections, readBarHTML, sQ, tanyaChapName, tanyaChapter, tanyaCur, tanyaSheet } from '../domain.js';
+import { el, fixSections, readBarHTML, sbtRow, sQ, tanyaChapName, tanyaChapter, tanyaCur, tanyaSheet } from '../domain.js';
 
 function tanyaTitleHTML(c) {
   return '<span class="ps">' + esc(PARSHIOT[c]) + '</span><span class="sep">·</span>' + esc(tanyaChapName(c));
@@ -19,13 +19,14 @@ function tanyaScreenHTML() {
     '</div>';
 }
 
-// עמודי הפרק, ואחריהם לוח התיקון והערות ותיקונים — רק שורות הפרק גלויות, ובלי שורות — טוסט.
+// עמודי הפרק, ואחריהם לוח התיקון והערות ותיקונים — רק שורות הפרק גלויות, ובלי שורות — טוסט; ובסוף — «פתיחת שיעורים בספר התניא», הפרק כולו.
 function tanyaFill(box) {
   var C = tanyaChapter(+box.dataset.id);
   var pages = el('div', 'pages');
   C.pages.forEach(function (x) { pages.appendChild(tanyaSheet(x)); });
   fixSections(pages, [[MSG_LUACH, C.luach, MSG_NO_LUACH_CH], [MSG_NOTES, C.notes, MSG_NO_NOTES_CH]]);
   box.appendChild(pages);
+  sbtRow(box, 'ch', +box.dataset.id);
 }
 
 function tanyaMount() {

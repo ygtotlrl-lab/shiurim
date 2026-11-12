@@ -1,7 +1,7 @@
 // app/screens/tanyay.js — תניא יומי: השיעור של היום לפי מורה השיעור, ואחריו לוח התיקון והערות ותיקונים
 import { esc } from '../../core/ui.js';
 import { MSG_LUACH, MSG_NEXT_DAY, MSG_NOTES, MSG_NO_LUACH_DAY, MSG_NO_NOTES_DAY, MSG_PREV_DAY, MSG_TANYA_DAY, MSG_YEAR_LEAP, MSG_YEAR_REG } from '../constants.js';
-import { el, fixSections, readBarHTML, sQ, tanyaChapter, tanyaSheet, tyCur, tyDay, tyLabel, tyStep } from '../domain.js';
+import { el, fixSections, readBarHTML, sbtRow, sQ, tanyaChapter, tanyaSheet, tyCur, tyDay, tyLabel, tyStep } from '../domain.js';
 
 function tanyayScreenHTML() {
   var c = tyCur();
@@ -25,6 +25,8 @@ function tanyayFill(box) {
   });
   fixSections(pages, secs);
   box.appendChild(pages);
+  // ובסוף — «פתיחת שיעורים בספר התניא»: עמודי הביאור של השיעור
+  sbtRow(box, 'day', +box.dataset.id);
 }
 
 // עמוד שחוזר — פעם אחת: מולבן רק מה שמולבן בכולם (הלבנות לרוחב העמוד; הלבנה חלקית נשארת בעמוד נפרד).
