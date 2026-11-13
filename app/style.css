@@ -67,7 +67,7 @@ button,[data-act]{user-select:none}
 :focus-visible{outline:var(--sp-1) solid var(--gold);outline-offset:var(--sp-1)}
 
 /* ── קליפה ── */
-#shell{display:contents}
+.shell{display:contents}
 main{padding:0 var(--sp-6); padding-bottom:calc(var(--sp-6) + env(safe-area-inset-bottom));
   width:100%;max-width:var(--col);margin:0 auto;flex:1 0 auto}
 /* הלוגו הוא הנכס שהמחולל מייצר — ציור שני של המאסטר היה מקור אמת שני. */
@@ -224,7 +224,7 @@ body.calm .readbar{transform:translateY(-100%)}
 body.reading .botbar{display:block}
 body.calm .botbar{transform:translateY(100%)}
 /* בשיעור הטוסטים מעל שורת הניווט — גם כשהיא נאספת בגלילה, כדי שלא תסתיר אותם כשהיא חוזרת. */
-body.reading #toasts{bottom:calc(var(--toast-bottom) + env(safe-area-inset-bottom) + var(--toasts-lift) + var(--readbar-h) + var(--sp-4))}
+body.reading .toasts{bottom:calc(var(--toast-bottom) + env(safe-area-inset-bottom) + var(--toasts-lift) + var(--readbar-h) + var(--sp-4))}
 /* כל כפתור שליש מרוחב השורה — מרחק בין השלושה ושטח לחיצה גדול. */
 .botbar .in{display:flex;align-items:stretch;height:var(--readbar-h);
   max-width:var(--col);margin:0 auto;padding:0 var(--sp-4)}
@@ -262,18 +262,18 @@ body.reading .read .pages{width:100vw;margin-inline:calc(50% - 50vw)}
 .x-btn .ico{width:20px;height:20px}
 
 /* בחירת שיעור — גיליון מלמטה: חיפוש, קבוצה לכל הלכות או חומש, והנוכחי בזהב. */
-#modal{align-items:flex-end}
-#modal .sheet{width:100%;max-width:var(--col);max-height:min(78vh,720px);display:flex;flex-direction:column;
+.veil-modal{align-items:flex-end}
+.veil-modal .sheet{width:100%;max-width:var(--col);max-height:min(78vh,720px);display:flex;flex-direction:column;
   background:var(--card);border-radius:var(--r-6) var(--r-6) 0 0;box-shadow:0 -10px 30px rgba(0,0,0,.2);
   padding-bottom:env(safe-area-inset-bottom)}
-#modal .sheet::before{content:"";width:44px;height:5px;border-radius:3px;background:var(--border);margin:var(--sp-4) auto 0}
-#modal .sheet-hd{padding:var(--sp-4) var(--sp-6) var(--sp-3)}
-#modal .sheet-hd h3{flex:1;font-family:var(--f-display);font-size:var(--fs-5);color:var(--brand-ink)}
-#modal .sheet-bd{flex:1;min-height:0;display:flex;flex-direction:column}
-#modal .sheet-ft{justify-content:center;padding:var(--sp-4) var(--sp-6);border-top:1px solid var(--border)}
+.veil-modal .sheet::before{content:"";width:44px;height:5px;border-radius:3px;background:var(--border);margin:var(--sp-4) auto 0}
+.veil-modal .sheet-hd{padding:var(--sp-4) var(--sp-6) var(--sp-3)}
+.veil-modal .sheet-hd h3{flex:1;font-family:var(--f-display);font-size:var(--fs-5);color:var(--brand-ink)}
+.veil-modal .sheet-bd{flex:1;min-height:0;display:flex;flex-direction:column}
+.veil-modal .sheet-ft{justify-content:center;padding:var(--sp-4) var(--sp-6);border-top:1px solid var(--border)}
 /* כפתורי התחתית אחד מעל השני, ברוחב הגיליון — כולם באותו גודל, ברמב״ם ובשניים מקרא. */
-#modal .sheet-ft:not(:empty){flex-direction:column;align-items:stretch;gap:var(--sp-3)}
-#modal .sheet-ft .btn{width:100%;justify-content:center}
+.veil-modal .sheet-ft:not(:empty){flex-direction:column;align-items:stretch;gap:var(--sp-3)}
+.veil-modal .sheet-ft .btn{width:100%;justify-content:center}
 .pk-search{display:flex;align-items:center;gap:var(--sp-4);margin:0 var(--sp-6) var(--sp-4);padding:0 var(--sp-5);
   background:var(--bg);border:1px solid var(--border);border-radius:var(--r-5);color:var(--text-3)}
 .pk-search:focus-within{border-color:var(--gold)}
