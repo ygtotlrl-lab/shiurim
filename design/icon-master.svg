@@ -1,52 +1,11 @@
 <svg viewBox="0 0 256 256" width="1024" height="1024" xmlns="http://www.w3.org/2000/svg">
-<defs>
-<linearGradient id="g1" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#F2D58A"/><stop offset="1" stop-color="#B88A30"/></linearGradient>
-<linearGradient id="g2" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#F6EFE1"/><stop offset="1" stop-color="#E6D8BC"/></linearGradient>
-<linearGradient id="g3" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#3C1113"/><stop offset="1" stop-color="#88474A"/></linearGradient>
-<linearGradient id="g4" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#88474A"/><stop offset="1" stop-color="#370F11"/></linearGradient>
-<linearGradient id="g5" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#311F10"/><stop offset="1" stop-color="#775D46"/></linearGradient>
-<linearGradient id="g6" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#775D46"/><stop offset="1" stop-color="#2D1D0F"/></linearGradient>
-<linearGradient id="g7" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#451714"/><stop offset="1" stop-color="#95504D"/></linearGradient>
-<linearGradient id="g8" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#95504D"/><stop offset="1" stop-color="#3F1513"/></linearGradient>
-<linearGradient id="g9" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#28180C"/><stop offset="1" stop-color="#6A5140"/></linearGradient>
-<linearGradient id="g10" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#6A5140"/><stop offset="1" stop-color="#25160B"/></linearGradient>
-<linearGradient id="g11" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#3C1113"/><stop offset="1" stop-color="#88474A"/></linearGradient>
-<linearGradient id="g12" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#88474A"/><stop offset="1" stop-color="#370F11"/></linearGradient>
-</defs>
-<rect x="0" y="0" width="256" height="256" fill="url(#g2)"/>
-<rect x="38.30" y="64.30" width="16.90" height="145.60" fill="url(#g3)"/>
-<rect x="55.20" y="64.30" width="16.90" height="145.60" fill="url(#g4)"/>
-<rect x="38.30" y="79.90" width="33.80" height="4.55" fill="url(#g1)"/>
-<rect x="38.30" y="87.70" width="33.80" height="2.08" fill="url(#g1)"/>
-<rect x="38.30" y="183.90" width="33.80" height="2.08" fill="url(#g1)"/>
-<rect x="38.30" y="191.70" width="33.80" height="4.55" fill="url(#g1)"/>
-<path d="M47.79 108.50 H62.61 V129.30 H47.79 Z M49.61 110.32 V127.48 H60.79 V110.32 Z" fill="url(#g1)"/>
-<rect x="74.70" y="46.10" width="19.50" height="163.80" fill="url(#g5)"/>
-<rect x="94.20" y="46.10" width="19.50" height="163.80" fill="url(#g6)"/>
-<rect x="74.70" y="61.70" width="39.00" height="4.55" fill="url(#g1)"/>
-<rect x="74.70" y="69.50" width="39.00" height="2.08" fill="url(#g1)"/>
-<rect x="74.70" y="183.90" width="39.00" height="2.08" fill="url(#g1)"/>
-<rect x="74.70" y="191.70" width="39.00" height="4.55" fill="url(#g1)"/>
-<path d="M85.62 90.30 H102.78 V111.10 H85.62 Z M87.44 92.12 V109.28 H100.96 V92.12 Z" fill="url(#g1)"/>
-<rect x="116.30" y="74.70" width="15.60" height="135.20" fill="url(#g7)"/>
-<rect x="131.90" y="74.70" width="15.60" height="135.20" fill="url(#g8)"/>
-<rect x="116.30" y="90.30" width="31.20" height="4.55" fill="url(#g1)"/>
-<rect x="116.30" y="98.10" width="31.20" height="2.08" fill="url(#g1)"/>
-<rect x="116.30" y="183.90" width="31.20" height="2.08" fill="url(#g1)"/>
-<rect x="116.30" y="191.70" width="31.20" height="4.55" fill="url(#g1)"/>
-<path d="M125.01 118.90 H138.79 V139.70 H125.01 Z M126.83 120.72 V137.88 H136.97 V120.72 Z" fill="url(#g1)"/>
-<rect x="150.10" y="53.90" width="18.20" height="156.00" fill="url(#g9)"/>
-<rect x="168.30" y="53.90" width="18.20" height="156.00" fill="url(#g10)"/>
-<rect x="150.10" y="69.50" width="36.40" height="4.55" fill="url(#g1)"/>
-<rect x="150.10" y="77.30" width="36.40" height="2.08" fill="url(#g1)"/>
-<rect x="150.10" y="183.90" width="36.40" height="2.08" fill="url(#g1)"/>
-<rect x="150.10" y="191.70" width="36.40" height="4.55" fill="url(#g1)"/>
-<path d="M160.24 98.10 H176.36 V118.90 H160.24 Z M162.06 99.92 V117.08 H174.54 V99.92 Z" fill="url(#g1)"/>
-<rect x="189.10" y="82.50" width="14.30" height="127.40" fill="url(#g11)"/>
-<rect x="203.40" y="82.50" width="14.30" height="127.40" fill="url(#g12)"/>
-<rect x="189.10" y="98.10" width="28.60" height="4.55" fill="url(#g1)"/>
-<rect x="189.10" y="105.90" width="28.60" height="2.08" fill="url(#g1)"/>
-<rect x="189.10" y="183.90" width="28.60" height="2.08" fill="url(#g1)"/>
-<rect x="189.10" y="191.70" width="28.60" height="4.55" fill="url(#g1)"/>
-<path d="M197.16 126.70 H209.64 V147.50 H197.16 Z M198.98 128.52 V145.68 H207.82 V128.52 Z" fill="url(#g1)"/>
+<rect width="256" height="256" fill="#F3EDE3"/>
+<rect x="51.125" y="76.875" width="36" height="133" rx="6" fill="#6E1E2A"/>
+<rect x="51.125" y="94.625" width="36" height="5.25" fill="#E7CC86"/>
+<rect x="89.625" y="56.375" width="41" height="153.5" rx="6" fill="#5B3A22"/>
+<rect x="89.625" y="74.125" width="41" height="5.25" fill="#E7CC86"/>
+<rect x="133.125" y="87.125" width="33.25" height="122.75" rx="6" fill="#2E4A3A"/>
+<rect x="133.125" y="104.875" width="33.25" height="5.25" fill="#E7CC86"/>
+<rect x="168.875" y="66.625" width="38.5" height="143.25" rx="6" fill="#1E3A6E"/>
+<rect x="168.875" y="84.375" width="38.5" height="5.25" fill="#E7CC86"/>
 </svg>

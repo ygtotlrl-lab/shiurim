@@ -67,7 +67,7 @@ function dndToggle() { lsSet(DND_KEY, lsGet(DND_KEY, '') === '1' ? '' : '1'); }
 
 // הלוגו הוא הנכס שהמחולל מייצר — ציור שני של המאסטר היה מקור אמת שני.
 function homeScreenHTML() {
-  return '<section class="shelf-pg"><header class="shelf-hd"><div class="shelf-tl"><img src="icons/icon-192.7a0c5b61.png" alt="" width="36" height="36">' +
+  return '<section class="shelf-pg"><header class="shelf-hd"><div class="shelf-tl"><img src="icons/icon-192.361ec026.png" alt="" width="36" height="36">' +
     '<h1>' + esc(MSG_HOME_TITLE) + '</h1></div>' + todayHTML() + '</header>' + shelvesHTML() + dndHTML() + '</section>';
 }
 
