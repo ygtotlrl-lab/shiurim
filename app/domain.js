@@ -526,13 +526,17 @@ function fixSections(pages, secs) {
   io.observe(end);
 }
 
-// עמוד תניא — הכותרת שבראשו ושורת הסימן שבתחתיתו גלויות תמיד: ההלבנה נחתכת אל המסגרת (TANYA_FRAME), בפרק ובתניא היומי כאחד.
+// עמוד תניא — הכותרת שבראשו גלויה תמיד, ושורת הסימן שבתחתיתו — כשהשיעור ממשיך אל העמוד הבא: ההלבנה נחתכת אל המסגרת (TANYA_FRAME),
+// בפרק ובתניא היומי כאחד. שיעור שנגמר לפני סוף העמוד — ההלבנה לרוחב העמוד מגיעה לתחתיתו ומכסה גם את שורת הסימן,
+// כי המילה שבה מקדימה את העמוד הבא, ואותו השיעור אינו קורא.
 function tanyaFramed(p, w) {
   var f = TANYA_FRAME[p];
   if (!f || !w) return w;
   var top = f[0], bot = f[1] || 100;
-  return w.map(function (r) { return [Math.max(r[0], top), Math.min(r[1], bot)].concat(r.slice(2)); })
-          .filter(function (r) { return r[1] > r[0]; });
+  return w.map(function (r) {
+    var end = r.length === 2 && r[1] >= bot - 2 ? 100 : Math.min(r[1], bot);
+    return [Math.max(r[0], top), end].concat(r.slice(2));
+  }).filter(function (r) { return r[1] > r[0]; });
 }
 function tanyaSheet(item) { return scanSheet((/\//.test(item.p) ? item.p : 'tny/' + item.p) + '.png', 1 / (TANYA_RATIO[item.p] || 1.25), tanyaFramed(item.p, item.w)); }
 
