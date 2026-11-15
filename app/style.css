@@ -142,9 +142,11 @@ body.shelf{background:linear-gradient(180deg,var(--shelf),var(--shelf-2))}
 .shelf-dnd{flex:none;display:flex;align-items:center;justify-content:center;gap:var(--sp-3);padding-top:var(--sp-6);
   font-size:var(--fs-2);color:var(--text-2);text-decoration:none}
 .shelf-dnd b{color:var(--brand-ink)}
-/* הספר בדרך — מהמדף למרכז, הכריכה נפתחת והדף מתפרש על כל המסך; אין מעבר כשמבקשים להפחית תנועה. */
-.bk3{position:fixed;inset:0;z-index:40;perspective:1500px;pointer-events:none;background:rgba(8,6,4,0);transition:background .28s ease,opacity .16s ease}
+/* הספר בדרך — מהמדף למרכז, הכריכה נפתחת והדף מתפרש על כל המסך; אין מעבר כשמבקשים להפחית תנועה.
+   במרכז הוא מתחת לגיליון הבחירה (--z-4), ומשהכריכה נפתחת — מעליו, כי הגיליון כבר נסגר. */
+.bk3{position:fixed;inset:0;z-index:var(--z-3);perspective:1500px;pointer-events:none;background:rgba(8,6,4,0);transition:background .28s ease,opacity .16s ease}
 .bk3.dim{background:rgba(8,6,4,.5)}
+.bk3.open{z-index:var(--z-5)}
 .bk3.out{opacity:0}
 .bk3-in{position:absolute;transform-style:preserve-3d;border-radius:4px;box-shadow:0 30px 60px rgba(0,0,0,.5);
   transition:left .28s cubic-bezier(.2,.8,.2,1),top .28s cubic-bezier(.2,.8,.2,1),width .28s cubic-bezier(.2,.8,.2,1),height .28s cubic-bezier(.2,.8,.2,1),transform .28s cubic-bezier(.2,.8,.2,1),border-radius .22s}
