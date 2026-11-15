@@ -210,7 +210,8 @@ function thPeopleOpen() {
   if (!ps.length) ps = [{ n: '', hy: '', hm: '', hd: '' }];
   openModal(MSG_TH_PEOPLE_TITLE, '<div class="thp-wrap"><div class="thp-list" id="thp-list">' + ps.map(thRowHTML).join('') + '</div>' +
     '<button class="btn ghost" data-act="th-people-add">' + esc(MSG_TH_PEOPLE_ADD) + '</button></div>',
-    '<button class="btn" data-act="th-people-save">' + esc(MSG_TH_PEOPLE_SAVE) + '</button>');
+    '<button class="btn ghost" data-act="modal-close">ביטול</button>' +
+    '<button class="btn" data-act="th-people-save" data-ksave>' + icon('save') + esc(MSG_TH_PEOPLE_SAVE) + '</button>');
   thDragWire();
 }
 
