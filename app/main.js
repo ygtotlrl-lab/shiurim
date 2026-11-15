@@ -5,7 +5,7 @@ import { lsGet, lsOpen, lsSet } from '../core/storage.js';
 import { MIRROR, mirrorKey, mirrorTables } from '../core/mirror.js';
 import { logAwait } from '../core/backup.js';
 import { bootRun } from '../core/boot-run.js';
-import { actWire, closeAsk, closeModal, esc, shellBare, swApply, swHideUpdate, uiNoDialog } from '../core/ui.js';
+import { actWire, closeAsk, closeModal, esc, modalDismiss, shellBare, swApply, swHideUpdate, uiNoDialog } from '../core/ui.js';
 import { KEY_CHUMASH, KEY_TH_PEOPLE, KEY_SHNAYIM, KEY_TANYA_DAY, KEY_HAYOM, KEY_RAMBAM, KEY_TANYA, KV_TABLE, MSG_NAV_BACK, PARSHIOT, MSG_NAV_EXIT, MSG_NAV_HOME, MSG_VIL_CLOSE, MSG_VIL_OPEN, MSG_SBT_CLOSE, MSG_SBT_OPEN, PUSH_TABLES, SUPABASE_ANON_KEY,
          SUPABASE_URL, TABLES } from './constants.js';
 import { S, shell, view } from './state.js';
@@ -334,7 +334,7 @@ var DOM_ACTIONS = {
   },
   'ask-yes': function () { closeAsk(true); },
   'ask-no':  function () { closeAsk(false); },
-  'modal-close': function () { closeModal(); },
+  'modal-close': function () { modalDismiss(); },
   'ls-alert-close': function () { var el = document.getElementById('ls-alert'); if (el) el.remove(); },
   'pend-alert-ok':  function () { pendAlertDismiss(); },
   'sw-apply': function (el) { swApply(el); },
