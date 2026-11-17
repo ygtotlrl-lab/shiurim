@@ -23,9 +23,9 @@ self.APP = Object.freeze({
     // צבע כפתור הניסיון החוזר בדף האופליין של המעטפת
     accent: '#1e3a6e',
     // לעולם אינו יורד — בלי קידום המכשיר המותקן אינו מקבל את ה-APK החדש.
-    versionCode: 18,
+    versionCode: 19,
     versionName: '1.0',
-    launcherBg: { kind: 'solid', color: '#FFFFFF' },
+    launcherBg: { kind: 'gradient', angle: 315, start: '#8E293A', end: '#5E1723' },
     // אפליקציות אחרות שקישור intent: רשאי לפתוח — שם ⟵ חבילה; ריק — המעטפת אינה פותחת אף אחת
     launch: { mafteach: 'app.mafteiach.app' },
     // כפתור «יציאה» שהמעטפת קולטת וסוגרת בו את האפליקציה
