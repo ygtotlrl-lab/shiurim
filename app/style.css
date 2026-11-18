@@ -20,6 +20,8 @@
   --bad:#9D2541; --bad-soft:#F9EBEF;
   /* הדף עצמו לבן בשתי הערכות — סריקה על נייר לבן, וההלבנה מכסה בלבן. */
   --leaf:#FFFFFF;
+  /* באנר העדכון — צבע האפליקציה הוא שמנת מסך הבית; דיו חום וכפתור לבן. */
+  --upd-bg:var(--shelf); --upd-ink:var(--cv-brown); --upd-btn:var(--leaf); --upd-btn-ink:var(--cv-brown);
   /* מדף הכריכות — עור, הטבעת זהב ובד; העור והזהב זהים בשתי הערכות, כמו כריכה אמיתית. */
   --shelf:#F3EDE3; --shelf-2:#E9E0D0; --cloth:#EDE6D6; --cloth-ink:#9A8F7A; --cloth-line:#CFC3A8;
   --cubby:#E2D5BF; --cubby-shade:rgba(80,50,20,.32); --plank-a:#DCBD90; --plank-b:#B0864F;
@@ -42,6 +44,7 @@
     --warn:#E8C27A; --warn-soft:#2B2214;
     --bad:#EB8EA4; --bad-soft:#2C1117;
     --leaf-shadow:0 1px 2px rgba(0,0,0,.4),0 8px 22px rgba(0,0,0,.35);
+    --upd-ink:var(--text);
     --shelf:#141821; --shelf-2:#10131A; --cloth:#262C38; --cloth-ink:#7D8494; --cloth-line:#3A4252;
     --cubby:#0B0E14; --cubby-shade:rgba(0,0,0,.7); --plank-a:#4B3223; --plank-b:#24160D;
   }
