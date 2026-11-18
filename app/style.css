@@ -104,8 +104,6 @@ body.shelf{background:linear-gradient(180deg,var(--shelf),var(--shelf-2))}
 .shelf-pg{padding:var(--sp-7) 0 var(--sp-5);display:flex;flex-direction:column;
   height:calc(100dvh - var(--sp-6) - env(safe-area-inset-bottom,0px) - env(safe-area-inset-top,0px));min-height:420px}
 .shelf-hd{flex:none;display:flex;flex-direction:column;align-items:center;gap:var(--sp-3);text-align:center}
-.shelf-tl{display:flex;align-items:center;gap:var(--sp-4)}
-.shelf-tl img{width:36px;height:36px;border-radius:var(--r-4)}
 .shelf-hd h1{font-family:var(--f-display);font-weight:900;font-size:40px;line-height:1;color:var(--brand-ink)}
 .shelf-date{font-size:var(--fs-3);color:var(--text-2);line-height:var(--lh-2)}
 .shelf-date b{font-family:var(--f-display);font-size:var(--fs-4);color:var(--gold);font-weight:700}
