@@ -20,8 +20,6 @@
   --bad:#9D2541; --bad-soft:#F9EBEF;
   /* הדף עצמו לבן בשתי הערכות — סריקה על נייר לבן, וההלבנה מכסה בלבן. */
   --leaf:#FFFFFF;
-  /* באנר העדכון — רקע שמנת של הטבעת הזהב, דיו חום, וכפתור לבן כמו בשאר האפליקציות. */
-  --upd-bg:var(--emboss); --upd-ink:var(--cv-brown); --upd-btn:var(--leaf); --upd-btn-ink:var(--cv-brown);
   /* מדף הכריכות — עור, הטבעת זהב ובד; העור והזהב זהים בשתי הערכות, כמו כריכה אמיתית. */
   --shelf:#F3EDE3; --shelf-2:#E9E0D0; --cloth:#EDE6D6; --cloth-ink:#9A8F7A; --cloth-line:#CFC3A8;
   --cubby:#E2D5BF; --cubby-shade:rgba(80,50,20,.32); --plank-a:#DCBD90; --plank-b:#B0864F;
