@@ -308,7 +308,8 @@ body.reading .read .pages{width:100vw;margin-inline:calc(50% - 50vw)}
 
 /* ── הספרים החדשים ── */
 /* הצללה בסידור — מה שמחוץ לתפילה שנבחרה באפור שקוף, והטקסט נראה דרכו. */
-.leaf .wh.shade{background:rgba(120,120,120,.38)}
+/* בלי הטבעת הלבנה של רצועת ההלבנה — על הצללה שקופה היא נראית כפס לבן בין שתי רצועות צמודות. */
+.leaf .wh.shade{background:rgba(120,120,120,.38);box-shadow:none}
 /* תהלים — פרקים אישיים: שורה לכל אדם, ידית גרירה, שם, תאריך לידה ואחרי השקיעה. */
 .thp-wrap{flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain;padding:0 var(--sp-6) var(--sp-5)}
 .thp-list{display:grid;gap:var(--sp-3);margin-bottom:var(--sp-4)}
