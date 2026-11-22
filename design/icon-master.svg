@@ -1,11 +1,9 @@
 <svg viewBox="0 0 256 256" width="1024" height="1024" xmlns="http://www.w3.org/2000/svg">
-<rect width="256" height="256" fill="#7A2233"/>
-<rect x="51.125" y="76.875" width="36" height="133" rx="6" fill="#F3EDE3"/>
-<rect x="51.125" y="94.625" width="36" height="5.25" fill="#7A2233"/>
-<rect x="89.625" y="56.375" width="41" height="153.5" rx="6" fill="#E7CC86"/>
-<rect x="89.625" y="74.125" width="41" height="5.25" fill="#7A2233"/>
-<rect x="133.125" y="87.125" width="33.25" height="122.75" rx="6" fill="#DCBD90"/>
-<rect x="133.125" y="104.875" width="33.25" height="5.25" fill="#7A2233"/>
-<rect x="168.875" y="66.625" width="38.5" height="143.25" rx="6" fill="#F3EDE3"/>
-<rect x="168.875" y="84.375" width="38.5" height="5.25" fill="#7A2233"/>
+<rect width="256" height="256" fill="#1E3A6E"/>
+<rect x="61.5" y="72.52" width="39.9" height="128.48" rx="6.65" fill="#E7CC86"/>
+<rect x="61.5" y="91.79" width="39.9" height="5.84" fill="#1E3A6E"/>
+<rect x="104.06" y="55" width="47.88" height="146" rx="7.98" fill="#E7CC86"/>
+<rect x="104.06" y="76.9" width="47.88" height="5.84" fill="#1E3A6E"/>
+<rect x="154.6" y="79.82" width="39.9" height="121.18" rx="6.65" fill="#E7CC86"/>
+<rect x="154.6" y="98" width="39.9" height="5.84" fill="#1E3A6E"/>
 </svg>
