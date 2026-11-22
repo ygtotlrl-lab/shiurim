@@ -4,6 +4,7 @@ import { HEB_DOW, hebDate } from '../../core/hebrew.js';
 import { lsGet, lsSet } from '../../core/storage.js';
 import { LESSONS, LINKS, MSG_BOOKS_TITLE, MSG_DND, MSG_DND_OFF, MSG_DND_ON, MSG_HOME_TITLE, MSG_SOON } from '../constants.js';
 import { lessonAppHref, lessonOpen } from '../domain.js';
+import { gauthUser } from '../../core/gauth.js';
 
 // ── המדף ──
 // שתי קומות: בעליונה השיעורים הראשונים של LESSONS, ובתחתונה השאר ואחריהם הקישורים — הסדר מימין לשמאל.
@@ -63,10 +64,15 @@ function dndHTML() {
   var on = lsGet(DND_KEY, '') === '1';
   return '<a class="shelf-dnd" href="app-dnd:' + (on ? 'off' : 'on') + '">' + esc(MSG_DND) + ' · <b>' + esc(on ? MSG_DND_ON : MSG_DND_OFF) + '</b></a>';
 }
+// החשבון — אין מסך הגדרות, ולכן שורה מתחת למדף שפותחת את חלון החשבון (core/gauth.js)
+function accountHTML() {
+  var u = gauthUser();
+  return u ? '<button class="shelf-dnd" data-act="ga-account">החשבון · <b>' + esc(u.full_name || u.login) + '</b></button>' : '';
+}
 function dndToggle() { lsSet(DND_KEY, lsGet(DND_KEY, '') === '1' ? '' : '1'); }
 
 function homeScreenHTML() {
-  return '<section class="shelf-pg"><header class="shelf-hd"><h1>' + esc(MSG_HOME_TITLE) + '</h1>' + todayHTML() + '</header>' + shelvesHTML() + dndHTML() + '</section>';
+  return '<section class="shelf-pg"><header class="shelf-hd"><h1>' + esc(MSG_HOME_TITLE) + '</h1>' + todayHTML() + '</header>' + shelvesHTML() + dndHTML() + accountHTML() + '</section>';
 }
 
 // ── הספר יוצא מהמדף ──

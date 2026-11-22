@@ -5,6 +5,7 @@ import { lsGet, lsOpen, lsSet } from '../core/storage.js';
 import { MIRROR, mirrorKey, mirrorTables } from '../core/mirror.js';
 import { logAwait } from '../core/backup.js';
 import { bootRun } from '../core/boot-run.js';
+import { GAUTH_ACTIONS, gauthClientOpts, gauthGate, gauthHeaders, gauthUser } from '../core/gauth.js';
 import { actWire, closeAsk, closeModal, esc, modalDismiss, shellBare, swApply, swHideUpdate, uiNoDialog } from '../core/ui.js';
 import { KEY_CHUMASH, KEY_TH_PEOPLE, KEY_SHNAYIM, KEY_TANYA_DAY, KEY_HAYOM, KEY_RAMBAM, KEY_TANYA, KV_TABLE, MSG_NAV_BACK, PARSHIOT, MSG_NAV_EXIT, MSG_NAV_HOME, MSG_VIL_CLOSE, MSG_VIL_OPEN, MSG_SBT_CLOSE, MSG_SBT_OPEN, PUSH_TABLES, SUPABASE_ANON_KEY,
          SUPABASE_URL, TABLES } from './constants.js';
@@ -31,6 +32,8 @@ appConfigure({
   get BK_CFG() { return BK_CFG; },
   get DEV_CFG() { return DEV_CFG; },
   get DOM_ACTIONS() { return DOM_ACTIONS; },
+  get GAUTH_CFG() { return GAUTH_CFG; },
+  get NOTIFY_CFG() { return NOTIFY_CFG; },
   get ERA_CFG() { return ERA_CFG; },
   get LS_CFG() { return LS_CFG; },
   get MIRROR_CFG() { return MIRROR_CFG; },
@@ -40,6 +43,13 @@ appConfigure({
   get RTY_CFG() { return RTY_CFG; },
   get saveRefresh() { return saveRefresh; }
 });
+
+// הכניסה עם Google (core/gauth.js) — הלקוח של האפליקציה; וההתראות (core/push.js) — המשתמש מזוהה מול השער באסימון הסשן
+var GAUTH_CFG = { sb: function () { return S.sb; } };
+var NOTIFY_CFG = {
+  auth: async function () { return { headers: await gauthHeaders() }; },
+  user: function () { return gauthUser(); }
+};
 
 var MIRROR_CFG = {
   prefix: self.APP.prefix + 'mirror_',
@@ -343,6 +353,7 @@ var DOM_ACTIONS = {
 
 // ── המאזינים הגלובליים ──
 // מאזין אחד לכל אירוע, בהאצלה מ-document — המסכים נבנים מחדש בכל רינדור, ומאזין שנקשר לאלמנט מת איתו.
+Object.assign(DOM_ACTIONS, GAUTH_ACTIONS);
 actWire(DOM_ACTIONS);
 
 document.addEventListener('input', function (e) {
@@ -373,7 +384,6 @@ function sBoot() {
   shell.sRender = sRender;
   var bb = sQ('#botbar');
   if (bb) bb.innerHTML = botBarHTML();
-  S.sb = sbWatch(window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY));
   // הליבה עולה לפני הציור הראשון — המסך עולה מהמראה, והסימונים הממתינים מוצגים מהשנייה הראשונה.
   bootRun();
   sRender();
@@ -383,6 +393,9 @@ function sBoot() {
 
 // האחסון נפתח לפני כל קריאה ממנו — אחרי שה-CFG הוגדרו, כי המרשם קורא אותם.
 await lsOpen();
-sBoot();
-
+// הלקוח — עם הסשן של האפליקציה (core/gauth.js), לפני הכניסה ולפני הסנכרון
+S.sb = sbWatch(window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, gauthClientOpts()));
 window.bootOk();
+// הכניסה — מסך הכניסה מעל הכל, עד שנכנס משתמש מהרשימה; והסנכרון רק אחריה
+await gauthGate();
+sBoot();
