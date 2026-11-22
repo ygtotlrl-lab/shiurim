@@ -1,9 +1,9 @@
 <svg viewBox="0 0 256 256" width="1024" height="1024" xmlns="http://www.w3.org/2000/svg">
-<rect width="256" height="256" fill="#1E3A6E"/>
-<rect x="61.5" y="72.52" width="39.9" height="128.48" rx="6.65" fill="#E7CC86"/>
-<rect x="61.5" y="91.79" width="39.9" height="5.84" fill="#1E3A6E"/>
-<rect x="104.06" y="55" width="47.88" height="146" rx="7.98" fill="#E7CC86"/>
-<rect x="104.06" y="76.9" width="47.88" height="5.84" fill="#1E3A6E"/>
-<rect x="154.6" y="79.82" width="39.9" height="121.18" rx="6.65" fill="#E7CC86"/>
-<rect x="154.6" y="98" width="39.9" height="5.84" fill="#1E3A6E"/>
+<rect width="256" height="256" fill="#2E6C50"/>
+<rect x="62.5" y="78.05" width="37" height="126.7" rx="5.6" fill="#FFFFFF"/>
+<rect x="62.5" y="100.45" width="37" height="3.4" fill="#2E6C50"/>
+<rect x="105.5" y="51.25" width="45" height="153.5" rx="5.6" fill="#FFFFFF"/>
+<rect x="105.5" y="71.25" width="45" height="3.4" fill="#2E6C50"/>
+<rect x="156.5" y="81.25" width="37" height="123.5" rx="5.6" fill="#FFFFFF"/>
+<rect x="156.5" y="102.45" width="37" height="3.4" fill="#2E6C50"/>
 </svg>
