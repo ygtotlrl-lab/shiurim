@@ -5,9 +5,9 @@ import { lsGet, lsOpen, lsSet } from '../core/storage.js';
 import { MIRROR, mirrorKey, mirrorTables } from '../core/mirror.js';
 import { logAwait } from '../core/backup.js';
 import { bootRun } from '../core/boot-run.js';
-import { GAUTH_ACTIONS, gauthClientOpts, gauthGate, gauthHeaders, gauthUser } from '../core/gauth.js';
-import { actWire, closeAsk, closeModal, esc, modalDismiss, shellBare, swApply, swHideUpdate, uiNoDialog } from '../core/ui.js';
-import { KEY_CHUMASH, KEY_TH_PEOPLE, KEY_SHNAYIM, KEY_TANYA_DAY, KEY_HAYOM, KEY_RAMBAM, KEY_TANYA, KV_TABLE, MSG_NAV_BACK, PARSHIOT, MSG_NAV_EXIT, MSG_NAV_HOME, MSG_VIL_CLOSE, MSG_VIL_OPEN, MSG_SBT_CLOSE, MSG_SBT_OPEN, PUSH_TABLES, SUPABASE_ANON_KEY,
+import { GAUTH_ACTIONS, gauthCardHTML, gauthClientOpts, gauthGate, gauthHeaders, gauthUser } from '../core/gauth.js';
+import { actWire, closeAsk, closeModal, esc, modalDismiss, openModal, shellBare, swApply, swHideUpdate, uiNoDialog } from '../core/ui.js';
+import { KEY_CHUMASH, KEY_TH_PEOPLE, KEY_SHNAYIM, KEY_TANYA_DAY, KEY_HAYOM, KEY_RAMBAM, KEY_TANYA, KV_TABLE, MSG_NAV_BACK, PARSHIOT, MSG_NAV_EXIT, MSG_NAV_HOME, MSG_NAV_SETTINGS, MSG_VIL_CLOSE, MSG_VIL_OPEN, MSG_SBT_CLOSE, MSG_SBT_OPEN, PUSH_TABLES, SUPABASE_ANON_KEY,
          SUPABASE_URL, TABLES } from './constants.js';
 import { S, shell, view } from './state.js';
 import { sPickRawAny, PICKERS, chumashCur, shnayimCur, hayomCur, lessonPickOpen, pickerFilter, pickerOpen, pinchEnd, pinchMove, pinchReset, pinchStart, pzSwipeMove, pzSwipeStart, readTap, rambamCur, stripEnd, sPendKey, sPendKeyOf, sPickSet, sQ, sStripRows, sSyncNow, sSyncPull,
@@ -45,7 +45,13 @@ appConfigure({
 });
 
 // הכניסה עם Google (core/gauth.js) — הלקוח של האפליקציה; וההתראות (core/push.js) — המשתמש מזוהה מול השער באסימון הסשן
-var GAUTH_CFG = { sb: function () { return S.sb; } };
+var GAUTH_CFG = {
+  sb: function () { return S.sb; },
+  // כרטיס החשבון — בחלון «הגדרות», שאין לו מסך משלו
+  card: function (title, inner) { return '<div class="ga-card"><div class="ga-sec">' + esc(title) + '</div>' + inner + '</div>'; }
+};
+// «הגדרות» — חלון, ובו רכיב המשתמשים (core/gauth.js)
+function settingsOpen() { openModal(MSG_NAV_SETTINGS, gauthCardHTML(), '', icon('settings')); }
 var NOTIFY_CFG = {
   auth: async function () { return { headers: await gauthHeaders() }; },
   user: function () { return gauthUser(); }
@@ -252,12 +258,12 @@ function pickGo(key, v) {
   navTop();
 }
 
-// השורה התחתונה — חזור · בית · יציאה; «יציאה» רק במעטפת, שקולטת את הקישור וסוגרת את האפליקציה.
+// השורה התחתונה — חזור · בית · הגדרות · יציאה; «יציאה» רק במעטפת, שקולטת את הקישור וסוגרת את האפליקציה.
 function botBarHTML() {
   var it = function (act, ico, lab) { return '<button class="bb-it" data-act="' + act + '">' + icon(ico) + '<span>' + esc(lab) + '</span></button>'; };
   var exit = /\bwv\b/.test(navigator.userAgent)
     ? '<a class="bb-it" href="app-exit:close">' + icon('exit') + '<span>' + esc(MSG_NAV_EXIT) + '</span></a>' : '';
-  return '<div class="in">' + it('nav-back', 'back', MSG_NAV_BACK) + it('go-home', 'home', MSG_NAV_HOME) + exit + '</div>';
+  return '<div class="in">' + it('nav-back', 'back', MSG_NAV_BACK) + it('go-home', 'home', MSG_NAV_HOME) + it('settings-open', 'settings', MSG_NAV_SETTINGS) + exit + '</div>';
 }
 
 // הסרגל נאסף בגלילה למטה וחוזר בגלילה למעלה — הדף לבדו על המסך.
@@ -353,7 +359,7 @@ var DOM_ACTIONS = {
 
 // ── המאזינים הגלובליים ──
 // מאזין אחד לכל אירוע, בהאצלה מ-document — המסכים נבנים מחדש בכל רינדור, ומאזין שנקשר לאלמנט מת איתו.
-Object.assign(DOM_ACTIONS, GAUTH_ACTIONS);
+Object.assign(DOM_ACTIONS, GAUTH_ACTIONS, { 'settings-open': function () { settingsOpen(); } });
 actWire(DOM_ACTIONS);
 
 document.addEventListener('input', function (e) {

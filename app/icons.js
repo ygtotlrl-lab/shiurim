@@ -18,6 +18,7 @@ var PATHS = {
   refresh:  '<path d="M20 12a8 8 0 1 1-2.34-5.66L20 8.5"/><path d="M20 3.5v5h-5"/>',
   scroll: '<path d="M7 4h11v14a2 2 0 0 1-2 2H6"/><path d="M7 4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2"/><path d="M10 9h5M10 13h5"/>',
   home:   '<path d="M4 11l8-7 8 7"/><path d="M7 10v10h10V10"/>',
+  settings: '<path d="M4 6h8.5M16.5 6H20M4 12h2.5M10.5 12H20M4 18h6.5M14.5 18H20"/><circle cx="14.5" cy="6" r="2"/><circle cx="8.5" cy="12" r="2"/><circle cx="12.5" cy="18" r="2"/>',
   back:   '<path d="M5 12h14"/><path d="M13 6l6 6-6 6"/>',
   exit:   '<path d="M10 4H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h4"/><path d="M14 8l-4 4 4 4"/><path d="M10 12h10"/>',
   down:   '<path d="M6 9l6 6 6-6"/>',

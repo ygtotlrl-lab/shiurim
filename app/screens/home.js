@@ -64,10 +64,10 @@ function dndHTML() {
   var on = lsGet(DND_KEY, '') === '1';
   return '<a class="shelf-dnd" href="app-dnd:' + (on ? 'off' : 'on') + '">' + esc(MSG_DND) + ' · <b>' + esc(on ? MSG_DND_ON : MSG_DND_OFF) + '</b></a>';
 }
-// החשבון — אין מסך הגדרות, ולכן שורה מתחת למדף שפותחת את חלון החשבון (core/gauth.js)
+// «הגדרות» — שורה מתחת למדף שפותחת את חלון ההגדרות, ובו רכיב המשתמשים (core/gauth.js)
 function accountHTML() {
   var u = gauthUser();
-  return u ? '<button class="shelf-dnd" data-act="ga-account">החשבון · <b>' + esc(u.full_name || u.login) + '</b></button>' : '';
+  return u ? '<button class="shelf-dnd" data-act="settings-open">הגדרות · <b>' + esc(u.full_name || u.login) + '</b></button>' : '';
 }
 function dndToggle() { lsSet(DND_KEY, lsGet(DND_KEY, '') === '1' ? '' : '1'); }
 
