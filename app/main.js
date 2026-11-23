@@ -48,16 +48,13 @@ appConfigure({
 var GAUTH_CFG = {
   sb: function () { return S.sb; },
   // כרטיס החשבון — בחלון «הגדרות», שאין לו מסך משלו
-  card: function (title, inner) { return '<div class="ga-card"><div class="ga-sec">' + esc(title) + '</div>' + inner + '</div>'; },
-  // שני תפקידים — מנהל ומשתמש; אין צוות בכיר וזוטר
-  roles: ['admin', 'junior'],
-  roleLabels: { junior: 'משתמש' }
+  card: function (title, inner) { return '<div class="ga-card"><div class="ga-sec">' + esc(title) + '</div>' + inner + '</div>'; }
 };
 // «הגדרות» — מסך משלו, ובו רכיב המשתמשים (core/gauth.js); השורה התחתונה חוזרת ממנו
 function settingsScreenHTML() {
   return '<section class="set-page"><h1 class="set-ttl">' + esc(MSG_NAV_SETTINGS) + '</h1>' + gauthCardHTML() + '</section>';
 }
-function settingsOpen() { closeModal(); go('settings'); }
+function settingsOpen() { var u = gauthUser(); if (!u || u.role !== 'admin') return; closeModal(); go('settings'); }
 var NOTIFY_CFG = {
   auth: async function () { return { headers: await gauthHeaders() }; },
   user: function () { return gauthUser(); }
@@ -265,12 +262,12 @@ function pickGo(key, v) {
   navTop();
 }
 
-// השורה התחתונה — חזור · בית · הגדרות · יציאה; «יציאה» רק במעטפת, שקולטת את הקישור וסוגרת את האפליקציה.
+// השורה התחתונה — חזור · בית · יציאה; «יציאה» רק במעטפת, שקולטת את הקישור וסוגרת את האפליקציה.
 function botBarHTML() {
   var it = function (act, ico, lab) { return '<button class="bb-it" data-act="' + act + '">' + icon(ico) + '<span>' + esc(lab) + '</span></button>'; };
   var exit = /\bwv\b/.test(navigator.userAgent)
     ? '<a class="bb-it" href="app-exit:close">' + icon('exit') + '<span>' + esc(MSG_NAV_EXIT) + '</span></a>' : '';
-  return '<div class="in">' + it('nav-back', 'back', MSG_NAV_BACK) + it('go-home', 'home', MSG_NAV_HOME) + it('settings-open', 'settings', MSG_NAV_SETTINGS) + exit + '</div>';
+  return '<div class="in">' + it('nav-back', 'back', MSG_NAV_BACK) + it('go-home', 'home', MSG_NAV_HOME) + exit + '</div>';
 }
 
 // הסרגל נאסף בגלילה למטה וחוזר בגלילה למעלה — הדף לבדו על המסך.
