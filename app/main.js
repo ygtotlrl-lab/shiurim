@@ -5,7 +5,7 @@ import { lsGet, lsOpen, lsSet } from '../core/storage.js';
 import { MIRROR, mirrorKey, mirrorTables } from '../core/mirror.js';
 import { logAwait } from '../core/backup.js';
 import { bootRun } from '../core/boot-run.js';
-import { GAUTH_ACTIONS, gauthCardHTML, gauthClientOpts, gauthGate, gauthHeaders, gauthUser } from '../core/gauth.js';
+import { GAUTH_ACTIONS, gauthCardHTML, gauthClientOpts, gauthGate, gauthHeaders, gauthIsAdmin, gauthUser } from '../core/gauth.js';
 import { actWire, closeAsk, closeModal, esc, modalDismiss, openModal, shellBare, swApply, swHideUpdate, uiNoDialog } from '../core/ui.js';
 import { KEY_CHUMASH, KEY_TH_PEOPLE, KEY_SHNAYIM, KEY_TANYA_DAY, KEY_HAYOM, KEY_RAMBAM, KEY_TANYA, KV_TABLE, MSG_NAV_BACK, PARSHIOT, MSG_NAV_EXIT, MSG_NAV_HOME, MSG_NAV_SETTINGS, MSG_VIL_CLOSE, MSG_VIL_OPEN, MSG_SBT_CLOSE, MSG_SBT_OPEN, PUSH_TABLES, SUPABASE_ANON_KEY,
          SUPABASE_URL, TABLES } from './constants.js';
@@ -54,7 +54,7 @@ var GAUTH_CFG = {
 function settingsScreenHTML() {
   return '<section class="set-page"><h1 class="set-ttl">' + esc(MSG_NAV_SETTINGS) + '</h1>' + gauthCardHTML() + '</section>';
 }
-function settingsOpen() { var u = gauthUser(); if (!u || u.role !== 'admin') return; closeModal(); go('settings'); }
+function settingsOpen() { if (!gauthIsAdmin()) return; closeModal(); go('settings'); }
 var NOTIFY_CFG = {
   auth: async function () { return { headers: await gauthHeaders() }; },
   user: function () { return gauthUser(); }
@@ -262,12 +262,13 @@ function pickGo(key, v) {
   navTop();
 }
 
-// השורה התחתונה — חזור · בית · יציאה; «יציאה» רק במעטפת, שקולטת את הקישור וסוגרת את האפליקציה.
+// השורה התחתונה — בכל המסכים, גם בבית: חזור · בית · הגדרות (למנהל בלבד) · יציאה; «יציאה» רק במעטפת, שקולטת את הקישור וסוגרת את האפליקציה.
 function botBarHTML() {
   var it = function (act, ico, lab) { return '<button class="bb-it" data-act="' + act + '">' + icon(ico) + '<span>' + esc(lab) + '</span></button>'; };
   var exit = /\bwv\b/.test(navigator.userAgent)
     ? '<a class="bb-it" href="app-exit:close">' + icon('exit') + '<span>' + esc(MSG_NAV_EXIT) + '</span></a>' : '';
-  return '<div class="in">' + it('nav-back', 'back', MSG_NAV_BACK) + it('go-home', 'home', MSG_NAV_HOME) + exit + '</div>';
+  return '<div class="in">' + it('nav-back', 'back', MSG_NAV_BACK) + it('go-home', 'home', MSG_NAV_HOME) +
+    (gauthIsAdmin() ? it('settings-open', 'settings', MSG_NAV_SETTINGS) : '') + exit + '</div>';
 }
 
 // הסרגל נאסף בגלילה למטה וחוזר בגלילה למעלה — הדף לבדו על המסך.
