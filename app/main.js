@@ -48,10 +48,16 @@ appConfigure({
 var GAUTH_CFG = {
   sb: function () { return S.sb; },
   // כרטיס החשבון — בחלון «הגדרות», שאין לו מסך משלו
-  card: function (title, inner) { return '<div class="ga-card"><div class="ga-sec">' + esc(title) + '</div>' + inner + '</div>'; }
+  card: function (title, inner) { return '<div class="ga-card"><div class="ga-sec">' + esc(title) + '</div>' + inner + '</div>'; },
+  // שני תפקידים — מנהל ומשתמש; אין צוות בכיר וזוטר
+  roles: ['admin', 'junior'],
+  roleLabels: { junior: 'משתמש' }
 };
-// «הגדרות» — חלון, ובו רכיב המשתמשים (core/gauth.js)
-function settingsOpen() { openModal(MSG_NAV_SETTINGS, gauthCardHTML(), '', icon('settings')); }
+// «הגדרות» — מסך משלו, ובו רכיב המשתמשים (core/gauth.js); השורה התחתונה חוזרת ממנו
+function settingsScreenHTML() {
+  return '<section class="set-page"><h1 class="set-ttl">' + esc(MSG_NAV_SETTINGS) + '</h1>' + gauthCardHTML() + '</section>';
+}
+function settingsOpen() { closeModal(); go('settings'); }
 var NOTIFY_CFG = {
   auth: async function () { return { headers: await gauthHeaders() }; },
   user: function () { return gauthUser(); }
@@ -154,12 +160,13 @@ function sRender() {
   if (!root) { uiNoDialog('sRender', 'view'); return; }
   var home = view.screen === 'home';
   var bk = bookOf(view.screen);
-  var cur = bk ? (bk.people ? JSON.stringify(sPickRawAny(KEY_TH_PEOPLE)) : bookCur(bk)) : home ? (rambamCur() + ':' + tanyaCur()) : view.screen === 'tanya' ? tanyaCur()
+  var cur = view.screen === 'settings' ? 'settings' : bk ? (bk.people ? JSON.stringify(sPickRawAny(KEY_TH_PEOPLE)) : bookCur(bk)) : home ? (rambamCur() + ':' + tanyaCur()) : view.screen === 'tanya' ? tanyaCur()
     : view.screen === 'hayom' ? hayomCur() : view.screen === 'chumash' ? chumashCur() : view.screen === 'shnayim' ? shnayimCur() : view.screen === 'tanyay' ? tyCur() : rambamCur();
   if (view.shown[view.screen] !== cur || !root.firstChild || root.dataset.screen !== view.screen) {
     root.dataset.from = root.dataset.screen || '';
     root.dataset.screen = view.screen;
-    if (bk) { root.innerHTML = bookScreenHTML(view.screen); bookMount(view.screen); }
+    if (view.screen === 'settings') root.innerHTML = settingsScreenHTML();
+    else if (bk) { root.innerHTML = bookScreenHTML(view.screen); bookMount(view.screen); }
     else if (home) { root.innerHTML = homeScreenHTML(); shelfReturn(root.dataset.from); }
     else if (view.screen === 'tanya') { root.innerHTML = tanyaScreenHTML(); tanyaMount(); }
     else if (view.screen === 'hayom') { root.innerHTML = hayomScreenHTML(); hayomMount(); }
