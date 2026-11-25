@@ -52,3 +52,8 @@ create policy s_settings_users on public.s_settings as permissive for all to aut
 alter table public.s_users enable row level security;
 drop policy if exists s_users_select on public.s_users;
 create policy s_users_select on public.s_users as permissive for select to authenticated using (s_is_user());
+
+drop trigger if exists s_settings_history on public.s_settings;
+create trigger s_settings_history AFTER INSERT OR DELETE OR UPDATE ON public.s_settings FOR EACH ROW EXECUTE FUNCTION sh_history_log('key');
+drop trigger if exists s_users_history on public.s_users;
+create trigger s_users_history AFTER INSERT OR DELETE OR UPDATE ON public.s_users FOR EACH ROW EXECUTE FUNCTION sh_history_log('client_id');
