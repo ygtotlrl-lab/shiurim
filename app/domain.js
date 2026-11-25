@@ -11,7 +11,7 @@ import { S, shell } from './state.js';
 
 import { icon } from './icons.js';
 import { shareFiles } from '../core/share.js';
-import { BOOK_URL, CH, HAFTAROT, HY, RAMBAM_LESSONS, RAMBAM_MAP, SBT_CH, SBT_DAY, SCAN, SCAN_SUB, TANYA_CHAPTERS, TANYA_FRAME, TANYA_RATIO, TY } from './data.js';
+import { BOOK_URL, CH, CROP, HAFTAROT, HY, RAMBAM_LESSONS, RAMBAM_MAP, SBT_CH, SBT_DAY, SCAN, SCAN_SUB, TANYA_CHAPTERS, TANYA_FRAME, TANYA_RATIO, TY } from './data.js';
 
 // ── מטא ──
 function sTableMeta(t) {
@@ -244,6 +244,15 @@ function _leafDraw(leaf, im) {
           g.fillRect(l - 1, t - 1, ww + 2, h + 2);
         }
       });
+      // עמוד חתוך — כמו בתצוגה: רק החלק שבתוך גבולות הדיו.
+      var cr = (leaf.dataset.crop || '').split(',').map(Number);
+      if (cr.length === 4) {
+        var x0 = Math.round(cr[0] / 100 * W), y0 = Math.round(cr[1] / 100 * H);
+        var cw2 = Math.round(W - x0 - cr[2] / 100 * W), ch2 = Math.round(H - y0 - cr[3] / 100 * H);
+        var c2 = document.createElement('canvas'); c2.width = cw2; c2.height = ch2;
+        c2.getContext('2d').drawImage(c, x0, y0, cw2, ch2, 0, 0, cw2, ch2);
+        c = c2;
+      }
       return c.toDataURL('image/jpeg', 0.85).split(',')[1];
     }
   }
@@ -423,13 +432,30 @@ function scanFail() {
 }
 
 // עמוד סרוק — נטען רק כשהוא מתקרב למסך, ועליו רצועות ההלבנה של מה שאינו שייך לשיעור.
+// עמוד שסביב הטקסט שלו רקע לבן רחב — נחתך בתצוגה עד גבולות הדיו (CROP), והעמוד גדל עד קצה המסך בלי מתיחה:
+// העלה ביחס של החלק החתוך, והתמונה עם רצועות ההלבנה — בתוך מסגרת (.crop) בגודל העמוד המלא, שהעלה מסתיר את שוליה.
+function scanCrop(path) {
+  var m = /^([^/]+)\/(\d+)\.png$/.exec(path);
+  return m && CROP[m[1]] ? CROP[m[1]][m[2]] || null : null;
+}
 function scanSheet(path, ratio, whites, shade) {
-  var sh = sheetEl(ratio);
+  var c = scanCrop(path), cw = c ? 100 - c[0] - c[2] : 100, ch = c ? 100 - c[1] - c[3] : 100;
+  var sh = sheetEl(c ? ratio * cw / ch : ratio);
+  var box = sh.sheet;
+  if (c) {
+    box = el('div', 'crop');
+    box.style.setProperty('--cl', (-c[0] * 100 / cw).toFixed(3) + '%');
+    box.style.setProperty('--ct', (-c[1] * 100 / ch).toFixed(3) + '%');
+    box.style.setProperty('--cw', (1e4 / cw).toFixed(3) + '%');
+    box.style.setProperty('--ch', (1e4 / ch).toFixed(3) + '%');
+    sh.sheet.dataset.crop = c.join(',');
+    sh.sheet.appendChild(box);
+  }
   var im = new Image();
   im.loading = 'lazy'; im.decoding = 'async'; im.alt = '';
   im.onerror = scanFail;
   im.src = fileUrl(path);
-  sh.sheet.appendChild(im);
+  box.appendChild(im);
   if (ALT_RE.test(path)) altWatch(sh.fig);
   (whites || []).forEach(function (r) {
     var w = el('div', shade ? 'wh shade' : 'wh');
@@ -440,7 +466,7 @@ function scanSheet(path, ratio, whites, shade) {
       w.style.setProperty('--top', t + '%');
       w.style.setProperty('--h', H + '%');
       w.style.setProperty('--clip', 'polygon(100% ' + q(r[0]) + ', 0 ' + q(r[0] + r[2]) + ', 0 ' + q(r[1] + r[2]) + ', 100% ' + q(r[1]) + ')');
-      sh.sheet.appendChild(w);
+      box.appendChild(w);
       return;
     }
     w.style.setProperty('--top', r[0] + '%');
@@ -449,7 +475,7 @@ function scanSheet(path, ratio, whites, shade) {
       w.style.setProperty('--left', r[2] + '%');
       w.style.setProperty('--w', r[3] + '%');
     }
-    sh.sheet.appendChild(w);
+    box.appendChild(w);
   });
   return sh.fig;
 }

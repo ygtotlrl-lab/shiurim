@@ -84,6 +84,8 @@ main{padding:0 var(--sp-6); padding-bottom:calc(var(--sp-6) + env(safe-area-inse
 .leaf{position:relative;background:var(--leaf);box-shadow:var(--leaf-shadow);border-radius:var(--r-1);
   overflow:hidden;width:100%;aspect-ratio:var(--ratio,0.8)}
 .leaf img,.leaf canvas{display:block;width:100%;height:auto}
+/* עמוד חתוך (CROP) — המסגרת בגודל העמוד המלא, מוזזת כך שרק החלק שבגבולות הדיו נראה בעלה. */
+.leaf .crop{position:absolute;left:var(--cl);top:var(--ct);width:var(--cw);height:var(--ch)}
 /* רצועת הלבנה — מיקומה נגזר מנתוני הפרק ונכתב למשתנים. */
 .leaf .wh{position:absolute;top:var(--top);height:var(--h);left:var(--left,0);width:var(--w,100%);
   background:var(--leaf);box-shadow:0 0 0 1px var(--leaf);clip-path:var(--clip,none)}
