@@ -51,7 +51,7 @@ drop policy if exists s_settings_users on public.s_settings;
 create policy s_settings_users on public.s_settings as permissive for all to authenticated using (s_is_user()) with check (s_is_user());
 alter table public.s_users enable row level security;
 drop policy if exists s_users_select on public.s_users;
-create policy s_users_select on public.s_users as permissive for select to authenticated using (s_is_user());
+create policy s_users_select on public.s_users as permissive for select to authenticated using (s_is_user() and login = lower(auth.jwt() ->> 'email'));
 
 drop trigger if exists s_settings_history on public.s_settings;
 create trigger s_settings_history AFTER INSERT OR DELETE OR UPDATE ON public.s_settings FOR EACH ROW EXECUTE FUNCTION sh_history_log('key');
