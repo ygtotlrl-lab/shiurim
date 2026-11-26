@@ -139,7 +139,12 @@ body.shelf{background:linear-gradient(180deg,var(--shelf),var(--shelf-2))}
 .spine.off{cursor:default;background-color:var(--cloth);color:var(--cloth-ink);box-shadow:-1px 0 2px rgba(0,0,0,.08),inset 0 0 0 1px var(--cloth-line)}
 .shelf-dnd{flex:none;display:flex;align-items:center;justify-content:center;gap:var(--sp-3);padding-top:var(--sp-6);
   font-size:var(--fs-2);font-weight:300;color:var(--text-2);text-decoration:none}
-.shelf-dnd b{color:var(--home-ink);font-weight:500}
+/* המתג — גלולה שהעיגול שבה עובר לצד השני: דולק בירוק האייקון, וכבוי באפור. */
+.dnd-sw{flex:none;position:relative;width:38px;height:22px;border-radius:999px;background:var(--border);transition:background .15s}
+.dnd-sw::after{content:"";position:absolute;top:3px;inset-inline-start:3px;width:16px;height:16px;border-radius:50%;background:#fff;
+  box-shadow:0 1px 2px rgba(0,0,0,.2);transition:inset-inline-start .15s}
+.shelf-dnd[aria-checked="true"] .dnd-sw{background:var(--home-ink)}
+.shelf-dnd[aria-checked="true"] .dnd-sw::after{inset-inline-start:19px}
 /* הספר בדרך — נבנה פעם אחת, בגודל ובמקום שלו במרכז, והתנועה כולה transform ו-opacity (Web Animations, app/screens/home.js):
    מהשדרה אל המרכז, הכריכה נפתחת לימין ונמוגה, והדף הלבן מתפרש עד שורת הניווט; ובחזרה — אותה תנועה הפוכה.
    במרכז הוא מתחת לגיליון הבחירה (--z-4), ומשהכריכה נפתחת — מעליו, כי הגיליון כבר נסגר. */
@@ -188,6 +193,9 @@ body.shelf{background:linear-gradient(180deg,var(--shelf),var(--shelf-2))}
   .shelves:not(.in-sheet) .sp-t{font-size:11px;padding:4px 0 7px}
   .shelves:not(.in-sheet) .plank{height:4px}
   .shelf-dnd{padding-top:4px;font-size:10.5px}
+  .dnd-sw{width:30px;height:17px}
+  .dnd-sw::after{top:2px;inset-inline-start:2px;width:13px;height:13px}
+  .shelf-dnd[aria-checked="true"] .dnd-sw::after{inset-inline-start:15px}
   .shelves.in-sheet{height:calc(100dvh - 158px);min-height:0;gap:10px;padding:4px var(--sp-6) var(--sp-5)}
   .shelves.in-sheet .plank{height:4px}
 }

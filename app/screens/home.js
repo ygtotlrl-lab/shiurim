@@ -78,9 +78,18 @@ var DND_KEY = 's_dnd';
 function dndHTML() {
   if (!/\bwv\b/.test(navigator.userAgent)) return '';
   var on = lsGet(DND_KEY, '') === '1';
-  return '<a class="shelf-dnd" href="app-dnd:' + (on ? 'off' : 'on') + '">' + esc(MSG_DND) + ' · <b>' + esc(on ? MSG_DND_ON : MSG_DND_OFF) + '</b></a>';
+  return '<a class="shelf-dnd" role="switch" aria-checked="' + on + '" title="' + esc(on ? MSG_DND_ON : MSG_DND_OFF) + '" href="app-dnd:' + (on ? 'off' : 'on') + '">' +
+    '<span>' + esc(MSG_DND) + '</span><span class="dnd-sw" aria-hidden="true"></span></a>';
 }
-function dndToggle() { lsSet(DND_KEY, lsGet(DND_KEY, '') === '1' ? '' : '1'); }
+// המתג מתהפך במקום — הקישור כבר עבר למעטפת, וכאן מתעדכנים רק מצבו והקישור הבא.
+function dndToggle(el) {
+  var on = lsGet(DND_KEY, '') !== '1';
+  lsSet(DND_KEY, on ? '1' : '');
+  if (!el) return;
+  el.setAttribute('aria-checked', String(on));
+  el.title = on ? MSG_DND_ON : MSG_DND_OFF;
+  el.setAttribute('href', 'app-dnd:' + (on ? 'off' : 'on'));
+}
 
 function homeScreenHTML() {
   return '<section class="shelf-pg"><header class="shelf-hd"><h1>' + esc(MSG_HOME_TITLE) + '</h1>' + todayHTML() + '</header>' + shelvesHTML() + dndHTML() + '</section>';

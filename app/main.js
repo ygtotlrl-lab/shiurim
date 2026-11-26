@@ -374,11 +374,11 @@ document.addEventListener('input', function (e) {
 
 window.addEventListener('scroll', calmOnScroll, { passive: true });
 
-// השתקת התראות — הקישור עצמו עובר למעטפת (app-dnd:), וכאן מתעדכן רק המתג שעל המסך.
+// השתקת התראות — הקישור עצמו עובר למעטפת (app-dnd:), וכאן המתג מתהפך במקום.
 document.addEventListener('click', function (e) {
-  if (!e.target.closest || !e.target.closest('.shelf-dnd')) return;
-  dndToggle();
-  setTimeout(function () { view.shown = {}; sRender(); }, 0);
+  var a = e.target.closest && e.target.closest('.shelf-dnd');
+  if (!a) return;
+  setTimeout(function () { dndToggle(a); }, 0);
 });
 
 // touchmove אינו פסיבי — הצביטה עוצרת את הגלילה של הדפדפן בזמן שהיא מותחת את הדף.
