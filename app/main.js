@@ -176,6 +176,7 @@ function sRender() {
   }
   document.body.classList.toggle('reading', !home);
   document.body.classList.toggle('shelf', home);
+  document.body.dataset.scr = view.screen; // הכפתור של המסך הנוכחי בשורה התחתונה מסומן ברקע רך
   if (home) document.body.classList.remove('calm');
   shellBare(false);
 }

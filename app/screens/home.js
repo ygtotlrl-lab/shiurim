@@ -48,14 +48,14 @@ function booksPick(screen) {
   spFit();
 }
 
-// שם הספר על השדרה — מילה אינה נשברת באמצעה: הגופן קטן עד שכל מילה נכנסת לגובה השדרה
-// והשורות לרוחבה, וכך גם במסך קטן; שבירה — רק בין המילים. מתעדכן בשינוי גודל ואחרי טעינת הגופנים.
-var SP_FS = 16, SP_MIN = 8;
+// שם הספר על השדרה — תמיד בשורה אחת: הגופן קטן מגודל הבסיס (13px, ובמסך נמוך 11px — מה-CSS) עד שהשם נכנס לגובה השדרה,
+// וכך גם במסך קטן. מתעדכן בשינוי גודל ואחרי טעינת הגופנים.
+var SP_MIN = 7;
 function spFit() {
   document.querySelectorAll('.sp-t').forEach(function (t) {
-    var f = SP_FS;
     t.style.fontSize = '';
-    while (f > SP_MIN && (t.scrollHeight > t.clientHeight + 1 || t.scrollWidth > t.clientWidth + 1)) {
+    var f = parseFloat(getComputedStyle(t).fontSize) || 13;
+    while (f > SP_MIN && t.scrollHeight > t.clientHeight + 1) {
       f -= 0.5;
       t.style.fontSize = f + 'px';
     }
@@ -87,9 +87,12 @@ function homeScreenHTML() {
 }
 
 // ── הספר יוצא מהמדף ──
-// השדרה מתרוממת, הספר יוצא למרכז המסך, הכריכה נפתחת והדף מתפרש על כל המסך — פחות משנייה בסך הכל;
-// וכשמבקשים להפחית תנועה — בלי תנועה כלל. שיעור בעל חלקים עוצר במרכז, ובחירת החלק בגיליון ממשיכה את הפתיחה.
-var T_LIFT = 110, T_FLY = 280, T_OPEN = 280, T_FULL = 220, T_FADE = 160;
+// הספר נבנה פעם אחת, בגודל ובמקום שלו במרכז, והתנועה כולה transform ו-opacity (Web Animations) — ממלבן השדרה אליו (FLIP):
+// הרמה · יציאה למרכז · המתנה · הכריכה נפתחת לימין ונמוגה · הדף מתפרש עד שורת הניווט; והחזרה — אותה תנועה בדיוק, הפוך.
+// כשמבקשים להפחית תנועה — בלי תנועה כלל. שיעור בעל חלקים עוצר במרכז, ובחירת החלק בגיליון ממשיכה את הפתיחה.
+var T_LIFT = 130, T_FLY = 380, T_LBL_AT = 110, T_LBL = 140, T_HOLD = 110, T_OPEN = 340, T_LBL_OUT = 120, T_FULL = 260, T_FADE = 140;
+var E_FLY = 'cubic-bezier(.2,.8,.2,1)', E_OPEN = 'cubic-bezier(.5,.1,.4,1)', E_FULL = 'cubic-bezier(.3,.7,.2,1)';
+var DIM = 0.32;
 var bk = null; // הספר שבדרך: { l, sp, ov, held, going }
 
 function still() {
@@ -99,26 +102,76 @@ function later(ms, f) { setTimeout(f, ms); }
 function lessonByK(k) { return LESSONS.filter(function (l) { return l.k === k; })[0] || null; }
 
 function boxOf(r) { return { l: r.left, t: r.top, w: r.width, h: r.height }; }
+// הגובה שמעל שורת הניווט — הדף מתפרש עד אליה, והספר מתמרכז בו.
+function areaH() {
+  var bb = document.getElementById('botbar'), t = bb && bb.getBoundingClientRect().top;
+  return t > 0 && t <= innerHeight ? t : innerHeight;
+}
+// גודל הספר במרכז — רוחב min(230px, 56% מהמסך) וגובה פי 1.45, ולא יותר מ-64% מגובה המסך.
 function midBox() {
-  var vw = innerWidth, vh = innerHeight, w = Math.min(262, Math.round(vw * 0.67)), h = Math.round(w * 1.49);
-  return { l: (vw - w) / 2, t: (vh - h) / 2, w: w, h: h };
+  var vw = innerWidth, vh = innerHeight, w = Math.min(230, vw * 0.56), h = w * 1.45;
+  if (h > vh * 0.64) { h = vh * 0.64; w = h / 1.45; }
+  return { l: (vw - w) / 2, t: (areaH() - h) / 2, w: w, h: h };
 }
-function fullBox() { return { l: 0, t: 0, w: innerWidth, h: innerHeight }; }
-function place(ov, b, tf) {
-  var s = ov.firstChild.style;
-  s.left = b.l + 'px'; s.top = b.t + 'px'; s.width = b.w + 'px'; s.height = b.h + 'px';
-  s.transform = tf;
+function fullBox() { return { l: 0, t: 0, w: innerWidth, h: areaH() }; }
+// המעבר מהמלבן של הספר במרכז (m) אל מלבן אחר (b) — הזזה והגדלה בלבד.
+function flip(b, m, rest) {
+  return 'translate(' + (b.l - m.l) + 'px,' + (b.t - m.t) + 'px) scale(' + (b.w / m.w) + ',' + (b.h / m.h) + ')' + (rest ? ' ' + rest : '');
 }
-var TF_SPINE = 'rotateY(-78deg)', TF_MID = 'rotateY(-12deg) rotateX(3deg)', TF_FLAT = 'none';
+function anim(el, kf, ms, ease, delay) {
+  return el.animate(kf, { duration: ms, easing: ease || 'linear', delay: delay || 0, fill: 'both' });
+}
+function done(a, f) { a.onfinish = f; }
 
 function ovMake(l) {
-  var ov = document.createElement('div');
+  var ov = document.createElement('div'), m = midBox();
   ov.className = 'bk3';
   ov.setAttribute('aria-hidden', 'true');
-  ov.innerHTML = '<div class="bk3-in cv-' + esc(l.cover) + '"><div class="bk3-pages"></div><div class="bk3-cover"><div class="bk3-front">' +
-    '<span class="bk3-frame"></span><h2>' + esc(l.lab) + '</h2></div><div class="bk3-inner"></div></div></div>';
+  ov.innerHTML = '<div class="bk3-dim"></div><div class="bk3-in" style="left:' + m.l + 'px;top:' + m.t + 'px;width:' + m.w + 'px;height:' + m.h + 'px">' +
+    '<div class="bk3-rot"><div class="bk3-shade"></div><div class="bk3-pages"></div><div class="bk3-cover cv-' + esc(l.cover) + '">' +
+    '<div class="bk3-lbl"><span class="bk3-frame"></span><h2>' + esc(l.lab) + '</h2></div></div></div></div>';
   document.body.appendChild(ov);
-  return ov;
+  return { el: ov, m: m, dim: ov.querySelector('.bk3-dim'), box: ov.querySelector('.bk3-in'), rot: ov.querySelector('.bk3-rot'),
+    shade: ov.querySelector('.bk3-shade'), cover: ov.querySelector('.bk3-cover'), lbl: ov.querySelector('.bk3-lbl') };
+}
+
+// השלבים — כל אחד הפוך לעצמו (back), כך שהחזרה היא אותה תנועה.
+// יציאה: מהשדרה אל המרכז, עם נטייה עדינה ב-75% מהדרך; הרקע מתכהה, והשם והמסגרת עולים כשהספר עוד בדרך.
+function stFly(o, sp, back, f) {
+  var s = flip(boxOf(sp.getBoundingClientRect()), o.m), z = 'translate(0px,0px) scale(1,1)';
+  var pos = back ? [{ transform: z }, { transform: s }] : [{ transform: s }, { transform: z }];
+  var a = anim(o.box, pos, T_FLY, E_FLY);
+  anim(o.rot, [{ transform: 'perspective(900px) rotateY(0deg)' }, { transform: 'perspective(900px) rotateY(-10deg)', offset: back ? 0.25 : 0.75 }, { transform: 'perspective(900px) rotateY(0deg)' }], T_FLY, E_FLY);
+  anim(o.dim, back ? [{ opacity: DIM }, { opacity: 0 }] : [{ opacity: 0 }, { opacity: DIM }], T_FLY, 'ease');
+  if (back) anim(o.shade, [{ opacity: 1 }, { opacity: 0 }], 80, 'ease');
+  else {
+    anim(o.lbl, [{ opacity: 0 }, { opacity: 1 }], T_LBL, 'ease', T_LBL_AT);
+    anim(o.shade, [{ opacity: 0 }, { opacity: 1 }], 120, 'ease', T_FLY - 120);
+  }
+  done(a, f);
+}
+// הכריכה נפתחת לימין (הציר בצד ימין) ונמוגה; השם והמסגרת נמוגים בהתחלה. ובסגירה — הפוך, והם עולים בסופה.
+function stCover(o, back, f) {
+  var kf = [{ transform: 'perspective(1100px) rotateY(0deg)', opacity: 1 }, { transform: 'perspective(1100px) rotateY(70deg)', opacity: 0.4, offset: 0.55 },
+    { transform: 'perspective(1100px) rotateY(115deg)', opacity: 0 }];
+  if (back) { kf = kf.slice().reverse(); kf[1] = { transform: kf[1].transform, opacity: kf[1].opacity, offset: 0.45 }; }
+  var a = anim(o.cover, kf, T_OPEN, E_OPEN);
+  if (back) anim(o.lbl, [{ opacity: 0 }, { opacity: 1 }], T_LBL_OUT, 'ease', T_OPEN - T_LBL_OUT);
+  else anim(o.lbl, [{ opacity: 1 }, { opacity: 0 }], T_LBL_OUT, 'ease');
+  done(a, f);
+}
+// הדף מתפרש עד כל המסך שמעל שורת הניווט — לבן ובלי צל; ובקיפול — חוזר לגודל הספר.
+function stFull(o, back, f) {
+  var s = flip(fullBox(), o.m), z = 'translate(0px,0px) scale(1,1)';
+  var a = anim(o.box, back ? [{ transform: s }, { transform: z }] : [{ transform: z }, { transform: s }], T_FULL, E_FULL);
+  anim(o.shade, back ? [{ opacity: 0 }, { opacity: 1 }] : [{ opacity: 1 }, { opacity: 0 }], 120, 'ease', back ? T_FULL - 120 : 0);
+  done(a, f);
+}
+// הספר נחת בשדרה — היא נגלית מורמת, ויורדת למקומה ונוטה שוב.
+function land(o, sp) {
+  sp.classList.remove('gone');
+  o.el.remove();
+  next(function () { sp.classList.remove('up'); });
 }
 // מעבר בין שני מצבים מתחיל רק אחרי שהדפדפן צייר את הראשון.
 function next(f) { requestAnimationFrame(function () { requestAnimationFrame(f); }); }
@@ -127,52 +180,44 @@ function shelfOpen(el, onOut) {
   var l = lessonByK(el.dataset.id);
   if (!l || bk) return;
   bk = { l: l, sp: el, ov: null, held: false, going: false };
-  if (still()) { bk.held = true; onOut(l); return; }
+  if (still() || !el.animate) { bk.held = true; onOut(l); return; }
   el.classList.add('up');
   later(T_LIFT, function () {
-    var ov = ovMake(l);
-    bk.ov = ov;
-    place(ov, boxOf(el.getBoundingClientRect()), TF_SPINE);
-    next(function () {
-      el.classList.add('gone');
-      ov.classList.add('dim');
-      place(ov, midBox(), TF_MID);
-      later(T_FLY, function () { ov.classList.add('lbl'); bk.held = true; onOut(l); });
-    });
+    var o = ovMake(l);
+    bk.ov = o;
+    el.classList.add('gone');
+    stFly(o, el, false, function () { bk.held = true; onOut(l); });
   });
 }
 
-// שם הספר על הכריכה — רק כשהספר במרכז (lbl), ולא בדרך מהמדף ואליו.
-// הכריכה נפתחת והדף מתפרש — ובסופו המסך של השיעור נצבע מתחת, והספר נעלם.
+// המתנה קצרה במרכז, הכריכה נפתחת והדף מתפרש — ובסופו המסך של השיעור נצבע מתחת, והספר נמוג.
 function shelfIn(go) {
   if (!bk) { go(); return; }
   var b = bk;
   b.going = true;
   if (still() || !b.ov) { bk = null; go(); return; }
-  b.ov.classList.add('open');
-  later(T_OPEN, function () {
-    b.ov.classList.add('full');
-    place(b.ov, fullBox(), TF_FLAT);
-    later(T_FULL, function () {
-      go();
-      b.ov.classList.add('out');
-      later(T_FADE, function () { b.ov.remove(); });
-      bk = null;
+  var o = b.ov;
+  later(T_HOLD, function () {
+    o.el.classList.add('open');
+    stCover(o, false, function () {
+      stFull(o, false, function () {
+        go();
+        bk = null;
+        done(anim(o.el, [{ opacity: 1 }, { opacity: 0 }], T_FADE, 'ease'), function () { o.el.remove(); });
+      });
     });
   });
 }
 
-// הגיליון נסגר בלי בחירה — הספר חוזר למקומו במדף.
+// הגיליון נסגר בלי בחירה — השם והמסגרת נמוגים, והספר עף בחזרה אל השדרה.
 function shelfBack() {
   var b = bk;
   if (!b || b.going) return;
   bk = null;
   if (!b.ov) { b.sp.classList.remove('up', 'gone'); return; }
-  b.ov.classList.remove('dim', 'lbl');
-  place(b.ov, boxOf(b.sp.getBoundingClientRect()), TF_SPINE);
-  later(T_FLY, function () {
-    b.sp.classList.remove('gone', 'up');
-    b.ov.remove();
+  var o = b.ov;
+  done(anim(o.lbl, [{ opacity: 1 }, { opacity: 0 }], T_LBL_OUT, 'ease'), function () {
+    stFly(o, b.sp, true, function () { land(o, b.sp); });
   });
 }
 function shelfHeld() { return !!(bk && bk.held && !bk.going); }
@@ -189,25 +234,27 @@ function shelfWatch() {
   mo.observe(m, { attributes: true, attributeFilter: ['class'] });
 }
 
-// חזרה לבית משיעור (from — המסך שעזבו): הדף מתקפל לספר, הכריכה נסגרת והספר חוזר למקומו במדף.
+// חזרה לבית משיעור (from — המסך שעזבו) — אותה תנועה הפוכה: הדף מתקפל, הכריכה נסגרת, השם והמסגרת עולים לרגע ונמוגים,
+// והספר עף בחזרה אל השדרה; רק אחרי שנחת הוא יורד למקומו ונוטה שוב.
 function shelfReturn(from) {
   if (!from || still()) return;
   var l = LESSONS.filter(function (x) { return lessonHas(x, from); })[0];
   var sp = l && document.querySelector('.spine[data-id="' + l.k + '"]');
-  if (!l || !sp) return;
-  var ov = ovMake(l);
-  ov.classList.add('dim', 'open', 'full', 'lbl');
-  place(ov, fullBox(), TF_FLAT);
-  sp.classList.add('gone');
-  next(function () {
-    ov.classList.remove('full');
-    place(ov, midBox(), TF_MID);
-    later(T_FULL, function () {
-      ov.classList.remove('open');
-      later(T_OPEN, function () {
-        ov.classList.remove('dim', 'lbl');
-        place(ov, boxOf(sp.getBoundingClientRect()), TF_SPINE);
-        later(T_FLY, function () { sp.classList.remove('gone'); ov.remove(); });
+  if (!l || !sp || !sp.animate) return;
+  var o = ovMake(l);
+  sp.classList.add('up', 'gone');
+  o.el.classList.add('open');
+  anim(o.box, [{ transform: flip(fullBox(), o.m) }], 1);
+  anim(o.cover, [{ transform: 'perspective(1100px) rotateY(115deg)', opacity: 0 }], 1);
+  anim(o.shade, [{ opacity: 0 }], 1);
+  anim(o.dim, [{ opacity: 0 }, { opacity: DIM }], T_FULL, 'ease');
+  stFull(o, true, function () {
+    stCover(o, true, function () {
+      later(T_HOLD, function () {
+        o.el.classList.remove('open');
+        done(anim(o.lbl, [{ opacity: 1 }, { opacity: 0 }], T_LBL_OUT, 'ease'), function () {
+          stFly(o, sp, true, function () { land(o, sp); });
+        });
       });
     });
   });

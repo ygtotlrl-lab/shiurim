@@ -21,11 +21,12 @@
   --bad:#9D2541; --bad-soft:#F9EBEF;
   /* הדף עצמו לבן בשתי הערכות — סריקה על נייר לבן, וההלבנה מכסה בלבן. */
   --leaf:#FFFFFF;
-  /* מדף הכריכות — עור, הטבעת זהב ובד; העור והזהב זהים בשתי הערכות, כמו כריכה אמיתית. */
-  --shelf:#F3EDE3; --shelf-2:#E9E0D0; --cloth:#EDE6D6; --cloth-ink:#9A8F7A; --cloth-line:#CFC3A8;
-  --cubby:#E2D5BF; --cubby-shade:rgba(80,50,20,.32); --plank-a:#DCBD90; --plank-b:#B0864F;
-  --cv-navy:#1E3A6E; --cv-bord:#6E1E2A; --cv-brown:#5B3A22; --cv-green:#2E4A3A;
-  --emboss:#E7CC86; --emboss-line:rgba(214,182,110,.55);
+  /* מדף הכריכות — בירוק האייקון: רקע מרווה, תאים רכים ומדף דק; הכריכות והשם שעליהן זהים בשתי הערכות, כמו כריכה אמיתית. */
+  --shelf:#F4F8F5; --shelf-2:#E6EFE9; --cloth:#EDE6D6; --cloth-ink:#9A8F7A; --cloth-line:#CFC3A8;
+  --cubby:#E2EDE6; --cubby-shade:rgba(30,70,50,.10); --plank:#2E6C50;
+  --home-ink:#2E6C50; --nav-ink:#2E6C50; --nav-on:#E1EEE6;
+  --cv-navy:#2B4A7E; --cv-bord:#7E3340; --cv-brown:#6E4E36; --cv-green:#2E6C50;
+  --emboss:#E8DDBE; --emboss-line:rgba(232,221,190,.6);
   --leaf-shadow:0 1px 2px rgba(20,30,50,.08),0 6px 18px rgba(20,30,50,.07);
   --f-display:"Frank Ruhl Libre","David Libre","Times New Roman",serif;
   --f-body:Heebo,sans-serif;
@@ -43,8 +44,10 @@
     --warn:#E8C27A; --warn-soft:#2B2214;
     --bad:#EB8EA4; --bad-soft:#2C1117;
     --leaf-shadow:0 1px 2px rgba(0,0,0,.4),0 8px 22px rgba(0,0,0,.35);
-    --shelf:#141821; --shelf-2:#10131A; --cloth:#262C38; --cloth-ink:#7D8494; --cloth-line:#3A4252;
-    --cubby:#0B0E14; --cubby-shade:rgba(0,0,0,.7); --plank-a:#4B3223; --plank-b:#24160D;
+    --cloth:#262C38; --cloth-ink:#7D8494; --cloth-line:#3A4252;
+    --shelf:#121815; --shelf-2:#0E1411;
+    --cubby:#18221D; --cubby-shade:rgba(0,0,0,.35); --plank:#3E8A66;
+    --home-ink:#8CC7A8; --nav-ink:#8CC7A8; --nav-on:#1F3329;
   }
 }
 
@@ -99,76 +102,62 @@ main{padding:0 var(--sp-6); padding-bottom:calc(var(--sp-6) + env(safe-area-inse
 .sect span{font-size:var(--fs-2);color:var(--text-2)}
 .vil{margin-top:var(--sp-6);padding:var(--sp-5) var(--sp-4) 0;border-top:2px solid var(--gold-soft)}
 
-/* מדף הספרים — שתי קומות בארון עץ, ובכל קומה שדרות: עור בצבעו והטבעת זהב כשהספר פתוח, בד בהיר כשהוא «בקרוב». */
+/* מדף הספרים — שתי קומות, ובכל קומה תא מרווה רך ומדף דק בירוק האייקון; השדרות — עור בצבעו וקו זהב דק, ובד בהיר כשהספר «בקרוב». */
 body.shelf{background:linear-gradient(180deg,var(--shelf),var(--shelf-2))}
 .shelf-pg{padding:var(--sp-7) 0 var(--sp-5);display:flex;flex-direction:column;
   height:calc(100dvh - var(--sp-6) - var(--readbar-h) - env(safe-area-inset-bottom,0px) - env(safe-area-inset-top,0px));min-height:420px}
 .shelf-hd{flex:none;display:flex;flex-direction:column;align-items:center;gap:var(--sp-3);text-align:center}
-.shelf-hd h1{font-family:var(--f-display);font-weight:900;font-size:40px;line-height:1;color:var(--brand-ink)}
+.shelf-hd h1{font-family:var(--f-display);font-weight:900;font-size:40px;line-height:1;color:var(--home-ink)}
 .shelf-date{font-size:var(--fs-3);color:var(--text-2);line-height:var(--lh-2)}
 .shelf-date b{font-family:var(--f-display);font-size:var(--fs-4);color:var(--gold);font-weight:700}
 /* הקומות ממלאות את הגובה שבין הכותרת לתחתית — בלי גלילה; ובמסך גבוה הן נעצרות ומתמרכזות. */
 .shelves{flex:1;min-height:0;display:flex;flex-direction:column;justify-content:center;gap:clamp(16px,4dvh,40px);padding-top:var(--sp-6)}
 .shelf-unit{flex:1;min-height:0;max-height:270px;display:flex;flex-direction:column}
 .cubby{flex:1;min-height:0;display:flex;align-items:flex-end;justify-content:center;gap:3px;padding:14px 10px 0;
-  background:var(--cubby);border-radius:4px 4px 0 0;
-  box-shadow:inset 0 18px 22px -10px var(--cubby-shade),inset 10px 0 16px -12px var(--cubby-shade),inset -10px 0 16px -12px var(--cubby-shade)}
-.plank{flex:none;position:relative;height:18px;margin:0 -4px;border-radius:2px;
-  background:linear-gradient(180deg,var(--plank-a),var(--plank-b));
-  box-shadow:0 12px 18px -6px rgba(0,0,0,.45),inset 0 1px 0 rgba(255,255,255,.25)}
-.plank::after{content:"";position:absolute;inset:0;border-radius:2px;
-  background:repeating-linear-gradient(90deg,rgba(0,0,0,.06) 0 1px,transparent 1px 23px,rgba(255,255,255,.05) 23px 24px,transparent 24px 51px)}
+  background:var(--cubby);border-radius:6px 6px 0 0;box-shadow:inset 0 10px 14px -12px var(--cubby-shade)}
+.plank{flex:none;height:6px;margin:0 -4px;border-radius:3px;background:var(--plank)}
 /* השדרה — רוחב ברירת המחדל מ-sp, והיא מתכווצת כשהעמודה צרה; הגובה באחוזים מגובה הקומה. */
-.spine{position:relative;flex:0 1 var(--w);min-width:0;height:var(--h);border:0;padding:0;margin:0;cursor:pointer;
-  border-radius:3px 3px 1px 1px;color:var(--emboss);text-decoration:none;
-  background-image:linear-gradient(90deg,rgba(0,0,0,.42) 0%,rgba(255,255,255,.08) 18%,rgba(255,255,255,.2) 34%,rgba(255,255,255,.04) 55%,rgba(0,0,0,.18) 80%,rgba(0,0,0,.45) 100%);
-  box-shadow:-3px 0 6px rgba(0,0,0,.3),inset 0 0 0 1px rgba(0,0,0,.25);
-  display:flex;flex-direction:column;align-items:center;justify-content:space-between;transform-origin:bottom left;
-  transition:transform .11s ease-out,filter .11s ease-out}
-.spine.lean{margin-inline-start:18px;transform-origin:bottom right;transform:rotate(6deg)}
-.spine:not(.off):active{filter:brightness(1.12)}
-.spine.up{transform:translateY(-14px) scale(1.06);filter:brightness(1.12) drop-shadow(0 12px 10px rgba(0,0,0,.45))}
+.spine{--band:14px;position:relative;flex:0 1 var(--w);min-width:0;height:var(--h);border:0;padding:0;margin:0;cursor:pointer;
+  border-radius:2px 2px 1px 1px;color:var(--emboss);text-decoration:none;
+  background-image:linear-gradient(90deg,rgba(0,0,0,.08),rgba(255,255,255,.06) 35%,rgba(255,255,255,0) 65%,rgba(0,0,0,.08));
+  box-shadow:-1px 0 2px rgba(0,0,0,.1);
+  display:flex;flex-direction:column;align-items:center;transform-origin:bottom left;
+  transition:transform .13s ease-out}
+.spine.lean{margin-inline-start:18px;transform-origin:bottom right;transform:rotate(5deg)}
+.spine:not(.off):active{filter:brightness(1.08)}
+/* ההרמה — השדרה עולה מעט, והנשען מתיישר; ובחזרה — יורדת ונוטה שוב. */
+.spine.up{transform:translateY(-8px)}
 .spine.gone{visibility:hidden}
-.sp-band{flex:none;display:block;width:100%;height:12px;margin-top:14px;border-top:1.5px solid currentColor;border-bottom:1.5px solid currentColor;opacity:.9}
-.sp-band.bot{margin:0 0 16px}
-.sp-t{flex:1;min-height:0;display:flex;align-items:center;justify-content:center;text-align:center;writing-mode:vertical-rl;transform:rotate(180deg);
-  font-family:var(--f-display);font-weight:700;font-size:16px;line-height:1.1;text-shadow:0 -1px 0 rgba(0,0,0,.45);overflow:hidden;padding:6px 0;
-  overflow-wrap:normal;word-break:keep-all}
+/* פסי הזהב — קו דק אחד למעלה ואחד למטה */
+.sp-band{flex:none;display:block;width:100%;height:0;margin-top:var(--band);border-top:.75px solid currentColor;opacity:.6}
+.sp-band.bot{margin:auto 0 var(--band)}
+/* השם — מראש הספר כלפי מטה, בשורה אחת; spFit מקטין את הגופן עד שהוא נכנס. */
+.sp-t{flex:0 1 auto;min-height:0;max-height:calc(100% - 2 * var(--band));display:flex;align-items:center;justify-content:flex-start;
+  writing-mode:vertical-rl;transform:rotate(180deg);
+  font-family:var(--f-display);font-weight:300;font-size:13px;letter-spacing:.03em;line-height:1.1;white-space:nowrap;overflow:hidden;padding:6px 0 10px}
 .sp-m{flex:none;writing-mode:vertical-rl;transform:rotate(180deg);font-size:var(--fs-1);padding-bottom:6px}
-.spine.off{cursor:default;background-color:var(--cloth);color:var(--cloth-ink);box-shadow:-2px 0 4px rgba(0,0,0,.12),inset 0 0 0 1px var(--cloth-line);
-  background-image:linear-gradient(90deg,rgba(0,0,0,.08),rgba(255,255,255,.1) 40%,rgba(0,0,0,.08))}
-.spine.off .sp-t{text-shadow:none}
+.spine.off{cursor:default;background-color:var(--cloth);color:var(--cloth-ink);box-shadow:-1px 0 2px rgba(0,0,0,.08),inset 0 0 0 1px var(--cloth-line)}
 .shelf-dnd{flex:none;display:flex;align-items:center;justify-content:center;gap:var(--sp-3);padding-top:var(--sp-6);
-  font-size:var(--fs-2);color:var(--text-2);text-decoration:none}
-.shelf-dnd b{color:var(--brand-ink)}
-/* הספר בדרך — מהמדף למרכז, הכריכה נפתחת והדף מתפרש על כל המסך; אין מעבר כשמבקשים להפחית תנועה.
+  font-size:var(--fs-2);font-weight:300;color:var(--text-2);text-decoration:none}
+.shelf-dnd b{color:var(--home-ink);font-weight:500}
+/* הספר בדרך — נבנה פעם אחת, בגודל ובמקום שלו במרכז, והתנועה כולה transform ו-opacity (Web Animations, app/screens/home.js):
+   מהשדרה אל המרכז, הכריכה נפתחת לימין ונמוגה, והדף הלבן מתפרש עד שורת הניווט; ובחזרה — אותה תנועה הפוכה.
    במרכז הוא מתחת לגיליון הבחירה (--z-4), ומשהכריכה נפתחת — מעליו, כי הגיליון כבר נסגר. */
-.bk3{position:fixed;inset:0;z-index:var(--z-3);perspective:1500px;pointer-events:none;background:rgba(8,6,4,0);transition:background .28s ease,opacity .16s ease}
-.bk3.dim{background:rgba(8,6,4,.5)}
+.bk3{position:fixed;inset:0;z-index:var(--z-3);pointer-events:none}
 .bk3.open{z-index:var(--z-5)}
-.bk3.out{opacity:0}
-.bk3-in{position:absolute;transform-style:preserve-3d;border-radius:4px;box-shadow:0 30px 60px rgba(0,0,0,.5);
-  transition:left .28s cubic-bezier(.2,.8,.2,1),top .28s cubic-bezier(.2,.8,.2,1),width .28s cubic-bezier(.2,.8,.2,1),height .28s cubic-bezier(.2,.8,.2,1),transform .28s cubic-bezier(.2,.8,.2,1),border-radius .22s}
-.bk3.full .bk3-in{border-radius:0;box-shadow:none;transition-duration:.22s}
-.bk3-pages{position:absolute;top:5px;bottom:5px;left:3px;right:12px;background:var(--bg);border-radius:2px 1px 1px 2px;
-  box-shadow:inset -18px 0 22px -14px rgba(60,35,10,.4);transition:top .22s,bottom .22s,left .22s,right .22s}
-.bk3.full .bk3-pages{top:0;bottom:0;left:0;right:0;border-radius:0;box-shadow:none}
-.bk3-cover{position:absolute;inset:0;transform-origin:right center;transform-style:preserve-3d;transition:transform .28s cubic-bezier(.55,.05,.25,1),opacity .2s}
-.bk3.open .bk3-cover{transform:rotateY(168deg)}
-.bk3.full .bk3-cover{opacity:0}
-.bk3-front,.bk3-inner{position:absolute;inset:0;border-radius:4px 2px 2px 4px;backface-visibility:hidden;-webkit-backface-visibility:hidden;overflow:hidden}
-.bk3-front{background:inherit;background-image:linear-gradient(90deg,rgba(255,255,255,.05),transparent 40%,rgba(0,0,0,.15));box-shadow:inset 0 0 40px rgba(0,0,0,.45);color:var(--emboss);
-  display:flex;align-items:center;justify-content:center;text-align:center}
-.bk3-frame{position:absolute;inset:14px 26px 14px 14px;border:2px solid var(--emboss-line);border-radius:2px}
-.bk3-front h2{position:relative;padding:0 28px 0 16px;font-family:var(--f-display);font-weight:900;font-size:clamp(26px,9vw,44px);line-height:1.1;text-shadow:0 2px 0 rgba(0,0,0,.45);opacity:0;transition:opacity .12s}
-.bk3.lbl .bk3-front h2{opacity:1}
-.bk3-inner{transform:rotateY(180deg);background:var(--gold-soft)}
-.bk3-in.cv-navy,.bk3-in.cv-bord,.bk3-in.cv-brown,.bk3-in.cv-green{background:none}
-.bk3-in.cv-navy .bk3-front{background-color:var(--cv-navy)}
-.bk3-in.cv-bord .bk3-front{background-color:var(--cv-bord)}
-.bk3-in.cv-brown .bk3-front{background-color:var(--cv-brown)}
-.bk3-in.cv-green .bk3-front{background-color:var(--cv-green)}
-@media (prefers-reduced-motion:reduce){.spine,.bk3,.bk3-in,.bk3-pages,.bk3-cover{transition:none}}
+.bk3-dim{position:absolute;inset:0;background:#0f1a14;opacity:0}
+.bk3-in{position:absolute;transform-origin:0 0;will-change:transform}
+.bk3-rot{position:absolute;inset:0;transform-style:preserve-3d}
+.bk3-shade{position:absolute;inset:0;border-radius:3px;box-shadow:0 14px 34px rgba(0,0,0,.28);opacity:0}
+.bk3-pages{position:absolute;inset:0;background:#FFFFFF;border-radius:2px}
+.bk3-cover{position:absolute;inset:0;transform-origin:right center;border-radius:3px 2px 2px 3px;overflow:hidden;
+  background-image:linear-gradient(90deg,rgba(0,0,0,.08),rgba(255,255,255,.06) 35%,rgba(255,255,255,0) 65%,rgba(0,0,0,.08));
+  color:var(--emboss);display:flex;align-items:center;justify-content:center;text-align:center;will-change:transform,opacity;
+  backface-visibility:hidden;-webkit-backface-visibility:hidden}
+.bk3-lbl{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;opacity:0}
+.bk3-frame{position:absolute;inset:12px 18px 12px 12px;border:.75px solid var(--emboss-line);border-radius:2px}
+.bk3-lbl h2{position:relative;padding:0 24px 0 16px;font-family:var(--f-display);font-weight:300;letter-spacing:.03em;
+  font-size:clamp(22px,7.5vw,34px);line-height:1.15;color:var(--emboss)}
 .cv-navy{background-color:var(--cv-navy)}
 .cv-bord{background-color:var(--cv-bord)}
 .cv-brown{background-color:var(--cv-brown)}
@@ -178,6 +167,30 @@ body.shelf{background:linear-gradient(180deg,var(--shelf),var(--shelf-2))}
   padding:var(--sp-4) var(--sp-6) var(--sp-7);justify-content:stretch}
 .shelves.in-sheet .shelf-unit{max-height:none}
 .spine.cur{box-shadow:0 0 0 2px var(--cubby),0 0 0 5px var(--gold),0 6px 14px rgba(0,0,0,.35);z-index:1}
+/* מסך נמוך (כמו Qin F21 Pro, ‏320×427) — הכל במסך אחד, בלי גלילה: הגובה הוא המסך פחות שורת הניווט,
+   שורה נמוכה יותר, ספרים רזים ומדפים צרים ובמרכז. */
+@media (max-height:520px){
+  :root{--readbar-h:46px}
+  .bb-it{margin:4px 3px;gap:2px;font-size:10.5px;border-radius:12px}
+  .bb-it .ico{width:18px;height:18px}
+  body.shelf main{padding-bottom:env(safe-area-inset-bottom,0px)}
+  .shelf-pg{min-height:0;padding:10px 0 6px;
+    height:calc(100dvh - var(--readbar-h) - env(safe-area-inset-bottom,0px) - env(safe-area-inset-top,0px))}
+  .shelf-hd{gap:2px}
+  .shelf-hd h1{font-size:24px}
+  .shelf-date{font-size:11px}
+  .shelf-date b{font-size:12px}
+  .shelves:not(.in-sheet){gap:10px;padding-top:8px}
+  .shelves:not(.in-sheet) .shelf-unit{width:min(100%,252px);margin:0 auto}
+  .shelves:not(.in-sheet) .cubby{padding:8px 6px 0;justify-content:center}
+  .shelves:not(.in-sheet) .spine{--band:7px;flex-basis:calc(var(--w) * .56)}
+  .shelves:not(.in-sheet) .spine.lean{margin-inline-start:10px}
+  .shelves:not(.in-sheet) .sp-t{font-size:11px;padding:4px 0 7px}
+  .shelves:not(.in-sheet) .plank{height:4px}
+  .shelf-dnd{padding-top:4px;font-size:10.5px}
+  .shelves.in-sheet{height:calc(100dvh - 158px);min-height:0;gap:10px;padding:4px var(--sp-6) var(--sp-5)}
+  .shelves.in-sheet .plank{height:4px}
+}
 
 /* בחירת חלק — גיליון מלמטה; חלק בלי תוכן — באפור ו«בקרוב». */
 .lp-soon{flex:none;font-size:var(--fs-2);color:var(--text-3);border:1px solid var(--border);border-radius:var(--r-7);
@@ -229,9 +242,11 @@ body.reading .toasts{bottom:calc(var(--toast-bottom) + env(safe-area-inset-botto
 /* כל כפתור שליש מרוחב השורה — מרחק בין השלושה ושטח לחיצה גדול. */
 .botbar .in{display:flex;align-items:stretch;height:var(--readbar-h);
   max-width:var(--col);margin:0 auto;padding:0 var(--sp-4)}
-.bb-it{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;min-width:0;
-  border:0;background:none;color:var(--brand-ink);font:600 var(--fs-2)/1 var(--f-body);text-decoration:none;cursor:pointer}
-.bb-it .ico{width:22px;height:22px}
+/* בירוק האייקון, כתב רגיל ואייקון בקו דק; הכפתור של המסך הנוכחי — ברקע רך בפינות מעוגלות. */
+.bb-it{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;min-width:0;margin:5px 4px;
+  border:0;border-radius:16px;background:none;color:var(--nav-ink);font:400 var(--fs-2)/1 var(--f-body);text-decoration:none;cursor:pointer}
+.bb-it .ico{width:22px;height:22px;stroke-width:1.3}
+body[data-scr="home"] .bb-it[data-act="go-home"],body[data-scr="settings"] .bb-it[data-act="settings-open"]{background:var(--nav-on)}
 /* העמודים זה לצד זה, מימין לשמאל — כל עמוד שלם על המסך, וההחלקה לצד עוברת לעמוד הבא, כמו דפדוף בספר.
    כותרת ביניים וכפתורי הסוף — עמוד משלהם ברצף. */
 .read .pages{display:flex;flex-direction:row;direction:rtl;gap:0;height:var(--page-h);overflow-x:auto;overflow-y:hidden;
