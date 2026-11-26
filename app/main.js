@@ -5,14 +5,14 @@ import { lsGet, lsOpen, lsSet } from '../core/storage.js';
 import { MIRROR, mirrorKey, mirrorTables } from '../core/mirror.js';
 import { logAwait } from '../core/backup.js';
 import { bootRun } from '../core/boot-run.js';
-import { GAUTH_ACTIONS, gauthCardHTML, gauthClientOpts, gauthGate, gauthHeaders, gauthIsAdmin, gauthUser } from '../core/gauth.js';
+import { GAUTH_ACTIONS, gauthCardHTML, gauthClientOpts, gauthGate, gauthHeaders, gauthUser } from '../core/gauth.js';
 import { actWire, closeAsk, closeModal, esc, modalDismiss, openModal, shellBare, swApply, swHideUpdate, uiNoDialog } from '../core/ui.js';
 import { KEY_CHUMASH, KEY_TH_PEOPLE, KEY_SHNAYIM, KEY_TANYA_DAY, KEY_HAYOM, KEY_RAMBAM, KEY_TANYA, KV_TABLE, MSG_NAV_BACK, PARSHIOT, MSG_NAV_EXIT, MSG_NAV_HOME, MSG_NAV_SETTINGS, MSG_VIL_CLOSE, MSG_VIL_OPEN, MSG_SBT_CLOSE, MSG_SBT_OPEN, PUSH_TABLES, SUPABASE_ANON_KEY,
          SUPABASE_URL, TABLES } from './constants.js';
 import { S, shell, view } from './state.js';
 import { selKey, sPickRawAny, PICKERS, chumashCur, shnayimCur, hayomCur, lessonPickOpen, pickerFilter, pickerOpen, pinchEnd, pinchMove, pinchReset, pinchStart, pzSwipeMove, pzSwipeStart, readTap, rambamCur, stripEnd, sPendKey, sPendKeyOf, sPickSet, sQ, sStripRows, sSyncNow, sSyncPull,
          sTableMeta, tanyaCur, tyCur, tyShowSet , lessonShare , sbtFill } from './domain.js';
-import { DND_KEY, booksPick, spFit, dndToggle, homeScreenHTML, shelfHeld, shelfIn, shelfOpen, shelfReturn, shelfWatch } from './screens/home.js';
+import { DND_KEY, dndHTML, booksPick, spFit, dndToggle, homeScreenHTML, shelfHeld, shelfIn, shelfOpen, shelfReturn, shelfWatch } from './screens/home.js';
 import { rambamMorehFill, rambamMount, rambamScreenHTML, rambamVilnaFill } from './screens/rambam.js';
 import { chumashMount, chumashScreenHTML } from './screens/chumash.js';
 import { tanyayMount, tanyayScreenHTML } from './screens/tanyay.js';
@@ -50,11 +50,14 @@ var GAUTH_CFG = {
   // כרטיס החשבון — בחלון «הגדרות», שאין לו מסך משלו
   card: function (title, inner) { return '<div class="ga-card"><div class="ga-sec">' + esc(title) + '</div>' + inner + '</div>'; }
 };
-// «הגדרות» — מסך משלו, ובו רכיב המשתמשים (core/gauth.js); השורה התחתונה חוזרת ממנו
+// «הגדרות» — מסך משלו, לכל מי שנכנס: מתג ההשתקה בזמן לימוד (באפליקציה המותקנת) ורכיב החשבון (core/gauth.js) —
+// «משתמשים» בו למנהל בלבד; השורה התחתונה חוזרת ממנו
 function settingsScreenHTML() {
-  return '<section class="set-page"><h1 class="set-ttl">' + esc(MSG_NAV_SETTINGS) + '</h1>' + gauthCardHTML() + '</section>';
+  var dnd = dndHTML();
+  return '<section class="set-page"><h1 class="set-ttl">' + esc(MSG_NAV_SETTINGS) + '</h1>' +
+    (dnd ? '<div class="ga-card set-dnd">' + dnd + '</div>' : '') + gauthCardHTML() + '</section>';
 }
-function settingsOpen() { if (!gauthIsAdmin()) return; closeModal(); go('settings'); }
+function settingsOpen() { closeModal(); go('settings'); }
 var NOTIFY_CFG = {
   auth: async function () { return { headers: await gauthHeaders() }; },
   user: function () { return gauthUser(); }
@@ -263,13 +266,13 @@ function pickGo(key, v) {
   navTop();
 }
 
-// השורה התחתונה — בכל המסכים, גם בבית: חזור · בית · הגדרות (למנהל בלבד) · יציאה; «יציאה» רק במעטפת, שקולטת את הקישור וסוגרת את האפליקציה.
+// השורה התחתונה — בכל המסכים, גם בבית: חזור · בית · הגדרות · יציאה; «יציאה» רק במעטפת, שקולטת את הקישור וסוגרת את האפליקציה.
 function botBarHTML() {
   var it = function (act, ico, lab) { return '<button class="bb-it" data-act="' + act + '">' + icon(ico) + '<span>' + esc(lab) + '</span></button>'; };
   var exit = /\bwv\b/.test(navigator.userAgent)
     ? '<a class="bb-it" href="app-exit:close">' + icon('exit') + '<span>' + esc(MSG_NAV_EXIT) + '</span></a>' : '';
   return '<div class="in">' + it('nav-back', 'back', MSG_NAV_BACK) + it('go-home', 'home', MSG_NAV_HOME) +
-    (gauthIsAdmin() ? it('settings-open', 'settings', MSG_NAV_SETTINGS) : '') + exit + '</div>';
+    it('settings-open', 'settings', MSG_NAV_SETTINGS) + exit + '</div>';
 }
 
 // הסרגל נאסף בגלילה למטה וחוזר בגלילה למעלה — הדף לבדו על המסך.

@@ -72,7 +72,7 @@ function todayHTML() {
   return '<div class="shelf-date">' + esc('יום ' + HEB_DOW[d.getDay()] + ' · ' + h.dayLabel + ' ' + h.monthName + ' · ' + h.yearLabelFull) + '</div>';
 }
 
-// השתקת התראות בזמן לימוד — רק באפליקציה המותקנת: המעטפת קולטת את הקישור ומדליקה «נא לא להפריע» כשהיא בחזית.
+// השתקת התראות בזמן לימוד — במסך ההגדרות, רק באפליקציה המותקנת: המעטפת קולטת את הקישור ומדליקה «נא לא להפריע» כשהיא בחזית.
 // הבחירה נזכרת גם כאן, כדי שהמתג יציג אותה.
 var DND_KEY = 's_dnd';
 function dndHTML() {
@@ -92,7 +92,7 @@ function dndToggle(el) {
 }
 
 function homeScreenHTML() {
-  return '<section class="shelf-pg"><header class="shelf-hd"><h1>' + esc(MSG_HOME_TITLE) + '</h1>' + todayHTML() + '</header>' + shelvesHTML() + dndHTML() + '</section>';
+  return '<section class="shelf-pg"><header class="shelf-hd"><h1>' + esc(MSG_HOME_TITLE) + '</h1>' + todayHTML() + '</header>' + shelvesHTML() + '</section>';
 }
 
 // ── הספר יוצא מהמדף ──
@@ -269,4 +269,4 @@ function shelfReturn(from) {
   });
 }
 
-export { DND_KEY, booksPick, spFit, dndToggle, homeScreenHTML, shelfBack, shelfHeld, shelfIn, shelfOpen, shelfReturn, shelfWatch };
+export { DND_KEY, dndHTML, booksPick, spFit, dndToggle, homeScreenHTML, shelfBack, shelfHeld, shelfIn, shelfOpen, shelfReturn, shelfWatch };
