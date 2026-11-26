@@ -55,7 +55,6 @@ body{-webkit-tap-highlight-color:transparent}
 body{
   margin:0; background:var(--bg); color:var(--text);
   font-family:var(--f-body); font-size:var(--fs-4); line-height:var(--lh-4); -webkit-text-size-adjust:100%;
-  overflow-wrap:anywhere;
   display:flex; flex-direction:column; min-height:100vh;
 }
 h1,h2,h3{margin:0; line-height:var(--lh-2)}
