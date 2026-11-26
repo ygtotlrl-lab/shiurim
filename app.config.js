@@ -6,7 +6,7 @@ self.APP = Object.freeze({
   shortName: 'שיעורים',
   description: 'שיעורים יומיים — רמב״ם שלושה פרקים ופרק תניא, מתוך הדפוס.',
   prefix: 's_',
-  colors: { theme: '#1E3A6E', background: '#F3F2EE' },
+  colors: { theme: '#2E6C50', background: '#F3F2EE' },
   // דף האופליין של ה-service worker — הכהה לפי אסימוני הערכה הכהה של האפליקציה
   offline: { light: { bg: '#F3F2EE', ink: '#1D2433' }, dark: { bg: '#141821', ink: '#E8E6DF' } },
   // מפתח anon ציבורי ולא מפתח שירות — ההרשאות נאכפות במסד.
@@ -23,7 +23,7 @@ self.APP = Object.freeze({
     // משפט שלם ולא שם בלבד — הפועל מתאים למין השם
     offlineLine: 'השיעורים לא הצליחו להתחבר.',
     // צבע כפתור הניסיון החוזר בדף האופליין של המעטפת
-    accent: '#1e3a6e',
+    accent: '#2e6c50',
     // לעולם אינו יורד — בלי קידום המכשיר המותקן אינו מקבל את ה-APK החדש.
     versionCode: 28,
     versionName: '3.0',

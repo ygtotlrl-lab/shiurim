@@ -43,7 +43,7 @@ public class ShellPushService extends FirebaseMessagingService {
         // הסמל הקטן — הסמל בלבד, בלי שולי המשגר; הגדול — האריח בצבעיו (מתוך adaptive-icon אין תמונה)
         b.setSmallIcon(R.drawable.ic_stat)
          .setLargeIcon(BitmapFactory.decodeResource(getResources(), R.drawable.ic_notify_large))
-         .setColor(Color.parseColor("#1e3a6e"))
+         .setColor(Color.parseColor("#2e6c50"))
          .setContentTitle(title == null ? "" : title)
          .setContentText(body == null ? "" : body)
          .setStyle(new Notification.BigTextStyle().bigText(body == null ? "" : body))

@@ -54,7 +54,7 @@ public class MainActivity extends ShellActivity {
     protected String offlineLine() { return "השיעורים לא הצליחו להתחבר."; }
 
     @Override
-    protected String accentColor() { return "#1e3a6e"; }
+    protected String accentColor() { return "#2e6c50"; }
 
     // ── התראות (FCM) ──
     // הדף שואל את המעטפת על האסימון (op: token), ובלחיצה על «הפעלה» — גם על ההרשאה (op: enable, אנדרואיד 13+);
