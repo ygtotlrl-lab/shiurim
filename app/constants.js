@@ -153,8 +153,7 @@ var LESSONS = [
   ] },
   { k: 'chumash', lab: 'חומש', cover: 'brown', sp: [56, 92], subs: [
     { k: 'chumash-yomi', lab: MSG_CHUMASH, screen: 'chumash' },
-    { k: 'shnayim-mikra', lab: MSG_SHNAYIM, screen: 'shnayim' },
-    { k: 'tanach', lab: 'תנ״ך', screen: 'bk-tanach' }
+    { k: 'shnayim-mikra', lab: MSG_SHNAYIM, screen: 'shnayim' }
   ] },
   { k: 'tehillim', lab: 'תהלים', cover: 'green', sp: [48, 78], subs: [
     { k: 'tehillim-yomi', lab: 'תהלים יומי', screen: 'bk-thd' },
@@ -170,6 +169,7 @@ var LESSONS = [
   { k: 'chassidishe-parsha', lab: 'החסידישע פרשה', cover: 'bord', sp: [48, 85], screen: 'bk-chassidus' },
   { k: 'shulchan-aruch', lab: 'שולחן ערוך הרב', cover: 'brown', sp: [50, 92], screen: 'bk-sa' },
   { k: 'ein-yaakov', lab: 'עין יעקב', cover: 'green', sp: [46, 87], screen: 'bk-ey' },
+  { k: 'tanach', lab: 'תנ״ך', cover: 'navy', sp: [46, 88], screen: 'bk-tanach' },
   { k: 'mishnayot', lab: 'משניות', cover: 'brown', sp: [44, 83], screen: 'bk-mishnayot' },
   { k: 'shas', lab: 'ש״ס', cover: 'bord', sp: [46, 90], subs: [
     { k: 'shas-bavli', lab: 'תלמוד בבלי', screen: 'bk-bavli' },
