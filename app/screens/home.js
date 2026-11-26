@@ -69,7 +69,7 @@ try { document.fonts.ready.then(spFit); } catch (e) {}
 function todayHTML() {
   var d = new Date(), h = hebDate(d);
   if (!h.ok) return '';
-  return '<div class="shelf-date">' + esc('יום ' + HEB_DOW[d.getDay()] + ' · ' + h.dayLabel + ' ' + h.monthName + ' · ') + '<b>' + esc(h.yearLabelFull) + '</b></div>';
+  return '<div class="shelf-date">' + esc('יום ' + HEB_DOW[d.getDay()] + ' · ' + h.dayLabel + ' ' + h.monthName + ' · ' + h.yearLabelFull) + '</div>';
 }
 
 // השתקת התראות בזמן לימוד — רק באפליקציה המותקנת: המעטפת קולטת את הקישור ומדליקה «נא לא להפריע» כשהיא בחזית.

@@ -6,11 +6,12 @@ import { MIRROR, mirrorSave } from '../core/mirror.js';
 import { logAction } from '../core/backup.js';
 import { esc, openModal, pullRender, toast, uiNoDialog } from '../core/ui.js';
 import { hebDayLabel, hebGematria } from '../core/hebrew.js';
-import { ALIYOT, CH_URL, KEY_CHUMASH, KEY_SHNAYIM, MSG_PICK_ALIYAH_TITLE, HY_MONTHS, HY_NAMES, HY_URL, KEY_HAYOM, KEY_RAMBAM, KEY_TANYA, MSG_PICK_DAY_TITLE, KV_TABLE, MSG_HAKDAMA, MSG_LOAD_FAIL, MSG_MINHAG_OPEN, MSG_MOREH_CLOSE, MSG_MOREH_OPEN, MSG_PEREK, MSG_SPECIAL_OPEN, MSG_PICK_CUR, MSG_PICK_NONE, MSG_PICK_PARASHA_TITLE, MSG_PICK_SEARCH, MSG_PICK_TITLE, MSG_RAMBAM_OPENING, PARSHIOT, PUSH_TABLES, MT_URL, RAMBAM_VOLS, SCAN_W, TABLES, KEY_TANYA_DAY, MSG_YEAR_LEAP, MSG_YEAR_REG, TY_MONTHS, LESSONS, MSG_ALT_PAGE, MSG_BOOKS_TITLE, MSG_SHARE_FAIL, MSG_SHARE_NONE, MSG_SHARE_PREP, MSG_SHARE_TITLE, MSG_SOON, TANYA_BOOKS, TANYA_URL, ttDir, SBT_URL, MSG_SBT_OPEN } from './constants.js';
+import { ALIYOT, CH_URL, KEY_CHUMASH, KEY_SHNAYIM, MSG_PICK_ALIYAH_TITLE, HY_MONTHS, HY_NAMES, HY_URL, KEY_HAYOM, KEY_RAMBAM, KEY_TANYA, MSG_PICK_DAY_TITLE, KV_TABLE, MSG_HAKDAMA, MSG_LOAD_FAIL, MSG_MINHAG_OPEN, MSG_MOREH_CLOSE, MSG_MOREH_OPEN, MSG_PEREK, MSG_SPECIAL_OPEN, MSG_PICK_CUR, MSG_PICK_NONE, MSG_PICK_PARASHA_TITLE, MSG_PICK_SEARCH, MSG_PICK_TITLE, MSG_RAMBAM_OPENING, PARSHIOT, PUSH_TABLES, MT_URL, RAMBAM_VOLS, SCAN_W, TABLES, KEY_TANYA_DAY, MSG_YEAR_LEAP, MSG_YEAR_REG, TY_MONTHS, LESSONS, MSG_ALT_PAGE, MSG_BOOKS_TITLE, MSG_SHARE_FAIL, MSG_SHARE_NONE, MSG_SHARE_PREP, MSG_SHARE_TITLE, MSG_SOON, TANYA_BOOKS, TANYA_URL, ttDir, SBT_URL, MSG_SBT_OPEN, KEY_TH_PEOPLE } from './constants.js';
 import { S, shell } from './state.js';
 
 import { icon } from './icons.js';
 import { shareFiles } from '../core/share.js';
+import { gauthUser } from '../core/gauth.js';
 import { BOOK_URL, CH, CROP, HAFTAROT, HY, RAMBAM_LESSONS, RAMBAM_MAP, SBT_CH, SBT_DAY, SCAN, SCAN_SUB, TANYA_CHAPTERS, TANYA_FRAME, TANYA_RATIO, TY } from './data.js';
 
 // ── מטא ──
@@ -100,8 +101,15 @@ function localPut(table, row) {
 }
 
 // ── הבחירה ──
+// לכל משתמש בנפרד — המפתח נושא את המייל שלו (`<מפתח>@<מייל>`), ומסתנכרן בין המכשירים שלו;
+// רשימת האנשים בתהלים — משותפת לכולם.
+function selKey(key) {
+  var u = gauthUser();
+  return key === KEY_TH_PEOPLE || !u || !u.login ? key : key + '@' + String(u.login).toLowerCase();
+}
 // מספר בטווח, או ברירת המחדל — ערך שאינו בטווח נקרא כבחירה שלא נעשתה.
 function sPick(key, max) {
+  key = selKey(key);
   var rows = sLive(MIRROR[KV_TABLE]), i, v;
   for (i = 0; i < rows.length; i++) {
     if (rows[i].key !== key) continue;
@@ -113,6 +121,7 @@ function sPick(key, max) {
 
 // הערך השמור כמות שהוא, או null כשאין שורה — לתניא יומי, שבו 1000 ומעלה הוא שנה מעוברת.
 function sPickRaw(key) {
+  key = selKey(key);
   var rows = sLive(MIRROR[KV_TABLE]), i, v;
   for (i = 0; i < rows.length; i++) {
     if (rows[i].key !== key) continue;
@@ -124,12 +133,14 @@ function sPickRaw(key) {
 
 // הערך השמור כמות שהוא (מערך, אובייקט) — לרשימת האנשים בתהלים; null כשאין שורה.
 function sPickRawAny(key) {
+  key = selKey(key);
   var rows = sLive(MIRROR[KV_TABLE]), i;
   for (i = 0; i < rows.length; i++) if (rows[i].key === key) return kvParse(key, rows[i].value).value;
   return null;
 }
 
 function sPickSet(key, v) {
+  key = selKey(key);
   var rows = MIRROR[KV_TABLE], row = null, i;
   for (i = 0; i < rows.length; i++) if (rows[i].key === key) { row = rows[i]; break; }
   if (!row) row = { key: key, client_id: null, deleted: false, deleted_at: null, deleted_by: null };
@@ -820,6 +831,6 @@ function stripEnd() {
 
 function tanyaChapter(c) { return TANYA_CHAPTERS[c]; }
 
-export { sbtFill, sbtRow, lessonShare, TOAST_MS, stripEnd, scanSheet, ttSheets, sPickRawAny, fixSections, PICKERS, topSecHTML, haftaraOf, haftaraSheets, shnayimCur, shnayimSheets, chLabel, chSheets, chumashCur, el, fileUrl, hayomCur, hyHeSheets, hyLabel, hyStep, hyYiSheet, lessonAppHref, lessonOpen, lessonPickOpen, localPut, pickerFilter, pinchEnd, pinchMove, pinchReset, pinchStart, pzSwipeMove, readTap, pzSwipeStart, pickerOpen, pushSoon, rambamCur, rambamInto, rambamLabel, readBarHTML,
+export { selKey, sbtFill, sbtRow, lessonShare, TOAST_MS, stripEnd, scanSheet, ttSheets, sPickRawAny, fixSections, PICKERS, topSecHTML, haftaraOf, haftaraSheets, shnayimCur, shnayimSheets, chLabel, chSheets, chumashCur, el, fileUrl, hayomCur, hyHeSheets, hyLabel, hyStep, hyYiSheet, lessonAppHref, lessonOpen, lessonPickOpen, localPut, pickerFilter, pinchEnd, pinchMove, pinchReset, pinchStart, pzSwipeMove, readTap, pzSwipeStart, pickerOpen, pushSoon, rambamCur, rambamInto, rambamLabel, readBarHTML,
          sLive, sPendKey, sPendKeyOf, sPick, sPickSet, sQ, sStripRows, sSyncNow, sSyncPull,
          scanInto, sTableMeta, tanyaChapName, tanyaChapter, tanyaCur, tanyaLabel, tanyaSheet, tyCur, tyDay, tyLabel, tyShowSet, tyStep };

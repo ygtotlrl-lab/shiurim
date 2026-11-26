@@ -10,7 +10,7 @@ import { actWire, closeAsk, closeModal, esc, modalDismiss, openModal, shellBare,
 import { KEY_CHUMASH, KEY_TH_PEOPLE, KEY_SHNAYIM, KEY_TANYA_DAY, KEY_HAYOM, KEY_RAMBAM, KEY_TANYA, KV_TABLE, MSG_NAV_BACK, PARSHIOT, MSG_NAV_EXIT, MSG_NAV_HOME, MSG_NAV_SETTINGS, MSG_VIL_CLOSE, MSG_VIL_OPEN, MSG_SBT_CLOSE, MSG_SBT_OPEN, PUSH_TABLES, SUPABASE_ANON_KEY,
          SUPABASE_URL, TABLES } from './constants.js';
 import { S, shell, view } from './state.js';
-import { sPickRawAny, PICKERS, chumashCur, shnayimCur, hayomCur, lessonPickOpen, pickerFilter, pickerOpen, pinchEnd, pinchMove, pinchReset, pinchStart, pzSwipeMove, pzSwipeStart, readTap, rambamCur, stripEnd, sPendKey, sPendKeyOf, sPickSet, sQ, sStripRows, sSyncNow, sSyncPull,
+import { selKey, sPickRawAny, PICKERS, chumashCur, shnayimCur, hayomCur, lessonPickOpen, pickerFilter, pickerOpen, pinchEnd, pinchMove, pinchReset, pinchStart, pzSwipeMove, pzSwipeStart, readTap, rambamCur, stripEnd, sPendKey, sPendKeyOf, sPickSet, sQ, sStripRows, sSyncNow, sSyncPull,
          sTableMeta, tanyaCur, tyCur, tyShowSet , lessonShare , sbtFill } from './domain.js';
 import { DND_KEY, booksPick, spFit, dndToggle, homeScreenHTML, shelfHeld, shelfIn, shelfOpen, shelfReturn, shelfWatch } from './screens/home.js';
 import { rambamMorehFill, rambamMount, rambamScreenHTML, rambamVilnaFill } from './screens/rambam.js';
@@ -209,7 +209,7 @@ function navTop() {
 }
 
 // ── השיעור של היום ──
-// בכניסה לשיעור, פעם ביום לכל לימוד, הבחירה עוברת לשיעור של היום לפי הלוח; בחירה ביד נשארת עד מחר.
+// בכניסה לשיעור, פעם ביום לכל לימוד ולכל משתמש, הבחירה עוברת לשיעור של היום לפי הלוח; בחירה ביד נשארת עד מחר — לאותו משתמש.
 var AUTO_KEY = 's_auto_day';
 function bkIndexByGroup(k, name) {
   var b = BOOKS[k], i = 0, g, n;
@@ -237,13 +237,14 @@ function autoPick(screen) {
   var f = AUTO[screen];
   if (!f) return;
   var d = new Date(), today = d.getFullYear() + '-' + (d.getMonth() + 1) + '-' + d.getDate(), seen = {};
-  try { seen = JSON.parse(lsGet(AUTO_KEY, '{}')) || {}; } catch (e) { seen = {}; }
+  var ak = selKey(AUTO_KEY);
+  try { seen = JSON.parse(lsGet(ak, '{}')) || {}; } catch (e) { seen = {}; }
   if (seen[screen] === today) return;
   var kv = f();
   if (!kv) return;
   sPickSet(kv[0], kv[1]);
   seen[screen] = today;
-  lsSet(AUTO_KEY, JSON.stringify(seen));
+  lsSet(ak, JSON.stringify(seen));
 }
 
 function go(screen) {
