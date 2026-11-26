@@ -132,7 +132,8 @@ body.shelf{background:linear-gradient(180deg,var(--shelf),var(--shelf-2))}
 .sp-band{flex:none;display:block;width:100%;height:12px;margin-top:14px;border-top:1.5px solid currentColor;border-bottom:1.5px solid currentColor;opacity:.9}
 .sp-band.bot{margin:0 0 16px}
 .sp-t{flex:1;min-height:0;display:flex;align-items:center;writing-mode:vertical-rl;transform:rotate(180deg);
-  font-family:var(--f-display);font-weight:700;font-size:16px;line-height:1.1;text-shadow:0 -1px 0 rgba(0,0,0,.45);overflow:hidden;padding:6px 0}
+  font-family:var(--f-display);font-weight:700;font-size:16px;line-height:1.1;text-shadow:0 -1px 0 rgba(0,0,0,.45);overflow:hidden;padding:6px 0;
+  overflow-wrap:normal;word-break:keep-all}
 .sp-m{flex:none;writing-mode:vertical-rl;transform:rotate(180deg);font-size:var(--fs-1);padding-bottom:6px}
 .spine.off{cursor:default;background-color:var(--cloth);color:var(--cloth-ink);box-shadow:-2px 0 4px rgba(0,0,0,.12),inset 0 0 0 1px var(--cloth-line);
   background-image:linear-gradient(90deg,rgba(0,0,0,.08),rgba(255,255,255,.1) 40%,rgba(0,0,0,.08))}

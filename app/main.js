@@ -12,7 +12,7 @@ import { KEY_CHUMASH, KEY_TH_PEOPLE, KEY_SHNAYIM, KEY_TANYA_DAY, KEY_HAYOM, KEY_
 import { S, shell, view } from './state.js';
 import { sPickRawAny, PICKERS, chumashCur, shnayimCur, hayomCur, lessonPickOpen, pickerFilter, pickerOpen, pinchEnd, pinchMove, pinchReset, pinchStart, pzSwipeMove, pzSwipeStart, readTap, rambamCur, stripEnd, sPendKey, sPendKeyOf, sPickSet, sQ, sStripRows, sSyncNow, sSyncPull,
          sTableMeta, tanyaCur, tyCur, tyShowSet , lessonShare , sbtFill } from './domain.js';
-import { DND_KEY, booksPick, dndToggle, homeScreenHTML, shelfHeld, shelfIn, shelfOpen, shelfReturn, shelfWatch } from './screens/home.js';
+import { DND_KEY, booksPick, spFit, dndToggle, homeScreenHTML, shelfHeld, shelfIn, shelfOpen, shelfReturn, shelfWatch } from './screens/home.js';
 import { rambamMorehFill, rambamMount, rambamScreenHTML, rambamVilnaFill } from './screens/rambam.js';
 import { chumashMount, chumashScreenHTML } from './screens/chumash.js';
 import { tanyayMount, tanyayScreenHTML } from './screens/tanyay.js';
@@ -163,7 +163,7 @@ function sRender() {
     root.dataset.screen = view.screen;
     if (view.screen === 'settings') root.innerHTML = settingsScreenHTML();
     else if (bk) { root.innerHTML = bookScreenHTML(view.screen); bookMount(view.screen); }
-    else if (home) { root.innerHTML = homeScreenHTML(); shelfReturn(root.dataset.from); }
+    else if (home) { root.innerHTML = homeScreenHTML(); spFit(); shelfReturn(root.dataset.from); }
     else if (view.screen === 'tanya') { root.innerHTML = tanyaScreenHTML(); tanyaMount(); }
     else if (view.screen === 'hayom') { root.innerHTML = hayomScreenHTML(); hayomMount(); }
     else if (view.screen === 'chumash') { root.innerHTML = chumashScreenHTML(); chumashMount(); }

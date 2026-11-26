@@ -45,7 +45,24 @@ function lessonHas(l, screen) {
 }
 function booksPick(screen) {
   openModal(MSG_BOOKS_TITLE, shelvesHTML(screen || 'home'), '');
+  spFit();
 }
+
+// שם הספר על השדרה — מילה אינה נשברת באמצעה: הגופן קטן עד שכל מילה נכנסת לגובה השדרה
+// והשורות לרוחבה, וכך גם במסך קטן; שבירה — רק בין המילים. מתעדכן בשינוי גודל ואחרי טעינת הגופנים.
+var SP_FS = 16, SP_MIN = 8;
+function spFit() {
+  document.querySelectorAll('.sp-t').forEach(function (t) {
+    var f = SP_FS;
+    t.style.fontSize = '';
+    while (f > SP_MIN && (t.scrollHeight > t.clientHeight + 1 || t.scrollWidth > t.clientWidth + 1)) {
+      f -= 0.5;
+      t.style.fontSize = f + 'px';
+    }
+  });
+}
+addEventListener('resize', spFit);
+try { document.fonts.ready.then(spFit); } catch (e) {}
 
 // התאריך העברי של היום — מתחת לכותרת: היום בשבוע, התאריך והשנה.
 // התאריך הוא של היום האזרחי — אינו מתחלף בשקיעה.
@@ -196,4 +213,4 @@ function shelfReturn(from) {
   });
 }
 
-export { DND_KEY, booksPick, dndToggle, homeScreenHTML, shelfBack, shelfHeld, shelfIn, shelfOpen, shelfReturn, shelfWatch };
+export { DND_KEY, booksPick, spFit, dndToggle, homeScreenHTML, shelfBack, shelfHeld, shelfIn, shelfOpen, shelfReturn, shelfWatch };
