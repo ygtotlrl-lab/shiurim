@@ -329,7 +329,7 @@ function pickerOpen(kind) {
     }).join('') + '</div>';
   });
   h += '<p class="pk-none hidden" id="pk-none">' + esc(MSG_PICK_NONE) + '</p></div>';
-  var foot = isR ? '<button class="btn ghost" data-act="moreh-open">' + esc(MSG_MOREH_OPEN) + '</button>'
+  var foot = P.foot ? P.foot() : isR ? '<button class="btn ghost" data-act="moreh-open">' + esc(MSG_MOREH_OPEN) + '</button>'
     : kind === 'shnayim' ? '<button class="btn ghost" data-act="minhag-open">' + esc(MSG_MINHAG_OPEN) + '</button>' +
       '<button class="btn ghost" data-act="special-open">' + esc(MSG_SPECIAL_OPEN) + '</button>' : '';
   openModal(P.title, h, foot);

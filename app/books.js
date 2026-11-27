@@ -3,7 +3,7 @@
 // קטע — [תיקייה, עמוד, הלבנות] לעמוד אחד, או [תיקייה, מעמוד, עד עמוד] לטווח שלם בלי הלבנה.
 import { esc, openModal, toast } from '../core/ui.js';
 import { hebDate, hebGematria, hebIsLeap, hebMonthNames, hebToGreg, hebYearLabelFull } from '../core/hebrew.js';
-import { MSG_TH_PEOPLE_TITLE, MSG_TH_PEOPLE_ADD, MSG_TH_PEOPLE_NAME, MSG_TH_PEOPLE_DATE, MSG_TH_DAY, MSG_TH_MONTH, MSG_TH_YEAR, MSG_TH_PEOPLE_NONE, MSG_TH_PEOPLE_DEL, MSG_TH_PEOPLE_SAVE, MSG_TH_PEOPLE_OPEN, MSG_PEREK, KEY_TH_PEOPLE, MSG_TH_NEXT, MSG_TH_FIX_NAME, MSG_TH_FIX_PH, MSG_TH_FIX_BAD, MSG_TH_KIND, MSG_TH_KIND_FIX, MSG_TH_KIND_BD, MSG_TH_PICK } from './constants.js';
+import { MSG_TH_PEOPLE_TITLE, MSG_TH_PEOPLE_ADD, MSG_TH_PEOPLE_NAME, MSG_TH_PEOPLE_DATE, MSG_TH_DAY, MSG_TH_MONTH, MSG_TH_YEAR, MSG_TH_PEOPLE_NONE, MSG_TH_PEOPLE_DEL, MSG_TH_PEOPLE_SAVE, MSG_TH_PEOPLE_OPEN, MSG_PEREK, KEY_TH_PEOPLE, MSG_TH_NEXT, MSG_TH_PREV, MSG_TH_FIX_NAME, MSG_TH_FIX_PH, MSG_TH_FIX_BAD, MSG_TH_KIND, MSG_TH_KIND_FIX, MSG_TH_KIND_BD, MSG_TH_PICK } from './constants.js';
 
 import { tehillimAddThirty } from './calendar.js';
 import { el, readBarHTML, sPick, sPickRawAny, sPickSet, sQ, scanSheet, ttSheets } from './domain.js';
@@ -190,13 +190,13 @@ function thChapterOf(p, now) {
   return ch >= 1 && ch <= 150 ? ch : null;
 }
 
-// המסך — פרק אחד בכל פעם; הבורר העליון עובר בין הפרקים, ובסוף — «עריכה» ו«לפרק הבא».
+// המסך — פרק אחד בכל פעם, ובסופו «לפרק הקודם» ו«לפרק הבא», כמו בכל שיעור; «עריכה» — בתחתית הבורר.
 function thPeopleScreenHTML(b) {
-  var es = thEntries(), c = thCur(), e = es[c];
+  var es = thEntries(), c = thCur(), e = es[c], n = es.length;
   return readBarHTML('bk-' + b.k, b.title, esc(e ? thEntryLabel(e) : b.label)) +
     '<div class="lesson read" id="now-body" data-id="' + c + '" data-act="read-toggle"></div>' +
-    '<div class="read-end"><button class="btn ghost" data-act="th-people-open">' + icon('edit') + esc(MSG_TH_PEOPLE_OPEN) + '</button>' +
-    (es.length > 1 ? '<button class="btn" data-act="bk-next" data-k="bk-' + b.k + '" data-id="' + ((c + 1) % es.length) + '">' + esc(MSG_TH_NEXT) + '</button>' : '') + '</div>';
+    (n > 1 ? '<div class="read-end"><button class="btn ghost" data-act="bk-next" data-k="bk-' + b.k + '" data-id="' + ((c + n - 1) % n) + '">' + esc(MSG_TH_PREV) + '</button>' +
+      '<button class="btn" data-act="bk-next" data-k="bk-' + b.k + '" data-id="' + ((c + 1) % n) + '">' + esc(MSG_TH_NEXT) + '</button></div>' : '');
 }
 
 function thPeopleMount(b, now) {
@@ -327,7 +327,9 @@ function bookPickers() {
   Object.keys(BOOKS).forEach(function (k) {
     var b = BOOKS[k];
     if (b.people) {
-      out['bk-' + k] = { key: bookKey(b), cur: thCur, title: MSG_TH_PICK, groups: function () {
+      out['bk-' + k] = { key: bookKey(b), cur: thCur, title: MSG_TH_PICK,
+        foot: function () { return '<button class="btn ghost" data-act="th-people-open">' + esc(MSG_TH_PEOPLE_OPEN) + '</button>'; },
+        groups: function () {
         return [{ title: b.title, items: thEntries().map(function (e, i) {
           return { i: i, num: hebGematria(e.ch, ''), name: (e.p.n || (e.p.t === 'fix' ? MSG_TH_KIND_FIX : MSG_TH_KIND_BD)) };
         }) }];
