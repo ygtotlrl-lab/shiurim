@@ -134,6 +134,14 @@ body.shelf{background:linear-gradient(180deg,var(--shelf),var(--shelf-2))}
 .sp-t{flex:0 1 auto;min-height:0;max-height:calc(100% - 2 * var(--band));display:flex;align-items:center;justify-content:flex-start;
   writing-mode:vertical-rl;transform:rotate(180deg);
   font-family:var(--f-display);font-weight:300;font-size:13px;letter-spacing:.03em;line-height:1.1;white-space:nowrap;overflow:hidden;padding:6px 0 10px}
+/* העיטור — השם בתווית כהה במסגרת זהב כפולה, ומעוין בין שני קווים קצרים בתחתית השדרה (בצבע הזהב, דרך מסכה); בלי פסי הזהב */
+.spine:not(.off) .sp-band{border-top-color:transparent}
+.spine:not(.off) .sp-t{background:rgba(0,0,0,.26);border:.75px solid var(--emboss-line);outline:.75px solid rgba(232,221,190,.35);outline-offset:2px;
+  border-radius:1px;padding:10px 3px;margin-top:12%;max-height:calc(100% - 2 * var(--band) - 12% - 26px)}
+.spine:not(.off)::after{content:"";position:absolute;left:50%;bottom:calc(var(--band) - 2px);width:70%;max-width:44px;height:12px;transform:translateX(-50%);
+  background:currentColor;opacity:.9;pointer-events:none;
+  -webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 10'%3E%3Cpath d='M10 1l3 4-3 4-3-4z'/%3E%3Cpath d='M1 5h5M14 5h5' stroke='%23000' stroke-width='.8'/%3E%3C/svg%3E") center/contain no-repeat;
+          mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 10'%3E%3Cpath d='M10 1l3 4-3 4-3-4z'/%3E%3Cpath d='M1 5h5M14 5h5' stroke='%23000' stroke-width='.8'/%3E%3C/svg%3E") center/contain no-repeat}
 .sp-m{flex:none;writing-mode:vertical-rl;transform:rotate(180deg);font-size:var(--fs-1);padding-bottom:6px}
 .spine.off{cursor:default;background-color:var(--cloth);color:var(--cloth-ink);box-shadow:-1px 0 2px rgba(0,0,0,.08),inset 0 0 0 1px var(--cloth-line)}
 .shelf-dnd{flex:none;display:flex;align-items:center;justify-content:center;gap:var(--sp-3);padding-top:var(--sp-6);
@@ -189,6 +197,8 @@ body.shelf{background:linear-gradient(180deg,var(--shelf),var(--shelf-2))}
   .shelves:not(.in-sheet) .spine{--band:7px;flex-basis:calc(var(--w) * .56)}
   .shelves:not(.in-sheet) .spine.lean{margin-inline-start:10px}
   .shelves:not(.in-sheet) .sp-t{font-size:11px;padding:4px 0 7px}
+  .shelves:not(.in-sheet) .spine:not(.off) .sp-t{padding:5px 2px;margin-top:8%;outline-offset:1px}
+  .shelves:not(.in-sheet) .spine:not(.off)::after{height:8px;bottom:calc(var(--band) - 3px)}
   .shelves:not(.in-sheet) .plank{height:4px}
   .shelf-dnd{padding-top:4px;font-size:10.5px}
   .dnd-sw{width:30px;height:17px}
