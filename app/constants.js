@@ -164,7 +164,10 @@ var LESSONS = [
     { k: 'tanya-yomi', lab: MSG_TANYA_DAY, screen: 'tanyay' },
     { k: 'tanya-week', lab: MSG_TANYA_WEEK, screen: 'tanya' }
   ] },
-  { k: 'rambam', lab: MSG_RAMBAM, cover: 'navy', sp: [54, 89], screen: 'rambam' },
+  { k: 'rambam', lab: MSG_RAMBAM, cover: 'navy', sp: [54, 89], subs: [
+    { k: 'rambam-mt', lab: 'משנה תורה', screen: 'rambam' },
+    { k: 'rambam-shm', lab: 'ספר המצוות', screen: 'bk-shm' }
+  ] },
   { k: 'hayom-yom', lab: MSG_HAYOM_YOM, cover: 'navy', sp: [44, 81], screen: 'hayom' },
   { k: 'chassidishe-parsha', lab: 'החסידישע פרשה', cover: 'bord', sp: [48, 85], screen: 'bk-chassidus' },
   { k: 'shulchan-aruch', lab: 'שולחן ערוך הרב', cover: 'brown', sp: [50, 92], screen: 'bk-sa' },
@@ -214,7 +217,7 @@ var HY_NAMES = { tishri: 'תשרי', heshvan: 'חשון', kislev: 'כסלו', te
 // רוחב כל עמוד סרוק; הגבהים — SCAN ב-app/data.js.
 var SCAN_W = 1600;
 
-// רמב״ם — מאגר משנה תורה: laam1–laam14, hkd ו-mzv (רמב״ם לעם), mrh (מורה השיעור) ו-vil1–vil12 (דפוס וילנא), הספרים השלמים, עמוד לכל קובץ.
+// רמב״ם — מאגר משנה תורה: laam1–laam14, hkd ו-mzv (רמב״ם לעם), mrh ו-mrs (מורי השיעור) ו-vil1–vil12 (דפוס וילנא), הספרים השלמים, עמוד לכל קובץ.
 // RAMBAM_VOLS — תיקיות רמב״ם לעם לפי המספר שבמפה (RAMBAM_MAP ב-app/data.js).
 var RAMBAM_VOLS = ["hkd","mzv","laam1","laam2","laam3","laam4","laam5","laam6","laam7","laam8","laam9","laam10","laam11","laam12","laam13","laam14"];
 
@@ -232,7 +235,7 @@ var MSG_TH_FIX_BAD = 'מספר הפרק — באותיות, מא׳ עד ק״נ';
 var MSG_TH_NEXT = 'לפרק הבא ‹';
 var MSG_TH_PREV = '› לפרק הקודם';
 var MSG_TH_PICK = 'בחירת פרק';
-var MSG_SHM_NONE = 'השיעור של היום אינו במנין המצוות שבספר — רק המצוות עצמן.';
+var MSG_SHM_NONE = 'סריקת ספר המצוות המלא עוד לא נכנסה לאפליקציה. מורה השיעור — בתחתית הבורר.';
 var MSG_TH_PEOPLE_NAME = 'שם';
 var MSG_TH_PEOPLE_DATE = 'תאריך לידה';
 var MSG_TH_DAY = 'יום';

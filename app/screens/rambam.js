@@ -43,6 +43,7 @@ function rambamVilnaFill(vs, i) {
   (VILNA[i] || []).forEach(function (seg) { scanInto(pages, 'vil' + seg[0], seg[1], seg[2]); });
 }
 
-function rambamMorehFill(box) { scanInto(box, 'mrh'); }
+// מורה השיעור — mrh (משנה תורה, שלושה פרקים), ומהבורר של ספר המצוות — mrs.
+function rambamMorehFill(box, dir) { scanInto(box, dir || 'mrh'); }
 
 export { rambamFill, rambamMorehFill, rambamMount, rambamScreenHTML, rambamVilnaFill };

@@ -3,10 +3,10 @@
 // קטע — [תיקייה, עמוד, הלבנות] לעמוד אחד, או [תיקייה, מעמוד, עד עמוד] לטווח שלם בלי הלבנה.
 import { esc, openModal, toast } from '../core/ui.js';
 import { hebDate, hebGematria, hebIsLeap, hebMonthNames, hebToGreg, hebYearLabelFull } from '../core/hebrew.js';
-import { MSG_TH_PEOPLE_TITLE, MSG_TH_PEOPLE_ADD, MSG_TH_PEOPLE_NAME, MSG_TH_PEOPLE_DATE, MSG_TH_DAY, MSG_TH_MONTH, MSG_TH_YEAR, MSG_TH_PEOPLE_NONE, MSG_TH_PEOPLE_DEL, MSG_TH_PEOPLE_SAVE, MSG_TH_PEOPLE_OPEN, MSG_PEREK, KEY_TH_PEOPLE, MSG_TH_NEXT, MSG_TH_PREV, MSG_TH_FIX_NAME, MSG_TH_FIX_PH, MSG_TH_FIX_BAD, MSG_TH_KIND, MSG_TH_KIND_FIX, MSG_TH_KIND_BD, MSG_TH_PICK, MSG_SHM_NONE } from './constants.js';
+import { MSG_TH_PEOPLE_TITLE, MSG_TH_PEOPLE_ADD, MSG_TH_PEOPLE_NAME, MSG_TH_PEOPLE_DATE, MSG_TH_DAY, MSG_TH_MONTH, MSG_TH_YEAR, MSG_TH_PEOPLE_NONE, MSG_TH_PEOPLE_DEL, MSG_TH_PEOPLE_SAVE, MSG_TH_PEOPLE_OPEN, MSG_PEREK, KEY_TH_PEOPLE, MSG_TH_NEXT, MSG_TH_PREV, MSG_TH_FIX_NAME, MSG_TH_FIX_PH, MSG_TH_FIX_BAD, MSG_TH_KIND, MSG_TH_KIND_FIX, MSG_TH_KIND_BD, MSG_TH_PICK, MSG_SHM_NONE, MSG_MOREH, MSG_MOREH_OPEN } from './constants.js';
 
 import { tehillimAddThirty } from './calendar.js';
-import { el, readBarHTML, sPick, sPickRawAny, sPickSet, sQ, scanSheet, ttSheets } from './domain.js';
+import { el, readBarHTML, sPick, sPickRawAny, sPickSet, sQ, scanSheet, ttSheets, topSecHTML } from './domain.js';
 import { icon } from './icons.js';
 import { BOOKS, BOOK_SCAN, SCAN, TH_CHAPTERS } from './data.js';
 
@@ -63,6 +63,7 @@ function bookScreenHTML(screen) {
   if (b.people) return thPeopleScreenHTML(b);
   var c = bookCur(b), n = bookItems(b).length;
   return readBarHTML(screen, b.title, esc(bookLabel(b, c))) +
+    (b.moreh ? topSecHTML('moreh', MSG_MOREH) : '') +
     '<div class="lesson read" id="now-body" data-id="' + c + '" data-act="read-toggle"></div>' +
     '<div class="read-end"><button class="btn ghost" data-act="bk-next" data-k="' + screen + '" data-id="' + ((c + n - 1) % n) + '">' + esc(b.prev) + '</button>' +
     '<button class="btn" data-act="bk-next" data-k="' + screen + '" data-id="' + ((c + 1) % n) + '">' + esc(b.next) + '</button></div>';
@@ -73,7 +74,7 @@ function bookMount(screen) {
   if (!now) return;
   if (b.people) { thPeopleMount(b, now); return; }
   var it = bookItems(b)[+now.dataset.id], pages = el('div', 'pages');
-  // יום שכולו מחוץ לסריקה (בספר המצוות — ההקדמה והשרשים) — הודעה במקום עמוד ריק
+  // יום שאין לו עמודים (ספר המצוות — עד שתיכנס סריקת הספר המלא) — הודעה במקום עמוד ריק
   if (!(it.segs || []).length) { now.appendChild(el('p', 'th-none', MSG_SHM_NONE)); return; }
   segSheets(it.segs, b.shade).forEach(function (f) { pages.appendChild(f); });
   // תהלים יומי — בכ״ט בחודש חסר אומרים גם את הפרקים של ל׳.
@@ -338,7 +339,8 @@ function bookPickers() {
       } };
       return;
     }
-    out['bk-' + k] = { key: bookKey(b), cur: function () { return bookCur(b); }, groups: function () { return bookGroups(b); }, title: b.pick };
+    out['bk-' + k] = { key: bookKey(b), cur: function () { return bookCur(b); }, groups: function () { return bookGroups(b); }, title: b.pick,
+      foot: b.moreh ? function () { return '<button class="btn ghost" data-act="moreh-open" data-id="' + b.moreh + '">' + esc(MSG_MOREH_OPEN) + '</button>'; } : null };
   });
   return out;
 }

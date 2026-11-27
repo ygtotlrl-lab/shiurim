@@ -343,7 +343,7 @@ var DOM_ACTIONS = {
     secOpen('special');
   },
   'sec-close': function (el) { var x = sQ('#' + el.dataset.id); if (x) x.classList.add('hidden'); },
-  'moreh-open': function () { secOpen('moreh', rambamMorehFill); },
+  'moreh-open': function (el) { secOpen('moreh', function (box) { rambamMorehFill(box, el && el.dataset.id); }); },
   'vilna-toggle': function (el) {
     var lesson = el.closest('.lesson'), vs = lesson && lesson.querySelector('[data-vil]');
     if (!vs) { uiNoDialog('vilna-toggle', el.dataset.id); return; }
