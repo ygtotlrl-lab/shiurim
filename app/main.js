@@ -21,7 +21,7 @@ import { hayomMount, hayomScreenHTML } from './screens/hayom.js';
 import { tanyaMount, tanyaScreenHTML } from './screens/tanya.js';
 import { icon } from './icons.js';
 import { todayChumash, todayDow, todayHayom, todayKria, todayRambam, todayShnayim, todayTanyaDay, todayTanyaWeek, todayTehillimDay, weekParasha } from './calendar.js';
-import { bookCur, bookMount, bookOf, bookPickers, bookScreenHTML, thPeopleAdd, thPeopleDel, thPeopleOpen, thPeopleSave } from './books.js';
+import { bookCur, bookMount, bookOf, bookPickers, bookScreenHTML, thPeopleAdd, thPeopleDel, thPeopleKind, thPeopleOpen, thPeopleSave } from './books.js';
 import { BOOKS } from './data.js';
 
 Object.assign(PICKERS, bookPickers());
@@ -311,7 +311,7 @@ var DOM_ACTIONS = {
   },
   'lesson-go': function (el) { var id = el.dataset.id, held = shelfHeld(); closeModal(); if (held) shelfIn(function () { go(id); }); else go(id); },
   'read-toggle': function () { readTap(function () { if (!pinchReset()) document.body.classList.toggle('calm'); }); },
-  'pick-open': function (el) { var b = bookOf(el.dataset.k); if (b && b.people) { thPeopleOpen(); return; } tyShowSet(null); pickerOpen(el.dataset.k); },
+  'pick-open': function (el) { tyShowSet(null); pickerOpen(el.dataset.k); },
   'pick-go': function (el) {
     closeModal();
     var P = PICKERS[el.dataset.k];
@@ -328,8 +328,9 @@ var DOM_ACTIONS = {
   // תהלים — הגדרת הפרקים האישיים: גיליון עם שורה לכל אדם, גרירה לסדר ושמירה.
   'th-people-open': function () { thPeopleOpen(); },
   'th-people-add': function () { thPeopleAdd(); },
+  'th-people-kind': function (el) { thPeopleKind(el.dataset.t); },
   'th-people-del': function (el) { thPeopleDel(el.dataset.id); },
-  'th-people-save': function () { thPeopleSave(); closeModal(); sRender(); },
+  'th-people-save': function () { if (!thPeopleSave()) return; closeModal(); sRender(); },
   // מתג השנה בבורר — מחליף את החלוקה המוצגת; הבחירה נשמרת רק בלחיצה על יום.
   'ty-type': function (el) { tyShowSet(el.dataset.id); pickerOpen('tanyay'); },
   // התוספות בראש השיעור — נפתחות מתחתית הבורר ונסגרות ב-✕.

@@ -27,6 +27,8 @@ var PATHS = {
   close:  '<path d="M6 6l12 12M18 6L6 18"/>',
   share:  '<circle cx="18" cy="5" r="2.6"/><circle cx="6" cy="12" r="2.6"/><circle cx="18" cy="19" r="2.6"/><path d="M8.3 10.8l7.4-4.3M8.3 13.2l7.4 4.3"/>',
   books:  '<path d="M4 4h4v16H4z"/><path d="M10 4h4v16h-4z"/><path d="M15.5 5.5l3.6-.9 3 14.6-3.6.9z"/>',
+  edit:   '<path d="M4 20h4L19 9l-4-4L4 16z"/><path d="M13.5 6.5l4 4"/>',
+  calendar: '<rect x="3.5" y="5" width="17" height="15" rx="2"/><path d="M3.5 10h17M8 3v4M16 3v4"/>',
   book:   '<path d="M12 6c-2-1.5-5-2-8-1.5V19c3-.5 6 0 8 1.5"/><path d="M12 6c2-1.5 5-2 8-1.5V19c-3-.5-6 0-8 1.5"/><path d="M12 6v14.5"/>'
 };
 

@@ -3,7 +3,7 @@
 // קטע — [תיקייה, עמוד, הלבנות] לעמוד אחד, או [תיקייה, מעמוד, עד עמוד] לטווח שלם בלי הלבנה.
 import { esc, openModal, toast } from '../core/ui.js';
 import { hebDate, hebGematria, hebIsLeap, hebMonthNames, hebToGreg, hebYearLabelFull } from '../core/hebrew.js';
-import { MSG_TH_PEOPLE_TITLE, MSG_TH_PEOPLE_ADD, MSG_TH_PEOPLE_NAME, MSG_TH_PEOPLE_DATE, MSG_TH_DAY, MSG_TH_MONTH, MSG_TH_YEAR, MSG_TH_PEOPLE_NONE, MSG_TH_PEOPLE_DEL, MSG_TH_PEOPLE_SAVE, MSG_TH_PEOPLE_OPEN, MSG_PEREK, KEY_TH_PEOPLE } from './constants.js';
+import { MSG_TH_PEOPLE_TITLE, MSG_TH_PEOPLE_ADD, MSG_TH_PEOPLE_NAME, MSG_TH_PEOPLE_DATE, MSG_TH_DAY, MSG_TH_MONTH, MSG_TH_YEAR, MSG_TH_PEOPLE_NONE, MSG_TH_PEOPLE_DEL, MSG_TH_PEOPLE_SAVE, MSG_TH_PEOPLE_OPEN, MSG_PEREK, KEY_TH_PEOPLE, MSG_TH_NEXT, MSG_TH_FIX_NAME, MSG_TH_FIX_PH, MSG_TH_FIX_BAD, MSG_TH_KIND, MSG_TH_KIND_FIX, MSG_TH_KIND_BD, MSG_TH_PICK } from './constants.js';
 
 import { tehillimAddThirty } from './calendar.js';
 import { el, readBarHTML, sPick, sPickRawAny, sPickSet, sQ, scanSheet, ttSheets } from './domain.js';
@@ -130,11 +130,34 @@ function thFromGreg(p) {
   return h.ok ? { n: p.n || '', hy: h.year, hm: h.monthName, hd: h.day } : null;
 }
 
+// שני סוגים: פרק קבוע ({t:'fix', n, ch}) ויום הולדת ({n, hy, hm, hd}) — רשומה ישנה בלי t היא יום הולדת.
 function thPeople() {
   var v = sPickRawAny(KEY_TH_PEOPLE);
   if (!Array.isArray(v)) return [];
-  return v.map(function (p) { return p && p.hy ? p : (p && p.d ? thFromGreg(p) : null); })
-    .filter(function (p) { return p && p.hy && p.hm && p.hd; });
+  return v.map(function (p) {
+    if (p && p.t === 'fix') return p.ch >= 1 && p.ch <= 150 ? p : null;
+    return p && p.hy ? p : (p && p.d ? thFromGreg(p) : null);
+  }).filter(function (p) { return p && (p.t === 'fix' || (p.hy && p.hm && p.hd)); });
+}
+
+// הפרק של רשומה — הקבוע כמות שהוא, ויום ההולדת — לפי השנים שמלאו
+function thCh(p) { return p.t === 'fix' ? p.ch : thChapterOf(p); }
+// הרשומות שיש להן פרק היום, בסדר שנקבע בעריכה
+function thEntries() {
+  return thPeople().map(function (p) { return { p: p, ch: thCh(p) }; }).filter(function (e) { return e.ch; });
+}
+function thEntryLabel(e) { return (e.p.n ? e.p.n + ' — ' : '') + MSG_PEREK + hebGematria(e.ch, ''); }
+function thCur() { return sPick(bookKey(BOOKS.thp), Math.max(1, thEntries().length)); }
+
+// מספר הפרק באותיות («כג», «קיט») — סכום הגימטריה; ספרות מתקבלות גם הן
+var TH_GEM = { 'א':1,'ב':2,'ג':3,'ד':4,'ה':5,'ו':6,'ז':7,'ח':8,'ט':9,'י':10,'כ':20,'ך':20,'ל':30,'מ':40,'ם':40,'נ':50,'ן':50,'ס':60,'ע':70,'פ':80,'ף':80,'צ':90,'ץ':90,'ק':100,'ר':200,'ש':300,'ת':400 };
+function thParseCh(str) {
+  var t = String(str || '').replace(/[\s'"׳״]/g, '');
+  if (!t) return 0;
+  if (/^\d+$/.test(t)) return +t;
+  var n = 0;
+  for (var i = 0; i < t.length; i++) { if (!TH_GEM[t[i]]) return 0; n += TH_GEM[t[i]]; }
+  return n;
 }
 
 // השקיעה בירושלים (NOAA, מקורב לדקות) — היום העברי מתחלף בה.
@@ -167,23 +190,22 @@ function thChapterOf(p, now) {
   return ch >= 1 && ch <= 150 ? ch : null;
 }
 
+// המסך — פרק אחד בכל פעם; הבורר העליון עובר בין הפרקים, ובסוף — «עריכה» ו«לפרק הבא».
 function thPeopleScreenHTML(b) {
-  return readBarHTML('bk-' + b.k, b.title, esc(b.label)) +
-    '<div class="lesson read" id="now-body" data-act="read-toggle"></div>' +
-    '<div class="read-end"><button class="btn" data-act="th-people-open">' + esc(MSG_TH_PEOPLE_OPEN) + '</button></div>';
+  var es = thEntries(), c = thCur(), e = es[c];
+  return readBarHTML('bk-' + b.k, b.title, esc(e ? thEntryLabel(e) : b.label)) +
+    '<div class="lesson read" id="now-body" data-id="' + c + '" data-act="read-toggle"></div>' +
+    '<div class="read-end"><button class="btn ghost" data-act="th-people-open">' + icon('edit') + esc(MSG_TH_PEOPLE_OPEN) + '</button>' +
+    (es.length > 1 ? '<button class="btn" data-act="bk-next" data-k="bk-' + b.k + '" data-id="' + ((c + 1) % es.length) + '">' + esc(MSG_TH_NEXT) + '</button>' : '') + '</div>';
 }
 
 function thPeopleMount(b, now) {
-  var ps = thPeople(), pages = el('div', 'pages');
-  if (!ps.length) { now.appendChild(el('p', 'th-none', MSG_TH_PEOPLE_NONE)); return; }
-  ps.forEach(function (p) {
-    var ch = thChapterOf(p);
-    if (!ch) return;
-    var hd = el('div', 'sect');
-    hd.appendChild(el('h3', null, (p.n ? p.n + ' — ' : '') + MSG_PEREK + hebGematria(ch, '')));
-    pages.appendChild(hd);
-    segSheets(TH_CHAPTERS[ch - 1], false).forEach(function (f) { pages.appendChild(f); });
-  });
+  var es = thEntries(), e = es[+now.dataset.id] || es[0], pages = el('div', 'pages');
+  if (!e) { now.appendChild(el('p', 'th-none', MSG_TH_PEOPLE_NONE)); return; }
+  var hd = el('div', 'sect');
+  hd.appendChild(el('h3', null, thEntryLabel(e)));
+  pages.appendChild(hd);
+  segSheets(TH_CHAPTERS[e.ch - 1], false).forEach(function (f) { pages.appendChild(f); });
   now.appendChild(pages);
 }
 
@@ -193,43 +215,69 @@ function thOpts(vals, labs, cur) {
 }
 
 function thRowHTML(p, i) {
+  var grip = '<div class="thp-row' + (p.t === 'fix' ? ' fix' : '') + '" data-i="' + i + '" data-t="' + (p.t === 'fix' ? 'fix' : 'bd') + '"><span class="thp-grip" aria-hidden="true">⋮⋮</span>';
+  var del = '<button class="x-btn" data-act="th-people-del" data-id="' + i + '" aria-label="' + esc(MSG_TH_PEOPLE_DEL) + '">' + icon('close') + '</button></div>';
+  if (p.t === 'fix') {
+    return grip + '<input class="thp-n" data-f="n" value="' + esc(p.n || '') + '" placeholder="' + esc(MSG_TH_FIX_NAME) + '">' +
+      '<div class="thp-d one"><label class="thp-ch"><span>' + esc(MSG_PEREK.trim()) + '</span><input data-f="ch" inputmode="text" value="' + esc(p.ch ? hebGematria(p.ch, '') : '') +
+        '" placeholder="' + esc(MSG_TH_FIX_PH) + '" aria-label="' + esc(MSG_TH_FIX_PH) + '"></label></div>' + del;
+  }
   var days = [], years = [], thisY = hebDate(new Date()).year || 5787;
   for (var d = 1; d <= 30; d++) days.push(d);
   for (var y = thisY; y >= 5640; y--) years.push(y);
-  return '<div class="thp-row" data-i="' + i + '"><span class="thp-grip" aria-hidden="true">⋮⋮</span>' +
+  return grip +
     '<input class="thp-n" data-f="n" value="' + esc(p.n || '') + '" placeholder="' + esc(MSG_TH_PEOPLE_NAME) + '">' +
     '<div class="thp-d" role="group" aria-label="' + esc(MSG_TH_PEOPLE_DATE) + '">' +
     '<select data-f="hd">' + '<option value="">' + esc(MSG_TH_DAY) + '</option>' + thOpts(days, days.map(function (x) { return hebGematria(x); }), p.hd) + '</select>' +
     '<select data-f="hm">' + '<option value="">' + esc(MSG_TH_MONTH) + '</option>' + thOpts(TH_MONTHS, TH_MONTHS, p.hm) + '</select>' +
-    '<select data-f="hy">' + '<option value="">' + esc(MSG_TH_YEAR) + '</option>' + thOpts(years, years.map(hebYearLabelFull), p.hy) + '</select></div>' +
-    '<button class="x-btn" data-act="th-people-del" data-id="' + i + '" aria-label="' + esc(MSG_TH_PEOPLE_DEL) + '">' + icon('close') + '</button></div>';
+    '<select data-f="hy">' + '<option value="">' + esc(MSG_TH_YEAR) + '</option>' + thOpts(years, years.map(hebYearLabelFull), p.hy) + '</select></div>' + del;
 }
 
+// העריכה — שורה לכל פרק, ו«הוספת פרק» שפותחת את הבחירה: פרק קבוע או יום הולדת.
 function thPeopleOpen() {
   var ps = thPeople();
-  if (!ps.length) ps = [{ n: '', hy: '', hm: '', hd: '' }];
   openModal(MSG_TH_PEOPLE_TITLE, '<div class="thp-wrap"><div class="thp-list" id="thp-list">' + ps.map(thRowHTML).join('') + '</div>' +
-    '<button class="btn ghost" data-act="th-people-add">' + esc(MSG_TH_PEOPLE_ADD) + '</button></div>',
+    '<button class="btn ghost" data-act="th-people-add">' + esc(MSG_TH_PEOPLE_ADD) + '</button>' +
+    '<div class="thp-kind" id="thp-kind" hidden><b>' + esc(MSG_TH_KIND) + '</b>' +
+      '<button class="btn ghost" data-act="th-people-kind" data-t="fix">' + icon('book') + esc(MSG_TH_KIND_FIX) + '</button>' +
+      '<button class="btn ghost" data-act="th-people-kind" data-t="bd">' + icon('calendar') + esc(MSG_TH_KIND_BD) + '</button></div></div>',
     '<button class="btn ghost" data-act="modal-close">ביטול</button>' +
     '<button class="btn" data-act="th-people-save" data-ksave>' + icon('save') + esc(MSG_TH_PEOPLE_SAVE) + '</button>');
   thDragWire();
 }
 
+// null — יש שורה שאינה תקינה, ושום דבר אינו נשמר
 function thPeopleRead() {
-  var out = [];
+  var out = [], bad = false;
   document.querySelectorAll('#thp-list .thp-row').forEach(function (r) {
-    var f = function (k) { return r.querySelector('[data-f=' + k + ']').value; };
+    var f = function (k) { var x = r.querySelector('[data-f=' + k + ']'); return x ? x.value : ''; };
+    if (r.dataset.t === 'fix') {
+      var raw = f('ch').trim(), ch = thParseCh(raw);
+      if (!raw && !f('n').trim()) return;
+      if (!(ch >= 1 && ch <= 150)) { bad = true; r.classList.add('bad'); return; }
+      r.classList.remove('bad');
+      out.push({ t: 'fix', n: f('n').trim(), ch: ch });
+      return;
+    }
     var p = { n: f('n').trim(), hy: +f('hy') || 0, hm: f('hm'), hd: +f('hd') || 0 };
     if (p.hy && p.hm && p.hd) out.push(p);
   });
-  return out;
+  return bad ? null : out;
 }
 
+// «הוספת פרק» — פותחת את הבחירה; הבחירה מוסיפה שורה מהסוג שנבחר וסוגרת אותה
 function thPeopleAdd() {
-  var l = sQ('#thp-list');
+  var k = sQ('#thp-kind');
+  if (k) { k.hidden = !k.hidden; if (!k.hidden) k.scrollIntoView({ block: 'nearest' }); }
+}
+function thPeopleKind(t) {
+  var l = sQ('#thp-list'), k = sQ('#thp-kind');
   if (!l) return;
-  l.insertAdjacentHTML('beforeend', thRowHTML({ n: '', hy: '', hm: '', hd: '' }, l.children.length));
+  if (k) k.hidden = true;
+  l.insertAdjacentHTML('beforeend', thRowHTML(t === 'fix' ? { t: 'fix', n: '', ch: 0 } : { n: '', hy: '', hm: '', hd: '' }, l.children.length));
   l.lastElementChild.scrollIntoView({ block: 'nearest' });
+  var inp = l.lastElementChild.querySelector(t === 'fix' ? '[data-f=ch]' : '[data-f=n]');
+  if (inp) inp.focus();
   thDragWire();
 }
 
@@ -238,7 +286,12 @@ function thPeopleDel(i) {
   if (r) r.remove();
 }
 
-function thPeopleSave() { sPickSet(KEY_TH_PEOPLE, thPeopleRead()); }
+function thPeopleSave() {
+  var v = thPeopleRead();
+  if (!v) { toast(MSG_TH_FIX_BAD, null, 'bad'); return false; }
+  sPickSet(KEY_TH_PEOPLE, v);
+  return true;
+}
 
 // גרירה מהידית — בעכבר ובמגע; הסדר נקרא מה-DOM בשמירה.
 function thDragWire() {
@@ -273,10 +326,17 @@ function bookPickers() {
   var out = {};
   Object.keys(BOOKS).forEach(function (k) {
     var b = BOOKS[k];
-    if (b.people) return;
+    if (b.people) {
+      out['bk-' + k] = { key: bookKey(b), cur: thCur, title: MSG_TH_PICK, groups: function () {
+        return [{ title: b.title, items: thEntries().map(function (e, i) {
+          return { i: i, num: hebGematria(e.ch, ''), name: (e.p.n || (e.p.t === 'fix' ? MSG_TH_KIND_FIX : MSG_TH_KIND_BD)) };
+        }) }];
+      } };
+      return;
+    }
     out['bk-' + k] = { key: bookKey(b), cur: function () { return bookCur(b); }, groups: function () { return bookGroups(b); }, title: b.pick };
   });
   return out;
 }
 
-export { bookCur, bookMount, bookOf, bookPickers, bookScreenHTML, thChapterOf, thPeopleAdd, thPeopleDel, thPeopleOpen, thPeopleSave };
+export { bookCur, bookMount, bookOf, bookPickers, bookScreenHTML, thChapterOf, thPeopleAdd, thPeopleDel, thPeopleKind, thPeopleOpen, thPeopleSave };
