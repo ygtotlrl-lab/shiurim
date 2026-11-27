@@ -234,6 +234,8 @@ var AUTO = {
   'bk-thd': function () { return ['bk_thd', todayTehillimDay()]; },
   'bk-thw': function () { return ['bk_thw', todayDow()]; },
   'bk-sidk': function () { return ['bk_sidk', todayKria()]; },
+  // ספר המצוות — מחזור של 339 ימים שרץ עם שלושת הפרקים, מאותו יום (כ״ז ניסן תשמ״ד)
+  'bk-shm': function () { return ['bk_shm', todayRambam()]; },
   'bk-chassidus': function () { var i = bkIndexByGroup('chassidus', PARSHIOT[weekParasha()[0]]); return i === null ? null : ['bk_chassidus', i]; }
 };
 function autoPick(screen) {

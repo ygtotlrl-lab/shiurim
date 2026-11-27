@@ -3,7 +3,7 @@
 // קטע — [תיקייה, עמוד, הלבנות] לעמוד אחד, או [תיקייה, מעמוד, עד עמוד] לטווח שלם בלי הלבנה.
 import { esc, openModal, toast } from '../core/ui.js';
 import { hebDate, hebGematria, hebIsLeap, hebMonthNames, hebToGreg, hebYearLabelFull } from '../core/hebrew.js';
-import { MSG_TH_PEOPLE_TITLE, MSG_TH_PEOPLE_ADD, MSG_TH_PEOPLE_NAME, MSG_TH_PEOPLE_DATE, MSG_TH_DAY, MSG_TH_MONTH, MSG_TH_YEAR, MSG_TH_PEOPLE_NONE, MSG_TH_PEOPLE_DEL, MSG_TH_PEOPLE_SAVE, MSG_TH_PEOPLE_OPEN, MSG_PEREK, KEY_TH_PEOPLE, MSG_TH_NEXT, MSG_TH_PREV, MSG_TH_FIX_NAME, MSG_TH_FIX_PH, MSG_TH_FIX_BAD, MSG_TH_KIND, MSG_TH_KIND_FIX, MSG_TH_KIND_BD, MSG_TH_PICK } from './constants.js';
+import { MSG_TH_PEOPLE_TITLE, MSG_TH_PEOPLE_ADD, MSG_TH_PEOPLE_NAME, MSG_TH_PEOPLE_DATE, MSG_TH_DAY, MSG_TH_MONTH, MSG_TH_YEAR, MSG_TH_PEOPLE_NONE, MSG_TH_PEOPLE_DEL, MSG_TH_PEOPLE_SAVE, MSG_TH_PEOPLE_OPEN, MSG_PEREK, KEY_TH_PEOPLE, MSG_TH_NEXT, MSG_TH_PREV, MSG_TH_FIX_NAME, MSG_TH_FIX_PH, MSG_TH_FIX_BAD, MSG_TH_KIND, MSG_TH_KIND_FIX, MSG_TH_KIND_BD, MSG_TH_PICK, MSG_SHM_NONE } from './constants.js';
 
 import { tehillimAddThirty } from './calendar.js';
 import { el, readBarHTML, sPick, sPickRawAny, sPickSet, sQ, scanSheet, ttSheets } from './domain.js';
@@ -73,6 +73,8 @@ function bookMount(screen) {
   if (!now) return;
   if (b.people) { thPeopleMount(b, now); return; }
   var it = bookItems(b)[+now.dataset.id], pages = el('div', 'pages');
+  // יום שכולו מחוץ לסריקה (בספר המצוות — ההקדמה והשרשים) — הודעה במקום עמוד ריק
+  if (!(it.segs || []).length) { now.appendChild(el('p', 'th-none', MSG_SHM_NONE)); return; }
   segSheets(it.segs, b.shade).forEach(function (f) { pages.appendChild(f); });
   // תהלים יומי — בכ״ט בחודש חסר אומרים גם את הפרקים של ל׳.
   if (b.k === 'thd' && +now.dataset.id === 28 && tehillimAddThirty()) {
